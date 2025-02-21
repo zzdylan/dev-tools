@@ -12,6 +12,24 @@
         <h3>XML 编辑器</h3>
         <p>XML 格式化、验证、转换工具</p>
       </router-link>
+
+      <router-link to="/time-converter" class="tool-card">
+        <div class="tool-icon">⏰</div>
+        <h3>时间戳转换</h3>
+        <p>时间戳与日期时间互转工具</p>
+      </router-link>
+
+      <router-link to="/url-converter" class="tool-card">
+        <div class="tool-icon">🔗</div>
+        <h3>URL 编解码</h3>
+        <p>URL 编码解码转换工具</p>
+      </router-link>
+
+      <router-link to="/url-parser" class="tool-card">
+        <div class="tool-icon">🔍</div>
+        <h3>URL 解析</h3>
+        <p>URL 参数解析分析工具</p>
+      </router-link>
     </div>
   </div>
 </template>
