@@ -17,6 +17,7 @@ func main() {
 
 	// Create JsonProcessor instance
 	jsonProcessor := NewJsonProcessor()
+	xmlProcessor := NewXMLProcessor()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -31,6 +32,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 			jsonProcessor,
+			xmlProcessor,
 		},
 	})
 

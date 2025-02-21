@@ -69,7 +69,7 @@ const menuTitles: Record<string, string> = {
   '/': '全部功能列表',
   '/json-editor': 'JSON 编辑器',
   '/xml-editor': 'XML 编辑器',
-  '/tools': '工具库',
+  // '/tools': '工具库',
   '/settings': '设置',
 }
 
@@ -98,7 +98,7 @@ const menuItems: MenuItem[] = [
   { path: '/', icon: '🏠', title: '全部功能列表' },
   { path: '/json-editor', icon: '{ }', title: 'JSON 编辑器' },
   { path: '/xml-editor', icon: '📄', title: 'XML 编辑器' },
-  { path: '/tools', icon: '🛠', title: '工具库' },
+  // { path: '/tools', icon: '🛠', title: '工具库' },
   { path: '/settings', icon: '⚙️', title: '设置' },
 ]
 

@@ -74,8 +74,6 @@
         />
       </div>
     </div>
-
-    <Message ref="messageRef" />
   </div>
 </template>
 
@@ -83,7 +81,7 @@
 import { ref, onMounted, computed } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { useClipboard } from '@vueuse/core'
-import Message from '../components/Message.vue'
+import { ElMessage } from 'element-plus'
 import { FormatJson, CompressJson } from '../../wailsjs/go/main/JsonProcessor'
 import { onClickOutside } from '@vueuse/core'
 
@@ -169,8 +167,6 @@ onMounted(() => {
   code.value = JSON.stringify(sampleJson, null, 2)
 })
 
-const messageRef = ref()
-
 const monacoEditor = ref()
 
 // 配置状态
@@ -209,13 +205,13 @@ const toggleSettings = () => {
 const formatJson = async () => {
   try {
     if (!code.value) {
-      messageRef.value?.show('内容为空', 'error')
+      ElMessage.error('内容为空')
       return
     }
 
     const editor = monacoEditor.value?.editor
     if (!editor) {
-      messageRef.value?.show('编辑器未准备好', 'error')
+      ElMessage.error('编辑器未准备好')
       return
     }
 
@@ -227,31 +223,31 @@ const formatJson = async () => {
       try {
         const result = await FormatJson(value, settings.value.autoDecodeUnicode)
         model.setValue(result)
-        messageRef.value?.show('格式化成功')
+        ElMessage.success('格式化成功')
         error.value = ''
       } catch (e) {
         console.error('格式化错误:', e)
         error.value = e instanceof Error ? e.message : '未知错误'
-        messageRef.value?.show(`格式化失败: ${error.value}`, 'error')
+        ElMessage.error(`格式化失败: ${error.value}`)
       }
     }
   } catch (e) {
     console.error('格式化错误:', e)
     error.value = e instanceof Error ? e.message : '未知错误'
-    messageRef.value?.show(`格式化失败: ${error.value}`, 'error')
+    ElMessage.error(`格式化失败: ${error.value}`)
   }
 }
 
 const compressJson = async () => {
   try {
     if (!code.value) {
-      messageRef.value?.show('内容为空', 'error')
+      ElMessage.error('内容为空')
       return
     }
 
     const editor = monacoEditor.value?.editor
     if (!editor) {
-      messageRef.value?.show('编辑器未准备好', 'error')
+      ElMessage.error('编辑器未准备好')
       return
     }
 
@@ -265,18 +261,18 @@ const compressJson = async () => {
           settings.value.autoDecodeUnicode
         )
         model.setValue(result)
-        messageRef.value?.show('压缩成功')
+        ElMessage.success('压缩成功')
         error.value = ''
       } catch (e) {
         console.error('压缩错误:', e)
         error.value = e instanceof Error ? e.message : '未知错误'
-        messageRef.value?.show(`压缩失败: ${error.value}`, 'error')
+        ElMessage.error(`压缩失败: ${error.value}`)
       }
     }
   } catch (e) {
     console.error('压缩错误:', e)
     error.value = e instanceof Error ? e.message : '未知错误'
-    messageRef.value?.show(`压缩失败: ${error.value}`, 'error')
+    ElMessage.error(`压缩失败: ${error.value}`)
   }
 }
 
@@ -285,7 +281,7 @@ const escapeJson = async () => {
   try {
     const editor = monacoEditor.value?.editor
     if (!editor) {
-      messageRef.value?.show('编辑器未准备好', 'error')
+      ElMessage.error('编辑器未准备好')
       return
     }
 
@@ -294,13 +290,13 @@ const escapeJson = async () => {
       const value = model.getValue()
       const result = escapeString(value)
       model.setValue(result)
-      messageRef.value?.show('转义成功')
+      ElMessage.success('转义成功')
       error.value = ''
     }
   } catch (e) {
     console.error('转义错误:', e)
     error.value = e instanceof Error ? e.message : '未知错误'
-    messageRef.value?.show(`转义失败: ${error.value}`, 'error')
+    ElMessage.error(`转义失败: ${error.value}`)
   }
 }
 
@@ -308,7 +304,7 @@ const unescapeJson = async () => {
   try {
     const editor = monacoEditor.value?.editor
     if (!editor) {
-      messageRef.value?.show('编辑器未准备好', 'error')
+      ElMessage.error('编辑器未准备好')
       return
     }
 
@@ -317,13 +313,13 @@ const unescapeJson = async () => {
       const value = model.getValue()
       const result = unescapeString(value)
       model.setValue(result)
-      messageRef.value?.show('去转义成功')
+      ElMessage.success('去转义成功')
       error.value = ''
     }
   } catch (e) {
     console.error('去转义错误:', e)
     error.value = e instanceof Error ? e.message : '未知错误'
-    messageRef.value?.show(`去转义失败: ${error.value}`, 'error')
+    ElMessage.error(`去转义失败: ${error.value}`)
   }
 }
 
@@ -400,27 +396,27 @@ const copyToClipboard = async () => {
   try {
     const editor = monacoEditor.value?.editor
     if (!editor) {
-      messageRef.value?.show('编辑器未准备好', 'error')
+      ElMessage.error('编辑器未准备好')
       return
     }
 
     const model = editor.getModel()
     if (!model) {
-      messageRef.value?.show('获取内容失败', 'error')
+      ElMessage.error('获取内容失败')
       return
     }
 
     const content = model.getValue()
     if (!content) {
-      messageRef.value?.show('内容为空', 'error')
+      ElMessage.error('内容为空')
       return
     }
 
     await copy(content)
-    messageRef.value?.show('复制成功')
+    ElMessage.success('复制成功')
   } catch (e) {
     console.error('复制失败:', e)
-    messageRef.value?.show('复制失败', 'error')
+    ElMessage.error('复制失败')
   }
 }
 
@@ -428,27 +424,27 @@ const clearContent = () => {
   try {
     const editor = monacoEditor.value?.editor
     if (!editor) {
-      messageRef.value?.show('编辑器未准备好', 'error')
+      ElMessage.error('编辑器未准备好')
       return
     }
 
     const model = editor.getModel()
     if (!model) {
-      messageRef.value?.show('获取内容失败', 'error')
+      ElMessage.error('获取内容失败')
       return
     }
 
     if (!model.getValue()) {
-      messageRef.value?.show('内容已经为空', 'error')
+      ElMessage.error('内容已经为空')
       return
     }
 
     model.setValue('')
     error.value = ''
-    messageRef.value?.show('已清空')
+    ElMessage.success('已清空')
   } catch (e) {
     console.error('清空失败:', e)
-    messageRef.value?.show('清空失败', 'error')
+    ElMessage.error('清空失败')
   }
 }
 
@@ -457,7 +453,7 @@ const loadSample = () => {
   try {
     const editor = monacoEditor.value?.editor
     if (!editor) {
-      messageRef.value?.show('编辑器未准备好', 'error')
+      ElMessage.error('编辑器未准备好')
       return
     }
 
@@ -467,13 +463,13 @@ const loadSample = () => {
       const sampleStr =
         '{"user":{"id":123,"name":"John Doe","email":"john.doe@example.com"},"products":[{"id":"p1","name":"Product A","price":19.99},{"id":"p2","name":"Product B","price":29.99},{"id":"p3","name":"Product \\u4E2D\\u6587","price":39.99}],"order":{"orderId":"abc123","date":"2023-08-18","items":[{"productId":"p1","quantity":2},{"productId":"p3","quantity":1}]}}'
       model.setValue(sampleStr)
-      messageRef.value?.show('示例加载成功')
+      ElMessage.success('示例加载成功')
       error.value = ''
     }
   } catch (e) {
     console.error('加载示例失败:', e)
     error.value = e instanceof Error ? e.message : '未知错误'
-    messageRef.value?.show(`加载示例失败: ${error.value}`, 'error')
+    ElMessage.error(`加载示例失败: ${error.value}`)
   }
 }
 

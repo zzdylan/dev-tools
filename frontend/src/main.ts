@@ -5,6 +5,8 @@ import router from './router'
 import * as monaco from 'monaco-editor'
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 // 配置 Monaco Editor 的 workers
 window.MonacoEnvironment = {
@@ -24,5 +26,6 @@ monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
 })
 
 const app = createApp(App)
+app.use(ElementPlus)
 app.use(router)
 app.mount('#app')
