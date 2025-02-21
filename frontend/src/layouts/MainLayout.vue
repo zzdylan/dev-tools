@@ -70,7 +70,9 @@ const menuTitles: Record<string, string> = {
   '/json-editor': 'JSON 编辑器',
   '/xml-editor': 'XML 编辑器',
   '/time-converter': '时间戳转换',
-  '/settings': '设置',
+  // '/settings': '设置',
+  '/url-converter': 'URL 编解码',
+  '/url-parser': 'URL 解析',
 }
 
 // 监听路由变化更新标题
@@ -99,7 +101,9 @@ const menuItems: MenuItem[] = [
   { path: '/json-editor', icon: '{ }', title: 'JSON 编辑器' },
   { path: '/xml-editor', icon: '📄', title: 'XML 编辑器' },
   { path: '/time-converter', icon: '⏰', title: '时间戳转换' },
-  { path: '/settings', icon: '⚙️', title: '设置' },
+  // { path: '/settings', icon: '⚙️', title: '设置' },
+  { path: '/url-converter', icon: '🔗', title: 'URL 编解码' },
+  { path: '/url-parser', icon: '🔍', title: 'URL 解析' },
 ]
 
 const searchQuery = ref('')

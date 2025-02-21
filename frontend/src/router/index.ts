@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 import MainLayout from '../layouts/MainLayout.vue'
 import TimeConverter from '../views/TimeConverter.vue'
+import UrlConverter from '../views/UrlConverter.vue'
+import UrlParser from '../views/UrlParser.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -27,15 +29,25 @@ const routes: RouteRecordRaw[] = [
       //   name: 'Tools',
       //   component: () => import('../views/Tools.vue')
       // },
-      {
-        path: 'settings',
-        name: 'Settings',
-        component: () => import('../views/Settings.vue')
-      },
+      // {
+      //   path: 'settings',
+      //   name: 'Settings',
+      //   component: () => import('../views/Settings.vue')
+      // },
       {
         path: '/time-converter',
         name: 'TimeConverter',
         component: TimeConverter
+      },
+      {
+        path: '/url-converter',
+        name: 'UrlConverter',
+        component: UrlConverter
+      },
+      {
+        path: '/url-parser',
+        name: 'UrlParser',
+        component: UrlParser
       }
     ]
   }
