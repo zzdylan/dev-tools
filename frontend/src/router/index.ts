@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 import MainLayout from '../layouts/MainLayout.vue'
+import TimeConverter from '../views/TimeConverter.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -30,6 +31,11 @@ const routes: RouteRecordRaw[] = [
         path: 'settings',
         name: 'Settings',
         component: () => import('../views/Settings.vue')
+      },
+      {
+        path: '/time-converter',
+        name: 'TimeConverter',
+        component: TimeConverter
       }
     ]
   }
