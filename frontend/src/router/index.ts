@@ -3,6 +3,9 @@ import MainLayout from '../layouts/MainLayout.vue'
 import TimeConverter from '../views/TimeConverter.vue'
 import UrlConverter from '../views/UrlConverter.vue'
 import UrlParser from '../views/UrlParser.vue'
+import QrCode from '../views/QrCode.vue'
+import Base64Image from '../views/Base64Image.vue'
+import Base64Text from '../views/Base64Text.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -48,6 +51,21 @@ const routes: RouteRecordRaw[] = [
         path: '/url-parser',
         name: 'UrlParser',
         component: UrlParser
+      },
+      {
+        path: '/qrcode',
+        name: 'QrCode',
+        component: QrCode
+      },
+      {
+        path: '/base64-image',
+        name: 'Base64Image',
+        component: Base64Image
+      },
+      {
+        path: '/base64-text',
+        name: 'Base64Text',
+        component: Base64Text
       }
     ]
   }

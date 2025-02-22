@@ -73,6 +73,9 @@ const menuTitles: Record<string, string> = {
   // '/settings': '设置',
   '/url-converter': 'URL 编解码',
   '/url-parser': 'URL 解析',
+  '/qrcode': '二维码工具',
+  '/base64-image': 'Base64 图像',
+  '/base64-text': 'Base64 文本',
 }
 
 // 监听路由变化更新标题
@@ -104,6 +107,9 @@ const menuItems: MenuItem[] = [
   // { path: '/settings', icon: '⚙️', title: '设置' },
   { path: '/url-converter', icon: '🔗', title: 'URL 编解码' },
   { path: '/url-parser', icon: '🔍', title: 'URL 解析' },
+  { path: '/qrcode', icon: '📱', title: '二维码工具' },
+  { path: '/base64-image', icon: '🖼️', title: 'Base64 图像' },
+  { path: '/base64-text', icon: '📝', title: 'Base64 文本' },
 ]
 
 const searchQuery = ref('')

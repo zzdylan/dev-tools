@@ -14,13 +14,16 @@
     "@vueuse/core": "^12.7.0",
     "dayjs": "^1.11.13",
     "element-plus": "^2.9.5",
+    "jsqr": "^1.4.0",
     "monaco-editor-vue3": "^0.1.10",
+    "qrcode": "^1.5.4",
     "vite-plugin-monaco-editor": "^1.1.0",
     "vue": "^3.2.37",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@babel/types": "^7.18.10",
+    "@types/qrcode": "^1.5.5",
     "@vitejs/plugin-vue": "^3.0.3",
     "typescript": "^4.6.4",
     "vite": "^3.0.7",

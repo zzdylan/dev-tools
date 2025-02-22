@@ -30,6 +30,12 @@
         <h3>URL 解析</h3>
         <p>URL 参数解析分析工具</p>
       </router-link>
+
+      <router-link to="/qrcode" class="tool-card">
+        <div class="tool-icon">📱</div>
+        <h3>二维码工具</h3>
+        <p>二维码生成与解析工具</p>
+      </router-link>
     </div>
   </div>
 </template>
