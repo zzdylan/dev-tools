@@ -36,6 +36,24 @@
         <h3>二维码工具</h3>
         <p>二维码生成与解析工具</p>
       </router-link>
+
+      <router-link to="/base64-image" class="tool-card">
+        <div class="tool-icon">🖼️</div>
+        <h3>Base64 图像</h3>
+        <p>图片与 Base64 编解码转换</p>
+      </router-link>
+
+      <router-link to="/base64-text" class="tool-card">
+        <div class="tool-icon">📝</div>
+        <h3>Base64 文本</h3>
+        <p>文本 Base64 编解码转换</p>
+      </router-link>
+
+      <router-link to="/number-converter" class="tool-card">
+        <div class="tool-icon">🔢</div>
+        <h3>进制转换</h3>
+        <p>二进制、八进制、十进制、十六进制转换</p>
+      </router-link>
     </div>
   </div>
 </template>

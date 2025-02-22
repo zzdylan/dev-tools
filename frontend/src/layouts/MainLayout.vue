@@ -76,6 +76,7 @@ const menuTitles: Record<string, string> = {
   '/qrcode': '二维码工具',
   '/base64-image': 'Base64 图像',
   '/base64-text': 'Base64 文本',
+  '/number-converter': '进制转换',
 }
 
 // 监听路由变化更新标题
@@ -110,6 +111,7 @@ const menuItems: MenuItem[] = [
   { path: '/qrcode', icon: '📱', title: '二维码工具' },
   { path: '/base64-image', icon: '🖼️', title: 'Base64 图像' },
   { path: '/base64-text', icon: '📝', title: 'Base64 文本' },
+  { path: '/number-converter', icon: '🔢', title: '进制转换' },
 ]
 
 const searchQuery = ref('')

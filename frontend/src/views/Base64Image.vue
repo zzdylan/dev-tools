@@ -17,7 +17,7 @@
               class="upload-content"
               @click="triggerFileInput"
             >
-              <div class="upload-icon">🖼️</div>
+              <div class="upload-icon">📤</div>
               <div class="upload-text">
                 点击或拖拽图片到此处
                 <div class="upload-hint">支持 jpg、png、gif 格式</div>

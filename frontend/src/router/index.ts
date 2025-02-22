@@ -6,6 +6,7 @@ import UrlParser from '../views/UrlParser.vue'
 import QrCode from '../views/QrCode.vue'
 import Base64Image from '../views/Base64Image.vue'
 import Base64Text from '../views/Base64Text.vue'
+import NumberConverter from '../views/NumberConverter.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -66,6 +67,11 @@ const routes: RouteRecordRaw[] = [
         path: '/base64-text',
         name: 'Base64Text',
         component: Base64Text
+      },
+      {
+        path: '/number-converter',
+        name: 'NumberConverter',
+        component: NumberConverter
       }
     ]
   }
