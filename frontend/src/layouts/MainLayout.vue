@@ -77,6 +77,7 @@ const menuTitles: Record<string, string> = {
   '/base64-image': 'Base64 图像',
   '/base64-text': 'Base64 文本',
   '/number-converter': '进制转换',
+  '/text-diff': '文本对比',
 }
 
 // 监听路由变化更新标题
@@ -112,6 +113,7 @@ const menuItems: MenuItem[] = [
   { path: '/base64-image', icon: '🖼️', title: 'Base64 图像' },
   { path: '/base64-text', icon: '📝', title: 'Base64 文本' },
   { path: '/number-converter', icon: '🔢', title: '进制转换' },
+  { path: '/text-diff', icon: '📋', title: '文本对比' },
 ]
 
 const searchQuery = ref('')

@@ -54,6 +54,12 @@
         <h3>进制转换</h3>
         <p>二进制、八进制、十进制、十六进制转换</p>
       </router-link>
+
+      <router-link to="/text-diff" class="tool-card">
+        <div class="tool-icon">📋</div>
+        <h3>文本对比</h3>
+        <p>文本差异对比工具</p>
+      </router-link>
     </div>
   </div>
 </template>

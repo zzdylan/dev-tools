@@ -9,16 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.3",
+    "@types/diff": "^7.0.1",
     "@vicons/ionicons5": "^0.13.0",
     "@vicons/utils": "^0.1.4",
     "@vueuse/core": "^12.7.0",
     "dayjs": "^1.11.13",
+    "diff": "^7.0.0",
     "element-plus": "^2.9.5",
     "jsqr": "^1.4.0",
     "monaco-editor-vue3": "^0.1.10",
+    "pinia": "^3.0.1",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "qrcode": "^1.5.4",
     "vite-plugin-monaco-editor": "^1.1.0",
     "vue": "^3.2.37",
+    "vue-codemirror": "^6.1.1",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {

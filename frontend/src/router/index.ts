@@ -7,6 +7,7 @@ import QrCode from '../views/QrCode.vue'
 import Base64Image from '../views/Base64Image.vue'
 import Base64Text from '../views/Base64Text.vue'
 import NumberConverter from '../views/NumberConverter.vue'
+import TextDiff from '../views/TextDiff.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -72,6 +73,11 @@ const routes: RouteRecordRaw[] = [
         path: '/number-converter',
         name: 'NumberConverter',
         component: NumberConverter
+      },
+      {
+        path: '/text-diff',
+        name: 'TextDiff',
+        component: TextDiff
       }
     ]
   }
