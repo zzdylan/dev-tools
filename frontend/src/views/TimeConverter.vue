@@ -56,13 +56,23 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import relativeTimePlugin from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 dayjs.extend(utc)
 dayjs.extend(relativeTimePlugin)
 dayjs.locale('zh-cn')
 
-const timestamp = ref('')
-const datetime = ref('')
+const store = useToolsStore()
+const { timeConverter } = storeToRefs(store)
+const timestamp = computed({
+  get: () => timeConverter.value.timestamp,
+  set: (val) => (timeConverter.value.timestamp = val),
+})
+const datetime = computed({
+  get: () => timeConverter.value.datetime,
+  set: (val) => (timeConverter.value.datetime = val),
+})
 
 const handleTimestampInput = () => {
   if (!timestamp.value) {

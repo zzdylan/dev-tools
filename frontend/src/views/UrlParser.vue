@@ -64,10 +64,20 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy: copyToClipboard } = useClipboard()
-const urlText = ref('')
-const viewMode = ref<'json' | 'table'>('json')
+const store = useToolsStore()
+const { urlParser } = storeToRefs(store)
+const urlText = computed({
+  get: () => urlParser.value.urlText,
+  set: (val) => (urlParser.value.urlText = val),
+})
+const viewMode = computed({
+  get: () => urlParser.value.viewMode,
+  set: (val) => (urlParser.value.viewMode = val),
+})
 const parsedParams = ref<Record<string, string>>({})
 
 const parseUrl = () => {

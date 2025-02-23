@@ -38,13 +38,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy: copyToClipboard } = useClipboard()
-const rawText = ref('')
-const result = ref('')
+const store = useToolsStore()
+const { base64Text } = storeToRefs(store)
+const rawText = computed({
+  get: () => base64Text.value.rawText,
+  set: (val) => (base64Text.value.rawText = val),
+})
+const result = computed({
+  get: () => base64Text.value.result,
+  set: (val) => (base64Text.value.result = val),
+})
 
 const encode = () => {
   try {

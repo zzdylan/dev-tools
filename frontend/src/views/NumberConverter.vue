@@ -58,10 +58,20 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy: copyToClipboard } = useClipboard()
-const inputValue = ref('')
-const inputBase = ref<string>('10')
+const store = useToolsStore()
+const { numberConverter } = storeToRefs(store)
+const inputValue = computed({
+  get: () => numberConverter.value.inputValue,
+  set: (val) => (numberConverter.value.inputValue = val),
+})
+const inputBase = computed({
+  get: () => numberConverter.value.inputBase,
+  set: (val) => (numberConverter.value.inputBase = val),
+})
 
 // 检测输入的是什么进制的数
 const detectBase = (value: string): number => {

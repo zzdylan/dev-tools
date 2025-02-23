@@ -66,9 +66,9 @@
       <div class="editor-container">
         <MonacoEditor
           ref="monacoEditor"
-          v-model="code"
+          :value="code"
+          @change="handleChange"
           :options="options"
-          @change="validateJson"
           language="json"
           theme="vs"
         />
@@ -84,10 +84,21 @@ import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 import { FormatJson, CompressJson } from '../../wailsjs/go/main/JsonProcessor'
 import { onClickOutside } from '@vueuse/core'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy } = useClipboard()
+const store = useToolsStore()
+const { jsonEditor } = storeToRefs(store)
+const code = computed({
+  get: () => jsonEditor.value.code,
+  set: (val) => (jsonEditor.value.code = val),
+})
+const settings = computed({
+  get: () => jsonEditor.value.settings,
+  set: (val) => (jsonEditor.value.settings = val),
+})
 
-const code = ref('')
 const error = ref('')
 
 const options = {
@@ -163,19 +174,10 @@ const sampleJson = {
   },
 }
 
-onMounted(() => {
-  code.value = JSON.stringify(sampleJson, null, 2)
-})
-
 const monacoEditor = ref()
 
 // 配置状态
 const showSettings = ref(false)
-const settings = ref({
-  autoDecodeUnicode: false,
-  removeEscapes: false,
-})
-
 const settingsPanel = ref<HTMLElement | null>(null)
 
 const configBtn = ref<HTMLElement | null>(null)
@@ -377,6 +379,11 @@ const unescapeString = (str: string): string => {
   return result
 }
 
+const handleChange = (value: string) => {
+  code.value = value
+  validateJson()
+}
+
 const validateJson = () => {
   if (!code.value.trim()) {
     error.value = ''
@@ -459,17 +466,14 @@ const loadSample = () => {
 
     const model = editor.getModel()
     if (model) {
-      // 直接使用原始字符串，不做任何处理
-      const sampleStr =
-        '{"user":{"id":123,"name":"John Doe","email":"john.doe@example.com"},"products":[{"id":"p1","name":"Product A","price":19.99},{"id":"p2","name":"Product B","price":29.99},{"id":"p3","name":"Product \\u4E2D\\u6587","price":39.99}],"order":{"orderId":"abc123","date":"2023-08-18","items":[{"productId":"p1","quantity":2},{"productId":"p3","quantity":1}]}}'
+      const sampleStr = JSON.stringify(sampleJson, null, 2)
+      code.value = sampleStr // 直接更新 store
       model.setValue(sampleStr)
       ElMessage.success('示例加载成功')
-      error.value = ''
     }
   } catch (e) {
     console.error('加载示例失败:', e)
-    error.value = e instanceof Error ? e.message : '未知错误'
-    ElMessage.error(`加载示例失败: ${error.value}`)
+    ElMessage.error('加载示例失败')
   }
 }
 

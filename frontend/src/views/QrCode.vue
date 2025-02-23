@@ -49,14 +49,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
 import jsQR from 'jsqr'
 import QRCode from 'qrcode'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy: copyToClipboard } = useClipboard()
-const text = ref('I am the qrcode generator of devTools😁')
+const store = useToolsStore()
+const { qrCode } = storeToRefs(store)
+const text = computed({
+  get: () => qrCode.value.text,
+  set: (val) => (qrCode.value.text = val),
+})
 const fileInput = ref<HTMLInputElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 

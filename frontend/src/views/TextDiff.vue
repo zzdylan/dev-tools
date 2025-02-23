@@ -37,19 +37,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
 import { diffLines } from 'diff'
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { lineNumbers } from '@codemirror/view'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy: copyToClipboard } = useClipboard()
-const oldText = ref('')
-const newText = ref('')
+const store = useToolsStore()
+const { textDiff } = storeToRefs(store)
+const oldText = computed({
+  get: () => textDiff.value.oldText,
+  set: (val) => (textDiff.value.oldText = val),
+})
+const newText = computed({
+  get: () => textDiff.value.newText,
+  set: (val) => (textDiff.value.newText = val),
+})
+const ignoreWhitespace = computed({
+  get: () => textDiff.value.ignoreWhitespace,
+  set: (val) => (textDiff.value.ignoreWhitespace = val),
+})
 const diffResult = ref('')
-const ignoreWhitespace = ref(false)
 const oldEditor = ref<HTMLDivElement>()
 const newEditor = ref<HTMLDivElement>()
 let oldEditorView: EditorView

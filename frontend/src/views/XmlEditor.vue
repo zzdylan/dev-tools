@@ -29,7 +29,8 @@
       <div class="editor-container">
         <MonacoEditor
           ref="monacoEditor"
-          v-model="code"
+          :value="code"
+          @change="handleEditorChange"
           :options="options"
           language="xml"
           theme="vs"
@@ -40,14 +41,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 import { FormatXML, CompressXML } from '../../wailsjs/go/main/XmlProcessor'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy } = useClipboard()
-const code = ref('')
+const store = useToolsStore()
+const { xmlEditor } = storeToRefs(store)
+const code = computed({
+  get: () => xmlEditor.value.code,
+  set: (val) => (xmlEditor.value.code = val),
+})
 const monacoEditor = ref()
 
 const options = {
@@ -68,6 +76,10 @@ const options = {
   language: 'xml',
 }
 
+const handleEditorChange = (value: string) => {
+  code.value = value
+}
+
 const loadSample = () => {
   try {
     const editor = monacoEditor.value?.editor
@@ -78,8 +90,9 @@ const loadSample = () => {
 
     const model = editor.getModel()
     if (model) {
-      model.setValue(`<classroom><course>Introduction to Computer Science</course><instructor>Dr. Smith</instructor><students><student><student_id>001</student_id><name>Emily Johnson</name><age>19</age><gender>Female</gender><grades><grade subject="Math">A</grade><grade subject="Programming">B+</grade><grade subject="English">A-</grade></grades></student><student><student_id>002</student_id><name>Michael Smith</name><age>20</age><gender>Male</gender><grades><grade subject="Math">B</grade><grade subject="Programming">A</grade><grade subject="English">B</grade></grades></student></students></classroom>
-`)
+      const sampleXml = `<classroom><course>Introduction to Computer Science</course><instructor>Dr. Smith</instructor><students><student><student_id>001</student_id><name>Emily Johnson</name><age>19</age><gender>Female</gender><grades><grade subject="Math">A</grade><grade subject="Programming">B+</grade><grade subject="English">A-</grade></grades></student><student><student_id>002</student_id><name>Michael Smith</name><age>20</age><gender>Male</gender><grades><grade subject="Math">B</grade><grade subject="Programming">A</grade><grade subject="English">B</grade></grades></student></students></classroom>`
+      code.value = sampleXml // 直接更新 store
+      model.setValue(sampleXml)
       ElMessage.success('示例加载成功')
     }
   } catch (e) {

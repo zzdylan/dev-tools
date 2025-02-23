@@ -49,14 +49,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const { copy } = useClipboard()
+const store = useToolsStore()
+const { base64Image } = storeToRefs(store)
+const imageUrl = computed({
+  get: () => base64Image.value.imageUrl,
+  set: (val) => (base64Image.value.imageUrl = val),
+})
+const base64Result = computed({
+  get: () => base64Image.value.base64Result,
+  set: (val) => (base64Image.value.base64Result = val),
+})
 const fileInput = ref<HTMLInputElement | null>(null)
-const imageUrl = ref('')
-const base64Result = ref('')
 
 const triggerFileInput = () => {
   fileInput.value?.click()
