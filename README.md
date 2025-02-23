@@ -136,17 +136,3 @@ wails dev
 # 构建可执行文件
 wails build
 ```
-
-## 开发指南
-
-1. 前端开发
-   - 使用 Vue 3 Composition API
-   - 使用 TypeScript 进行类型检查
-   - 使用 Element Plus 组件库
-   - 使用 Monaco Editor 实现代码编辑器
-
-2. 后端开发
-   - 使用 Go 实现核心功能
-   - 通过 Wails 提供的 API 与前端通信
-   - 实现数据处理和转换逻辑
-
