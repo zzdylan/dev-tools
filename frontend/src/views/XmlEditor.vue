@@ -93,7 +93,6 @@ const loadSample = () => {
       const sampleXml = `<classroom><course>Introduction to Computer Science</course><instructor>Dr. Smith</instructor><students><student><student_id>001</student_id><name>Emily Johnson</name><age>19</age><gender>Female</gender><grades><grade subject="Math">A</grade><grade subject="Programming">B+</grade><grade subject="English">A-</grade></grades></student><student><student_id>002</student_id><name>Michael Smith</name><age>20</age><gender>Male</gender><grades><grade subject="Math">B</grade><grade subject="Programming">A</grade><grade subject="English">B</grade></grades></student></students></classroom>`
       code.value = sampleXml // 直接更新 store
       model.setValue(sampleXml)
-      ElMessage.success('示例加载成功')
     }
   } catch (e) {
     console.error('加载示例失败:', e)
@@ -123,7 +122,6 @@ const formatXml = async () => {
 
     const formatted = await FormatXML(value)
     model.setValue(formatted)
-    ElMessage.success('格式化成功')
   } catch (err: any) {
     ElMessage.error('格式化失败：' + (err.message || err))
   }
@@ -151,7 +149,6 @@ const compressXml = async () => {
 
     const compressed = await CompressXML(value)
     model.setValue(compressed)
-    ElMessage.success('压缩成功')
   } catch (err: any) {
     ElMessage.error('压缩失败：' + (err.message || err))
   }
@@ -178,7 +175,6 @@ const copyToClipboard = async () => {
     }
 
     await copy(content)
-    ElMessage.success('已复制到剪贴板')
   } catch (e) {
     ElMessage.error('复制失败')
   }
@@ -199,7 +195,6 @@ const clearContent = () => {
     }
 
     model.setValue('')
-    ElMessage.success('已清空')
   } catch (e) {
     ElMessage.error('清空失败')
   }

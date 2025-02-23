@@ -206,11 +206,6 @@ const toggleSettings = () => {
 
 const formatJson = async () => {
   try {
-    if (!code.value) {
-      ElMessage.error('内容为空')
-      return
-    }
-
     const editor = monacoEditor.value?.editor
     if (!editor) {
       ElMessage.error('编辑器未准备好')
@@ -218,35 +213,26 @@ const formatJson = async () => {
     }
 
     const model = editor.getModel()
-    if (model) {
-      const value = model.getValue()
-
-      // 调用后端方法
-      try {
-        const result = await FormatJson(value, settings.value.autoDecodeUnicode)
-        model.setValue(result)
-        ElMessage.success('格式化成功')
-        error.value = ''
-      } catch (e) {
-        console.error('格式化错误:', e)
-        error.value = e instanceof Error ? e.message : '未知错误'
-        ElMessage.error(`格式化失败: ${error.value}`)
-      }
+    if (!model) {
+      ElMessage.error('获取内容失败')
+      return
     }
-  } catch (e) {
-    console.error('格式化错误:', e)
-    error.value = e instanceof Error ? e.message : '未知错误'
-    ElMessage.error(`格式化失败: ${error.value}`)
+
+    const value = model.getValue()
+    if (!value.trim()) {
+      ElMessage.error('请输入 JSON 内容')
+      return
+    }
+
+    const formatted = await FormatJson(value, settings.value.autoDecodeUnicode)
+    model.setValue(formatted)
+  } catch (err: any) {
+    ElMessage.error('格式化失败：' + (err.message || err))
   }
 }
 
 const compressJson = async () => {
   try {
-    if (!code.value) {
-      ElMessage.error('内容为空')
-      return
-    }
-
     const editor = monacoEditor.value?.editor
     if (!editor) {
       ElMessage.error('编辑器未准备好')
@@ -254,27 +240,24 @@ const compressJson = async () => {
     }
 
     const model = editor.getModel()
-    if (model) {
-      const value = model.getValue()
-
-      try {
-        const result = await CompressJson(
-          value,
-          settings.value.autoDecodeUnicode
-        )
-        model.setValue(result)
-        ElMessage.success('压缩成功')
-        error.value = ''
-      } catch (e) {
-        console.error('压缩错误:', e)
-        error.value = e instanceof Error ? e.message : '未知错误'
-        ElMessage.error(`压缩失败: ${error.value}`)
-      }
+    if (!model) {
+      ElMessage.error('获取内容失败')
+      return
     }
-  } catch (e) {
-    console.error('压缩错误:', e)
-    error.value = e instanceof Error ? e.message : '未知错误'
-    ElMessage.error(`压缩失败: ${error.value}`)
+
+    const value = model.getValue()
+    if (!value.trim()) {
+      ElMessage.error('请输入 JSON 内容')
+      return
+    }
+
+    const compressed = await CompressJson(
+      value,
+      settings.value.autoDecodeUnicode
+    )
+    model.setValue(compressed)
+  } catch (err: any) {
+    ElMessage.error('压缩失败：' + (err.message || err))
   }
 }
 
@@ -292,7 +275,6 @@ const escapeJson = async () => {
       const value = model.getValue()
       const result = escapeString(value)
       model.setValue(result)
-      ElMessage.success('转义成功')
       error.value = ''
     }
   } catch (e) {
@@ -315,7 +297,6 @@ const unescapeJson = async () => {
       const value = model.getValue()
       const result = unescapeString(value)
       model.setValue(result)
-      ElMessage.success('去转义成功')
       error.value = ''
     }
   } catch (e) {
@@ -420,7 +401,6 @@ const copyToClipboard = async () => {
     }
 
     await copy(content)
-    ElMessage.success('复制成功')
   } catch (e) {
     console.error('复制失败:', e)
     ElMessage.error('复制失败')
@@ -448,7 +428,6 @@ const clearContent = () => {
 
     model.setValue('')
     error.value = ''
-    ElMessage.success('已清空')
   } catch (e) {
     console.error('清空失败:', e)
     ElMessage.error('清空失败')
@@ -469,7 +448,6 @@ const loadSample = () => {
       const sampleStr = JSON.stringify(sampleJson, null, 2)
       code.value = sampleStr // 直接更新 store
       model.setValue(sampleStr)
-      ElMessage.success('示例加载成功')
     }
   } catch (e) {
     console.error('加载示例失败:', e)
