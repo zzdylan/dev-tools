@@ -78,6 +78,7 @@ const menuTitles: Record<string, string> = {
   '/base64-text': 'Base64 文本',
   '/number-converter': '进制转换',
   '/text-diff': '文本对比',
+  '/curl-converter': 'cURL 转换',
 }
 
 // 监听路由变化更新标题
