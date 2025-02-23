@@ -1,19 +1,141 @@
-# README
+# DevTools
 
-## About
+一个简洁高效的开发者工具集合，基于 Wails + Vue3 开发。
 
-This is the official Wails Vue-TS template.
+![all](docs/images/all.png)
+![json-editor](docs/images/json-editor.png)
+![qrcode](docs/images/qrcode.png)
+![time-converter](docs/images/time-converter.png)
+![curl-converter](docs/images/curl-converter.png)
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
 
-## Live Development
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+## 功能特性
 
-## Building
+### 编辑器类
+- **JSON 编辑器**
+  - 格式化、压缩 JSON 数据
+  - Unicode 自动解码
+  - 语法高亮和错误提示
+  - 转义/去转义功能
+  - 支持配置自动解码 Unicode
+  - 支持去转义时删除换行符和制表符
 
-To build a redistributable, production mode package, use `wails build`.
+- **XML 编辑器**
+  - 格式化、压缩 XML 数据
+  - 语法高亮
+  - 实时编辑预览
+  - Monaco Editor 支持
+
+### 转换工具
+- **时间戳转换**
+  - 时间戳与日期时间互转
+  - 支持毫秒/秒级时间戳
+  - 自动识别时间格式
+  - 多种时间格式输出
+
+- **URL 工具**
+  - URL 编解码转换
+  - URL 参数解析与提取
+  - 支持批量处理
+  - 实时编码结果预览
+
+- **进制转换**
+  - 支持二进制、八进制、十进制、十六进制互转
+  - 实时转换结果
+  - 支持大数值处理
+  - 自动进制识别
+
+- **Base64 工具**
+  - 文本 Base64 编解码
+  - 图片 Base64 转换
+  - 支持拖拽上传图片
+  - 支持复制 Base64 结果
+
+- **cURL 转换**
+  - 将 cURL 命令转换为多种编程语言代码
+  - 支持 JavaScript (Fetch)
+  - 支持 Python (requests)
+  - 支持 Go (net/http)
+  - 支持 Go (resty)
+  - 支持 Java (OkHttp)
+  - 支持 PHP (cURL)
+  - 支持 Node.js (Axios)
+  - 代码高亮显示
+  - 一键复制转换结果
+
+- **二维码工具**
+  - 二维码生成
+  - 支持自定义内容
+  - 实时预览
+  - 可下载二维码图片
+
+- **文本对比**
+  - 支持对比两段文本的差异
+  - 直观的差异显示
+  - 支持忽略空白字符
+  - 实时对比结果
+
+## 技术栈
+
+- 前端
+  - Vue 3
+  - TypeScript
+  - Element Plus
+  - Monaco Editor
+  - Vite
+
+- 后端
+  - Go
+  - Wails
+
+## 开发环境要求
+
+- Go 1.21+
+- Node.js 16+
+- Wails 2.5+
+
+## 快速开始
+
+1. 克隆项目
+```bash
+git clone https://github.com/zzdylan/dev-tools.git
+cd dev-tools
+```
+
+2. 安装依赖
+```bash
+# 前端依赖
+cd frontend
+npm install
+cd ..
+
+# 后端依赖
+go mod tidy
+```
+
+3. 开发模式
+```bash
+# 启动开发服务器
+wails dev
+```
+
+4. 构建
+```bash
+# 构建可执行文件
+wails build
+```
+
+## 开发指南
+
+1. 前端开发
+   - 使用 Vue 3 Composition API
+   - 使用 TypeScript 进行类型检查
+   - 使用 Element Plus 组件库
+   - 使用 Monaco Editor 实现代码编辑器
+
+2. 后端开发
+   - 使用 Go 实现核心功能
+   - 通过 Wails 提供的 API 与前端通信
+   - 实现数据处理和转换逻辑
+
