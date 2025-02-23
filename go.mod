@@ -1,4 +1,4 @@
-module go-tools
+module dev-tools
 
 go 1.21
 

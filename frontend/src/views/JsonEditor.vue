@@ -134,46 +134,6 @@ const options = {
   renderLineHighlight: 'none',
 }
 
-// 示例JSON
-const sampleJson = {
-  user: {
-    id: 123,
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-  },
-  products: [
-    {
-      id: 'p1',
-      name: 'Product A',
-      price: 19.99,
-    },
-    {
-      id: 'p2',
-      name: 'Product B',
-      price: 29.99,
-    },
-    {
-      id: 'p3',
-      name: 'Product \\u4E2D\\u6587',
-      price: 39.99,
-    },
-  ],
-  order: {
-    orderId: 'abc123',
-    date: '2023-08-18',
-    items: [
-      {
-        productId: 'p1',
-        quantity: 2,
-      },
-      {
-        productId: 'p3',
-        quantity: 1,
-      },
-    ],
-  },
-}
-
 const monacoEditor = ref()
 
 // 配置状态
@@ -445,7 +405,45 @@ const loadSample = () => {
 
     const model = editor.getModel()
     if (model) {
-      const sampleStr = JSON.stringify(sampleJson, null, 2)
+      // 使用原始字符串模板来保持转义序列
+      const sampleStr = `{
+  "user": {
+    "id": 123,
+    "name": "John Doe",
+    "email": "john.doe@example.com"
+  },
+  "products": [
+    {
+      "id": "p1",
+      "name": "Product A",
+      "price": 19.99
+    },
+    {
+      "id": "p2",
+      "name": "Product B",
+      "price": 29.99
+    },
+    {
+      "id": "p3",
+      "name": "Product \\u4E2D\\u6587",
+      "price": 39.99
+    }
+  ],
+  "order": {
+    "orderId": "abc123",
+    "date": "2023-08-18",
+    "items": [
+      {
+        "productId": "p1",
+        "quantity": 2
+      },
+      {
+        "productId": "p3",
+        "quantity": 1
+      }
+    ]
+  }
+}`
       code.value = sampleStr // 直接更新 store
       model.setValue(sampleStr)
     }
