@@ -49,6 +49,11 @@ export const useToolsStore = defineStore('tools', {
       curlCommand: '',
       targetLang: 'javascript', // 默认转换为 JavaScript
       convertedCode: ''
+    },
+    unicodeConverter: {
+      rawText: '',
+      result: '',
+      mode: 'encode' // 'encode' 或 'decode'
     }
   }),
   persist: true

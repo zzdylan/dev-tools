@@ -120,6 +120,7 @@ const menuItems: MenuItem[] = [
     path: '/curl-converter',
     icon: '🔄',
   },
+  { path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换' },
 ]
 
 const searchQuery = ref('')

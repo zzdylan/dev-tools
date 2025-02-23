@@ -9,6 +9,7 @@ import Base64Text from '../views/Base64Text.vue'
 import NumberConverter from '../views/NumberConverter.vue'
 import TextDiff from '../views/TextDiff.vue'
 import CurlConverter from '../views/CurlConverter.vue'
+import UnicodeConverter from '../views/UnicodeConverter.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -84,6 +85,11 @@ const routes: RouteRecordRaw[] = [
         path: '/curl-converter',
         name: 'CurlConverter',
         component: CurlConverter
+      },
+      {
+        path: '/unicode-converter',
+        name: 'UnicodeConverter',
+        component: UnicodeConverter
       }
     ]
   }

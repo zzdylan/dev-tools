@@ -66,6 +66,12 @@
         <h3>cURL 转换</h3>
         <p>将 cURL 命令转换为各种编程语言代码</p>
       </router-link>
+
+      <router-link to="/unicode-converter" class="tool-card">
+        <div class="tool-icon">🔤</div>
+        <h3>Unicode 转换</h3>
+        <p>Unicode 编码解码转换工具</p>
+      </router-link>
     </div>
   </div>
 </template>
