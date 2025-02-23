@@ -114,6 +114,11 @@ const menuItems: MenuItem[] = [
   { path: '/base64-text', icon: '📝', title: 'Base64 文本' },
   { path: '/number-converter', icon: '🔢', title: '进制转换' },
   { path: '/text-diff', icon: '📋', title: '文本对比' },
+  {
+    title: 'cURL 转换',
+    path: '/curl-converter',
+    icon: '🔄',
+  },
 ]
 
 const searchQuery = ref('')

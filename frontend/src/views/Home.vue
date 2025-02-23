@@ -60,6 +60,12 @@
         <h3>文本对比</h3>
         <p>文本差异对比工具</p>
       </router-link>
+
+      <router-link to="/curl-converter" class="tool-card">
+        <div class="tool-icon">🔄</div>
+        <h3>cURL 转换</h3>
+        <p>将 cURL 命令转换为各种编程语言代码</p>
+      </router-link>
     </div>
   </div>
 </template>

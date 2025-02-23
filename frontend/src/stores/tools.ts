@@ -44,6 +44,11 @@ export const useToolsStore = defineStore('tools', {
     timeConverter: {
       timestamp: '',
       datetime: ''
+    },
+    curlConverter: {
+      curlCommand: '',
+      targetLang: 'javascript', // 默认转换为 JavaScript
+      convertedCode: ''
     }
   }),
   persist: true
