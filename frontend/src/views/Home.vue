@@ -1,82 +1,64 @@
 <template>
   <div class="home">
-    <div class="tools-grid">
-      <router-link to="/json-editor" class="tool-card">
-        <div class="tool-icon">{ }</div>
-        <h3>JSON 编辑器</h3>
-        <p>JSON 格式化、验证、转换工具</p>
-      </router-link>
-
-      <router-link to="/xml-editor" class="tool-card">
-        <div class="tool-icon">📄</div>
-        <h3>XML 编辑器</h3>
-        <p>XML 格式化、验证、转换工具</p>
-      </router-link>
-
-      <router-link to="/time-converter" class="tool-card">
-        <div class="tool-icon">⏰</div>
-        <h3>时间戳转换</h3>
-        <p>时间戳与日期时间互转工具</p>
-      </router-link>
-
-      <router-link to="/url-converter" class="tool-card">
-        <div class="tool-icon">🔗</div>
-        <h3>URL 编解码</h3>
-        <p>URL 编码解码转换工具</p>
-      </router-link>
-
-      <router-link to="/url-parser" class="tool-card">
-        <div class="tool-icon">🔍</div>
-        <h3>URL 解析</h3>
-        <p>URL 参数解析分析工具</p>
-      </router-link>
-
-      <router-link to="/qrcode" class="tool-card">
-        <div class="tool-icon">📱</div>
-        <h3>二维码工具</h3>
-        <p>二维码生成与解析工具</p>
-      </router-link>
-
-      <router-link to="/base64-image" class="tool-card">
-        <div class="tool-icon">🖼️</div>
-        <h3>Base64 图像</h3>
-        <p>图片与 Base64 编解码转换</p>
-      </router-link>
-
-      <router-link to="/base64-text" class="tool-card">
-        <div class="tool-icon">📝</div>
-        <h3>Base64 文本</h3>
-        <p>文本 Base64 编解码转换</p>
-      </router-link>
-
-      <router-link to="/number-converter" class="tool-card">
-        <div class="tool-icon">🔢</div>
-        <h3>进制转换</h3>
-        <p>二进制、八进制、十进制、十六进制转换</p>
-      </router-link>
-
-      <router-link to="/text-diff" class="tool-card">
-        <div class="tool-icon">📋</div>
-        <h3>文本对比</h3>
-        <p>文本差异对比工具</p>
-      </router-link>
-
-      <router-link to="/curl-converter" class="tool-card">
-        <div class="tool-icon">🔄</div>
-        <h3>cURL 转换</h3>
-        <p>将 cURL 命令转换为各种编程语言代码</p>
-      </router-link>
-
-      <router-link to="/unicode-converter" class="tool-card">
-        <div class="tool-icon">🔤</div>
-        <h3>Unicode 转换</h3>
-        <p>Unicode 编码解码转换工具</p>
+    <div ref="menuListRef" class="tools-grid">
+      <router-link
+        v-for="item in menuItems"
+        :key="item.id"
+        :to="item.path"
+        class="tool-card"
+      >
+        <div class="drag-handle">⋮⋮</div>
+        <div class="tool-icon">{{ item.icon }}</div>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description }}</p>
+        <el-switch
+          class="visibility-switch"
+          v-model="item.visible"
+          @change="(val: boolean) => handleVisibilityChange(item.id, val)"
+        />
       </router-link>
     </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
+import Sortable from 'sortablejs'
+import { ref, onMounted } from 'vue'
+
+const store = useToolsStore()
+const { menuConfig } = storeToRefs(store)
+const menuListRef = ref<HTMLElement | null>(null)
+
+const menuItems = computed({
+  get: () => menuConfig.value.items,
+  set: (val) => store.updateMenuOrder(val),
+})
+
+const handleVisibilityChange = (id: string, visible: boolean) => {
+  store.updateMenuItemVisibility(id, visible)
+}
+
+const handleDragEnd = (evt: Sortable.SortableEvent) => {
+  const items = [...menuItems.value]
+  const [movedItem] = items.splice(evt.oldIndex!, 1)
+  items.splice(evt.newIndex!, 0, movedItem)
+  store.updateMenuOrder(items)
+}
+
+onMounted(() => {
+  if (menuListRef.value) {
+    new Sortable(menuListRef.value, {
+      handle: '.drag-handle',
+      onEnd: handleDragEnd,
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+    })
+  }
+})
+</script>
 
 <style scoped>
 .home {
@@ -90,6 +72,7 @@
 }
 
 .tool-card {
+  position: relative;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -119,5 +102,25 @@
   margin: 0;
   font-size: 14px;
   color: #6b7280;
+}
+
+.visibility-switch {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.drag-handle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  cursor: move;
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+.sortable-ghost {
+  opacity: 0.5;
+  background: #e5e7eb;
 }
 </style>

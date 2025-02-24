@@ -59,6 +59,8 @@
 import { ref, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { MenuOutline, SettingsOutline } from '@vicons/ionicons5'
+import { useToolsStore } from '../stores/tools'
+import { storeToRefs } from 'pinia'
 
 const route = useRoute()
 const currentMenuTitle = ref('')
@@ -94,42 +96,26 @@ const toggleSidebar = () => {
   showSidebar.value = !showSidebar.value
 }
 
-// 定义菜单项数据结构
-interface MenuItem {
-  path: string
-  icon: string
-  title: string
-}
+const store = useToolsStore()
+const { menuConfig } = storeToRefs(store)
 
-// 菜单项数据
-const menuItems: MenuItem[] = [
-  { path: '/', icon: '🏠', title: '全部功能列表' },
-  { path: '/json-editor', icon: '{ }', title: 'JSON 编辑器' },
-  { path: '/xml-editor', icon: '📄', title: 'XML 编辑器' },
-  { path: '/time-converter', icon: '⏰', title: '时间戳转换' },
-  // { path: '/settings', icon: '⚙️', title: '设置' },
-  { path: '/url-converter', icon: '🔗', title: 'URL 编解码' },
-  { path: '/url-parser', icon: '🔍', title: 'URL 解析' },
-  { path: '/qrcode', icon: '📱', title: '二维码工具' },
-  { path: '/base64-image', icon: '🖼️', title: 'Base64 图像' },
-  { path: '/base64-text', icon: '📝', title: 'Base64 文本' },
-  { path: '/number-converter', icon: '🔢', title: '进制转换' },
-  { path: '/text-diff', icon: '📋', title: '文本对比' },
-  {
-    title: 'cURL 转换',
-    path: '/curl-converter',
-    icon: '🔄',
-  },
-  { path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换' },
-]
+const menuItems = computed(() => {
+  const home = { path: '/', icon: '🏠', title: '全部功能列表' }
+  const visibleItems = menuConfig.value.items
+    .filter((item) => item.visible)
+    .sort((a, b) => a.order - b.order)
+  return [home, ...visibleItems]
+})
 
 const searchQuery = ref('')
 
 // 过滤后的菜单项
 const filteredMenuItems = computed(() => {
   const query = searchQuery.value.toLowerCase().trim()
-  if (!query) return menuItems
-  return menuItems.filter((item) => item.title.toLowerCase().includes(query))
+  if (!query) return menuItems.value
+  return menuItems.value.filter((item) =>
+    item.title.toLowerCase().includes(query)
+  )
 })
 </script>
 
