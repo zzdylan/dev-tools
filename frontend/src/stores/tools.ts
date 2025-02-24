@@ -1,5 +1,25 @@
 import { defineStore } from 'pinia'
 
+interface JsonEditorTab {
+  code: string
+  settings: {
+    autoDecodeUnicode: boolean
+    removeEscapes: boolean
+  }
+}
+
+interface JsonEditorTabs {
+  [key: string]: JsonEditorTab
+}
+
+interface XmlEditorTab {
+  code: string
+}
+
+interface XmlEditorTabs {
+  [key: string]: XmlEditorTab
+}
+
 export const useToolsStore = defineStore('tools', {
   state: () => ({
     // 保持每个组件原有的 ref 变量名
@@ -11,14 +31,18 @@ export const useToolsStore = defineStore('tools', {
       newText: '',
       ignoreWhitespace: false
     },
-    xmlEditor: {
-      code: ''
+    xmlEditorTabs: <XmlEditorTabs>{
+      default: {
+        code: ''
+      }
     },
-    jsonEditor: {
-      code: '',
-      settings: {
-        autoDecodeUnicode: false,
-        removeEscapes: false
+    jsonEditorTabs: <JsonEditorTabs>{
+      default: {
+        code: '',
+        settings: {
+          autoDecodeUnicode: false,
+          removeEscapes: false
+        }
       }
     },
     urlConverter: {
@@ -56,5 +80,25 @@ export const useToolsStore = defineStore('tools', {
       mode: 'encode' // 'encode' 或 'decode'
     }
   }),
+  actions: {
+    createJsonEditorTab() {
+      const id = Date.now().toString()
+      this.jsonEditorTabs[id] = {
+        code: '',
+        settings: {
+          autoDecodeUnicode: false,
+          removeEscapes: false
+        }
+      }
+      return id
+    },
+    createXmlEditorTab() {
+      const id = Date.now().toString()
+      this.xmlEditorTabs[id] = {
+        code: ''
+      }
+      return id
+    }
+  },
   persist: true
 }) 

@@ -24,11 +24,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'json-editor',
         name: 'JsonEditor',
+        redirect: { name: 'JsonEditorTab', params: { id: 'default' } }
+      },
+      {
+        path: 'json-editor/:id',
+        name: 'JsonEditorTab',
         component: () => import('../views/JsonEditor.vue')
       },
       {
         path: 'xml-editor',
         name: 'XmlEditor',
+        redirect: { name: 'XmlEditorTab', params: { id: 'default' } }
+      },
+      {
+        path: 'xml-editor/:id',
+        name: 'XmlEditorTab',
         component: () => import('../views/XmlEditor.vue')
       },
       // {

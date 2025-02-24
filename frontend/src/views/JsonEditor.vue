@@ -1,5 +1,29 @@
 <template>
   <div class="json-editor">
+    <div class="editor-tabs">
+      <router-link
+        v-for="id in Object.keys(jsonEditorTabs)"
+        :key="id"
+        :to="{ name: 'JsonEditorTab', params: { id } }"
+        class="tab"
+        :class="{ active: id === $route.params.id }"
+      >
+        {{
+          id === 'default'
+            ? 'json'
+            : `json ${Object.keys(jsonEditorTabs).indexOf(id)}`
+        }}
+        <button
+          v-if="id !== 'default'"
+          class="close-tab"
+          @click.stop="closeTab(id)"
+        >
+          ×
+        </button>
+      </router-link>
+      <button class="new-tab" @click="createTab">+</button>
+    </div>
+
     <div class="toolbar">
       <div class="config-wrapper">
         <button
@@ -86,17 +110,25 @@ import { FormatJson, CompressJson } from '../../wailsjs/go/main/JsonProcessor'
 import { onClickOutside } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
+import { useRoute, useRouter } from 'vue-router'
 
 const { copy } = useClipboard()
 const store = useToolsStore()
-const { jsonEditor } = storeToRefs(store)
+const { jsonEditorTabs } = storeToRefs(store)
+const route = useRoute()
+const router = useRouter()
+const tabId = computed(() => route.params.id as string)
+
+// 使用当前标签页的数据
+const currentTab = computed(() => store.jsonEditorTabs[tabId.value])
+
 const code = computed({
-  get: () => jsonEditor.value.code,
-  set: (val) => (jsonEditor.value.code = val),
+  get: () => currentTab.value.code,
+  set: (val) => (currentTab.value.code = val),
 })
 const settings = computed({
-  get: () => jsonEditor.value.settings,
-  set: (val) => (jsonEditor.value.settings = val),
+  get: () => currentTab.value.settings,
+  set: (val) => (currentTab.value.settings = val),
 })
 
 const error = ref('')
@@ -456,6 +488,18 @@ const loadSample = () => {
 const closeSettings = () => {
   showSettings.value = false
 }
+
+const createTab = () => {
+  const newId = store.createJsonEditorTab()
+  router.push({ name: 'JsonEditorTab', params: { id: newId } })
+}
+
+const closeTab = (id: string) => {
+  delete store.jsonEditorTabs[id]
+  if (id === tabId.value) {
+    router.push({ name: 'JsonEditorTab', params: { id: 'default' } })
+  }
+}
 </script>
 
 <style scoped>
@@ -564,5 +608,55 @@ const closeSettings = () => {
   margin: 0;
   width: 14px;
   height: 14px;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  color: #374151;
+  text-decoration: none;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab.active {
+  background: #e5e7eb;
+  font-weight: 500;
+}
+
+.close-tab {
+  border: none;
+  background: none;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.close-tab:hover {
+  background: #f3f4f6;
+}
+
+.new-tab {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.new-tab:hover {
+  background: #f3f4f6;
 }
 </style>

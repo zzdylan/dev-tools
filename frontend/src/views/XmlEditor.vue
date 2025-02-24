@@ -1,5 +1,29 @@
 <template>
   <div class="xml-editor">
+    <div class="editor-tabs">
+      <router-link
+        v-for="id in Object.keys(xmlEditorTabs)"
+        :key="id"
+        :to="{ name: 'XmlEditorTab', params: { id } }"
+        class="tab"
+        :class="{ active: id === $route.params.id }"
+      >
+        {{
+          id === 'default'
+            ? 'xml'
+            : `xml ${Object.keys(xmlEditorTabs).indexOf(id)}`
+        }}
+        <button
+          v-if="id !== 'default'"
+          class="close-tab"
+          @click.stop="closeTab(id)"
+        >
+          ×
+        </button>
+      </router-link>
+      <button class="new-tab" @click="createTab">+</button>
+    </div>
+
     <div class="toolbar">
       <div class="tools-group">
         <button class="tool-btn" @click="loadSample">
@@ -48,13 +72,20 @@ import { ElMessage } from 'element-plus'
 import { FormatXML, CompressXML } from '../../wailsjs/go/main/XmlProcessor'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
+import { useRoute, useRouter } from 'vue-router'
 
 const { copy } = useClipboard()
 const store = useToolsStore()
-const { xmlEditor } = storeToRefs(store)
+const { xmlEditorTabs } = storeToRefs(store)
+const route = useRoute()
+const router = useRouter()
+const tabId = computed(() => route.params.id as string)
+
+const currentTab = computed(() => store.xmlEditorTabs[tabId.value])
+
 const code = computed({
-  get: () => xmlEditor.value.code,
-  set: (val) => (xmlEditor.value.code = val),
+  get: () => currentTab.value.code,
+  set: (val) => (currentTab.value.code = val),
 })
 const monacoEditor = ref()
 
@@ -199,6 +230,18 @@ const clearContent = () => {
     ElMessage.error('清空失败')
   }
 }
+
+const createTab = () => {
+  const newId = store.createXmlEditorTab()
+  router.push({ name: 'XmlEditorTab', params: { id: newId } })
+}
+
+const closeTab = (id: string) => {
+  delete store.xmlEditorTabs[id]
+  if (id === tabId.value) {
+    router.push({ name: 'XmlEditorTab', params: { id: 'default' } })
+  }
+}
 </script>
 
 <style scoped>
@@ -265,5 +308,55 @@ const clearContent = () => {
 :deep(.monaco-editor .scrollbar) {
   width: 14px !important;
   right: 0 !important;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  color: #374151;
+  text-decoration: none;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab.active {
+  background: #e5e7eb;
+  font-weight: 500;
+}
+
+.close-tab {
+  border: none;
+  background: none;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.close-tab:hover {
+  background: #f3f4f6;
+}
+
+.new-tab {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.new-tab:hover {
+  background: #f3f4f6;
 }
 </style>
