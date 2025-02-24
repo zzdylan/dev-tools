@@ -14,6 +14,9 @@ interface JsonEditorTabs {
 
 interface XmlEditorTab {
   code: string
+  settings: {
+    autoFormat: boolean
+  }
 }
 
 interface XmlEditorTabs {
@@ -43,7 +46,10 @@ export const useToolsStore = defineStore('tools', {
     },
     xmlEditorTabs: <XmlEditorTabs>{
       default: {
-        code: ''
+        code: '',
+        settings: {
+          autoFormat: false
+        }
       }
     },
     jsonEditorTabs: <JsonEditorTabs>{
@@ -121,7 +127,10 @@ export const useToolsStore = defineStore('tools', {
     createXmlEditorTab() {
       const id = Date.now().toString()
       this.xmlEditorTabs[id] = {
-        code: ''
+        code: '',
+        settings: {
+          autoFormat: false
+        }
       }
       return id
     },

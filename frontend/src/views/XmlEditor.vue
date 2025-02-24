@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
@@ -84,9 +84,23 @@ const tabId = computed(() => route.params.id as string)
 const currentTab = computed(() => store.xmlEditorTabs[tabId.value])
 
 const code = computed({
-  get: () => currentTab.value.code,
-  set: (val) => (currentTab.value.code = val),
+  get: () => currentTab.value?.code ?? '',
+  set: (val) => {
+    if (currentTab.value) {
+      currentTab.value.code = val
+    }
+  },
 })
+
+const settings = computed({
+  get: () => currentTab.value?.settings ?? { autoFormat: false },
+  set: (val) => {
+    if (currentTab.value) {
+      currentTab.value.settings = val
+    }
+  },
+})
+
 const monacoEditor = ref()
 
 const options = {
@@ -237,10 +251,12 @@ const createTab = () => {
 }
 
 const closeTab = (id: string) => {
-  delete store.xmlEditorTabs[id]
   if (id === tabId.value) {
     router.push({ name: 'XmlEditorTab', params: { id: 'default' } })
   }
+  nextTick(() => {
+    delete store.xmlEditorTabs[id]
+  })
 }
 </script>
 
