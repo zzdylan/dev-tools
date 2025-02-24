@@ -33,7 +33,7 @@ const { menuConfig } = storeToRefs(store)
 const menuListRef = ref<HTMLElement | null>(null)
 
 const menuItems = computed({
-  get: () => menuConfig.value.items,
+  get: () => [...menuConfig.value.items].sort((a, b) => a.order - b.order),
   set: (val) => store.updateMenuOrder(val),
 })
 

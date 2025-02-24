@@ -103,7 +103,11 @@ const menuItems = computed(() => {
   const home = { path: '/', icon: '🏠', title: '全部功能列表' }
   const visibleItems = menuConfig.value.items
     .filter((item) => item.visible)
-    .sort((a, b) => a.order - b.order)
+    .sort((a, b) => {
+      // 确保排序稳定性
+      const orderDiff = a.order - b.order
+      return orderDiff !== 0 ? orderDiff : a.id.localeCompare(b.id)
+    })
   return [home, ...visibleItems]
 })
 
