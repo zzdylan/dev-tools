@@ -108,7 +108,8 @@ export const useToolsStore = defineStore('tools', {
         { id: 'number', path: '/number-converter', icon: '🔢', title: '进制转换', visible: true, order: 8, description: '不同进制之间的数值转换' },
         { id: 'diff', path: '/text-diff', icon: '📋', title: '文本对比', visible: true, order: 9, description: '比较两个文本的差异' },
         { id: 'curl', path: '/curl-converter', icon: '🔄', title: 'cURL 转换', visible: true, order: 10, description: '将cURL命令转换为其他语言' },
-        { id: 'unicode', path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换', visible: true, order: 11, description: 'Unicode编码和解码' }
+        { id: 'unicode', path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换', visible: true, order: 11, description: 'Unicode编码和解码' },
+        { id: 'json-to-go', path: '/json-to-go', icon: '🔄', title: 'JSON转Go', visible: true, order: 12, description: '将JSON转换为Go结构体' }
       ]
     }
   }),

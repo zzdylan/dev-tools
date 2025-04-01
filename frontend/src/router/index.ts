@@ -10,6 +10,7 @@ import NumberConverter from '../views/NumberConverter.vue'
 import TextDiff from '../views/TextDiff.vue'
 import CurlConverter from '../views/CurlConverter.vue'
 import UnicodeConverter from '../views/UnicodeConverter.vue'
+import JsonToGo from '../views/JsonToGo.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -100,6 +101,11 @@ const routes: RouteRecordRaw[] = [
         path: '/unicode-converter',
         name: 'UnicodeConverter',
         component: UnicodeConverter
+      },
+      {
+        path: '/json-to-go',
+        name: 'JsonToGo',
+        component: JsonToGo
       }
     ]
   }
