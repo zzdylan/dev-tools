@@ -87,11 +87,11 @@
     </div>
 
     <div class="editor-wrapper">
-      <div class="editor-container">
+      <div v-for="id in Object.keys(jsonEditorTabs)" :key="id" class="editor-container" v-show="id === tabId">
         <MonacoEditor
-          ref="monacoEditor"
-          :value="code"
-          @change="handleChange"
+          :ref="(el: any) => { if (el) editorRefs[id] = el }"
+          :value="jsonEditorTabs[id].code"
+          @change="(val: string) => handleChange(val, id)"
           :options="options"
           language="json"
           theme="vs"
@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick, reactive, watch, onBeforeUnmount } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
@@ -119,8 +119,16 @@ const route = useRoute()
 const router = useRouter()
 const tabId = computed(() => route.params.id as string)
 
+// 为每个标签页保存编辑器引用
+const editorRefs = reactive<Record<string, any>>({})
+
 // 使用当前标签页的数据
 const currentTab = computed(() => store.jsonEditorTabs[tabId.value])
+
+// 当前标签页的编辑器
+const getCurrentEditor = () => {
+  return editorRefs[tabId.value]
+}
 
 const code = computed({
   get: () => currentTab.value?.code ?? '',
@@ -130,6 +138,7 @@ const code = computed({
     }
   },
 })
+
 const settings = computed({
   get: () =>
     currentTab.value?.settings ?? {
@@ -178,25 +187,10 @@ const options = {
   renderLineHighlight: 'none',
 }
 
-const monacoEditor = ref()
-
 // 配置状态
 const showSettings = ref(false)
 const settingsPanel = ref<HTMLElement | null>(null)
-
 const configBtn = ref<HTMLElement | null>(null)
-
-// 计算面板位置
-const panelStyle = computed(() => {
-  if (!configBtn.value) return {}
-  const btnRect = configBtn.value.getBoundingClientRect()
-  return {
-    position: 'absolute',
-    top: '100%',
-    left: '0',
-    marginTop: '4px',
-  }
-})
 
 // 点击外部关闭配置面板
 onClickOutside(settingsPanel, () => {
@@ -210,13 +204,13 @@ const toggleSettings = () => {
 
 const formatJson = async () => {
   try {
-    const editor = monacoEditor.value?.editor
-    if (!editor) {
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
       return
     }
 
-    const model = editor.getModel()
+    const model = currentEditor.editor.getModel()
     if (!model) {
       ElMessage.error('获取内容失败')
       return
@@ -237,13 +231,13 @@ const formatJson = async () => {
 
 const compressJson = async () => {
   try {
-    const editor = monacoEditor.value?.editor
-    if (!editor) {
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
       return
     }
 
-    const model = editor.getModel()
+    const model = currentEditor.editor.getModel()
     if (!model) {
       ElMessage.error('获取内容失败')
       return
@@ -268,13 +262,13 @@ const compressJson = async () => {
 // 添加新的转义和去转义函数
 const escapeJson = async () => {
   try {
-    const editor = monacoEditor.value?.editor
-    if (!editor) {
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
       return
     }
 
-    const model = editor.getModel()
+    const model = currentEditor.editor.getModel()
     if (model) {
       const value = model.getValue()
       const result = escapeString(value)
@@ -290,13 +284,13 @@ const escapeJson = async () => {
 
 const unescapeJson = async () => {
   try {
-    const editor = monacoEditor.value?.editor
-    if (!editor) {
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
       return
     }
 
-    const model = editor.getModel()
+    const model = currentEditor.editor.getModel()
     if (model) {
       const value = model.getValue()
       const result = unescapeString(value)
@@ -364,18 +358,26 @@ const unescapeString = (str: string): string => {
   return result
 }
 
-const handleChange = (value: string) => {
-  code.value = value
-  validateJson()
+const handleChange = (value: string, id: string) => {
+  if (store.jsonEditorTabs[id]) {
+    store.jsonEditorTabs[id].code = value
+    
+    if (id === tabId.value) {
+      validateJson(value)
+    }
+  }
 }
 
-const validateJson = () => {
-  if (!code.value.trim()) {
+const validateJson = (content: string = '') => {
+  const valueToValidate = content || code.value
+  
+  if (!valueToValidate.trim()) {
     error.value = ''
     return
   }
+  
   try {
-    JSON.parse(code.value)
+    JSON.parse(valueToValidate)
     error.value = ''
   } catch (e) {
     if (e instanceof Error) {
@@ -386,13 +388,13 @@ const validateJson = () => {
 
 const copyToClipboard = async () => {
   try {
-    const editor = monacoEditor.value?.editor
-    if (!editor) {
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
       return
     }
 
-    const model = editor.getModel()
+    const model = currentEditor.editor.getModel()
     if (!model) {
       ElMessage.error('获取内容失败')
       return
@@ -405,6 +407,7 @@ const copyToClipboard = async () => {
     }
 
     await copy(content)
+    ElMessage.success('复制成功')
   } catch (e) {
     console.error('复制失败:', e)
     ElMessage.error('复制失败')
@@ -413,13 +416,13 @@ const copyToClipboard = async () => {
 
 const clearContent = () => {
   try {
-    const editor = monacoEditor.value?.editor
-    if (!editor) {
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
       return
     }
 
-    const model = editor.getModel()
+    const model = currentEditor.editor.getModel()
     if (!model) {
       ElMessage.error('获取内容失败')
       return
@@ -431,6 +434,7 @@ const clearContent = () => {
     }
 
     model.setValue('')
+    code.value = ''
     error.value = ''
   } catch (e) {
     console.error('清空失败:', e)
@@ -441,13 +445,13 @@ const clearContent = () => {
 // 加载示例数据
 const loadSample = () => {
   try {
-    const editor = monacoEditor.value?.editor
-    if (!editor) {
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
       return
     }
 
-    const model = editor.getModel()
+    const model = currentEditor.editor.getModel()
     if (model) {
       // 使用原始字符串模板来保持转义序列
       const sampleStr = `{
@@ -511,6 +515,9 @@ const closeTab = (id: string) => {
     router.push({ name: 'JsonEditorTab', params: { id: 'default' } })
   }
   nextTick(() => {
+    // 释放编辑器实例
+    delete editorRefs[id]
+    // 从存储中删除标签页
     delete store.jsonEditorTabs[id]
   })
 }
@@ -518,9 +525,10 @@ const closeTab = (id: string) => {
 
 <style scoped>
 .json-editor {
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .toolbar {
@@ -529,7 +537,6 @@ const closeTab = (id: string) => {
   justify-content: space-between;
   align-items: center;
   padding: 0 16px;
-  /* background: #f8f9fa; */
   border-bottom: 1px solid #eaecef;
   position: relative;
 }
@@ -570,6 +577,7 @@ const closeTab = (id: string) => {
 .editor-wrapper {
   flex: 1;
   position: relative;
+  overflow: hidden;
 }
 
 .editor-container {
@@ -592,6 +600,41 @@ const closeTab = (id: string) => {
 :deep(.monaco-editor .scrollbar) {
   width: 14px !important;
   right: 0 !important;
+}
+
+:deep(.monaco-editor .overflow-guard) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:deep(.monaco-scrollable-element > .scrollbar > .slider) {
+  background: rgba(100, 100, 100, 0.4) !important;
+  width: 10px !important;
+  left: 2px !important;
+  border-radius: 5px !important;
+}
+
+:deep(.monaco-scrollable-element > .scrollbar.vertical) {
+  width: 14px !important;
+}
+
+:deep(.monaco-scrollable-element > .scrollbar.vertical > .slider) {
+  width: 10px !important;
+  left: 2px !important;
+}
+
+:deep(.monaco-scrollable-element > .scrollbar.horizontal) {
+  height: 14px !important;
+  bottom: 0 !important;
+}
+
+:deep(.monaco-scrollable-element > .scrollbar.horizontal > .slider) {
+  height: 10px !important;
+  top: 2px !important;
+}
+
+:deep(.monaco-scrollable-element > .scrollbar.visible) {
+  opacity: 1 !important;
 }
 
 .settings-panel {
