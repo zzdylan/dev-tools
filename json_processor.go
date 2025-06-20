@@ -139,18 +139,18 @@ func parseInt(s string, base int, bitSize int) (int64, error) {
 }
 
 // FormatJson 格式化 JSON 字符串
-func (j *JsonProcessor) FormatJson(jsonStr string, autoDecodeUnicode bool) string {
+func (j *JsonProcessor) FormatJson(jsonStr string, autoDecodeUnicode bool) (string, error) {
 	// 使用 RawMessage 来保持原始 JSON 的顺序
 	var raw json.RawMessage
 	if err := json.Unmarshal([]byte(jsonStr), &raw); err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	// 如果需要解码 Unicode
 	if autoDecodeUnicode {
 		jsonStr = decodeUnicode(string(raw))
 		if err := json.Unmarshal([]byte(jsonStr), &raw); err != nil {
-			return err.Error()
+			return "", err
 		}
 	}
 
@@ -160,25 +160,25 @@ func (j *JsonProcessor) FormatJson(jsonStr string, autoDecodeUnicode bool) strin
 	enc.SetIndent("", "  ")
 	enc.SetEscapeHTML(false) // 不转义 HTML 字符
 	if err := enc.Encode(raw); err != nil {
-		return err.Error()
+		return "", err
 	}
 
-	return out.String()
+	return out.String(), nil
 }
 
 // CompressJson 压缩 JSON 字符串
-func (j *JsonProcessor) CompressJson(jsonStr string, autoDecodeUnicode bool) string {
+func (j *JsonProcessor) CompressJson(jsonStr string, autoDecodeUnicode bool) (string, error) {
 	// 使用 RawMessage 来保持原始 JSON 的顺序
 	var raw json.RawMessage
 	if err := json.Unmarshal([]byte(jsonStr), &raw); err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	// 如果需要解码 Unicode
 	if autoDecodeUnicode {
 		jsonStr = decodeUnicode(string(raw))
 		if err := json.Unmarshal([]byte(jsonStr), &raw); err != nil {
-			return err.Error()
+			return "", err
 		}
 	}
 
@@ -187,8 +187,8 @@ func (j *JsonProcessor) CompressJson(jsonStr string, autoDecodeUnicode bool) str
 	enc := json.NewEncoder(&out)
 	enc.SetEscapeHTML(false) // 不转义 HTML 字符
 	if err := enc.Encode(raw); err != nil {
-		return err.Error()
+		return "", err
 	}
 
-	return out.String()
+	return out.String(), nil
 }

@@ -1,23 +1,14 @@
 <template>
   <div class="json-editor">
     <div class="editor-tabs">
-      <router-link
-        v-for="id in Object.keys(jsonEditorTabs)"
-        :key="id"
-        :to="{ name: 'JsonEditorTab', params: { id } }"
-        class="tab"
-        :class="{ active: id === $route.params.id }"
-      >
+      <router-link v-for="id in Object.keys(jsonEditorTabs)" :key="id" :to="{ name: 'JsonEditorTab', params: { id } }"
+        class="tab" :class="{ active: id === $route.params.id }">
         {{
           id === 'default'
             ? 'json'
             : `json ${Object.keys(jsonEditorTabs).indexOf(id)}`
         }}
-        <button
-          v-if="id !== 'default'"
-          class="close-tab"
-          @click.stop="closeTab(id)"
-        >
+        <button v-if="id !== 'default'" class="close-tab" @click.stop="closeTab(id)">
           ×
         </button>
       </router-link>
@@ -26,22 +17,13 @@
 
     <div class="toolbar">
       <div class="config-wrapper">
-        <button
-          class="tool-btn config-btn"
-          ref="configBtn"
-          @click="toggleSettings"
-        >
+        <button class="tool-btn config-btn" ref="configBtn" @click="toggleSettings">
           <span class="tool-icon">⚙️</span>
           配置
         </button>
 
         <!-- 配置面板 -->
-        <div
-          v-show="showSettings"
-          class="settings-panel"
-          ref="settingsPanel"
-          v-click-outside="closeSettings"
-        >
+        <div v-show="showSettings" class="settings-panel" ref="settingsPanel" v-click-outside="closeSettings">
           <label class="setting-item">
             <input type="checkbox" v-model="settings.autoDecodeUnicode" />
             自动解码 Unicode
@@ -88,14 +70,8 @@
 
     <div class="editor-wrapper">
       <div v-for="id in Object.keys(jsonEditorTabs)" :key="id" class="editor-container" v-show="id === tabId">
-        <MonacoEditor
-          :ref="(el: any) => { if (el) editorRefs[id] = el }"
-          :value="jsonEditorTabs[id].code"
-          @change="(val: string) => handleChange(val, id)"
-          :options="options"
-          language="json"
-          theme="vs"
-        />
+        <MonacoEditor :ref="(el: any) => { if (el) editorRefs[id] = el }" :value="jsonEditorTabs[id].code"
+          @change="(val: string) => handleChange(val, id)" :options="options" language="json" theme="vs" />
       </div>
     </div>
   </div>
@@ -359,23 +335,28 @@ const unescapeString = (str: string): string => {
 }
 
 const handleChange = (value: string, id: string) => {
-  if (store.jsonEditorTabs[id]) {
+  // 避免重复更新导致清除撤销栈
+  if (store.jsonEditorTabs[id] && store.jsonEditorTabs[id].code !== value) {
     store.jsonEditorTabs[id].code = value
-    
+
+    // 验证JSON但不阻断编辑器操作
     if (id === tabId.value) {
-      validateJson(value)
+      // 异步验证，避免阻塞编辑器操作
+      nextTick(() => {
+        validateJson(value)
+      })
     }
   }
 }
 
 const validateJson = (content: string = '') => {
   const valueToValidate = content || code.value
-  
+
   if (!valueToValidate.trim()) {
     error.value = ''
     return
   }
-  
+
   try {
     JSON.parse(valueToValidate)
     error.value = ''
