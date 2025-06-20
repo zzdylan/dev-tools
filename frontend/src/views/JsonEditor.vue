@@ -200,12 +200,16 @@ const formatJson = async () => {
 
     const formatted = await FormatJson(value, settings.value.autoDecodeUnicode)
 
-    // 使用 executeEdits 来保持撤销栈
+    // 创建撤销停止点，使格式化成为独立的撤销单元
+    currentEditor.editor.pushUndoStop()
+
     const fullRange = model.getFullModelRange()
     currentEditor.editor.executeEdits('formatJson', [{
       range: fullRange,
       text: formatted
     }])
+
+    currentEditor.editor.pushUndoStop()
   } catch (err: any) {
     ElMessage.error('格式化失败：' + (err.message || err))
   }
@@ -236,12 +240,16 @@ const compressJson = async () => {
       settings.value.autoDecodeUnicode
     )
 
-    // 使用 executeEdits 来保持撤销栈
+    // 创建撤销停止点，使压缩成为独立的撤销单元
+    currentEditor.editor.pushUndoStop()
+
     const fullRange = model.getFullModelRange()
     currentEditor.editor.executeEdits('compressJson', [{
       range: fullRange,
       text: compressed
     }])
+
+    currentEditor.editor.pushUndoStop()
   } catch (err: any) {
     ElMessage.error('压缩失败：' + (err.message || err))
   }
@@ -501,12 +509,18 @@ const loadSample = () => {
     ]
   }
 }`
-      // 使用 executeEdits 来保持撤销栈
+      // 先创建撤销停止点，然后执行操作
+      // 这样撤销时会直接回到加载示例之前的状态
+      currentEditor.editor.pushUndoStop()
+
       const fullRange = model.getFullModelRange()
       currentEditor.editor.executeEdits('loadSample', [{
         range: fullRange,
         text: sampleStr
       }])
+
+      // 在操作后也创建停止点，使这个操作成为独立的撤销单元
+      currentEditor.editor.pushUndoStop()
     }
   } catch (e) {
     console.error('加载示例失败:', e)
