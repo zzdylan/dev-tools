@@ -199,7 +199,13 @@ const formatJson = async () => {
     }
 
     const formatted = await FormatJson(value, settings.value.autoDecodeUnicode)
-    model.setValue(formatted)
+
+    // 使用 executeEdits 来保持撤销栈
+    const fullRange = model.getFullModelRange()
+    currentEditor.editor.executeEdits('formatJson', [{
+      range: fullRange,
+      text: formatted
+    }])
   } catch (err: any) {
     ElMessage.error('格式化失败：' + (err.message || err))
   }
@@ -229,7 +235,13 @@ const compressJson = async () => {
       value,
       settings.value.autoDecodeUnicode
     )
-    model.setValue(compressed)
+
+    // 使用 executeEdits 来保持撤销栈
+    const fullRange = model.getFullModelRange()
+    currentEditor.editor.executeEdits('compressJson', [{
+      range: fullRange,
+      text: compressed
+    }])
   } catch (err: any) {
     ElMessage.error('压缩失败：' + (err.message || err))
   }
@@ -248,7 +260,13 @@ const escapeJson = async () => {
     if (model) {
       const value = model.getValue()
       const result = escapeString(value)
-      model.setValue(result)
+
+      // 使用 executeEdits 来保持撤销栈
+      const fullRange = model.getFullModelRange()
+      currentEditor.editor.executeEdits('escapeJson', [{
+        range: fullRange,
+        text: result
+      }])
       error.value = ''
     }
   } catch (e) {
@@ -270,7 +288,13 @@ const unescapeJson = async () => {
     if (model) {
       const value = model.getValue()
       const result = unescapeString(value)
-      model.setValue(result)
+
+      // 使用 executeEdits 来保持撤销栈
+      const fullRange = model.getFullModelRange()
+      currentEditor.editor.executeEdits('unescapeJson', [{
+        range: fullRange,
+        text: result
+      }])
       error.value = ''
     }
   } catch (e) {
@@ -414,8 +438,12 @@ const clearContent = () => {
       return
     }
 
-    model.setValue('')
-    code.value = ''
+    // 使用 executeEdits 来保持撤销栈
+    const fullRange = model.getFullModelRange()
+    currentEditor.editor.executeEdits('clearContent', [{
+      range: fullRange,
+      text: ''
+    }])
     error.value = ''
   } catch (e) {
     console.error('清空失败:', e)
@@ -473,8 +501,12 @@ const loadSample = () => {
     ]
   }
 }`
-      code.value = sampleStr // 直接更新 store
-      model.setValue(sampleStr)
+      // 使用 executeEdits 来保持撤销栈
+      const fullRange = model.getFullModelRange()
+      currentEditor.editor.executeEdits('loadSample', [{
+        range: fullRange,
+        text: sampleStr
+      }])
     }
   } catch (e) {
     console.error('加载示例失败:', e)
