@@ -25,22 +25,11 @@
       <aside class="sidebar" :class="{ 'sidebar-hidden': !showSidebar }">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            v-model="searchQuery"
-            placeholder="Search..."
-            class="search-input"
-          />
+          <input type="text" v-model="searchQuery" placeholder="Search..." class="search-input" />
         </div>
         <nav class="side-nav">
-          <router-link
-            v-for="item in filteredMenuItems"
-            :key="item.path"
-            :to="item.path"
-            class="nav-item"
-            :exact="item.path === '/'"
-            exact-active-class="router-link-active"
-          >
+          <router-link v-for="item in filteredMenuItems" :key="item.path" :to="item.path" class="nav-item"
+            :exact="item.path === '/'" exact-active-class="router-link-active">
             <span class="nav-icon">{{ item.icon }}</span>
             {{ item.title }}
           </router-link>
@@ -198,6 +187,8 @@ const filteredMenuItems = computed(() => {
 
 .sidebar {
   width: 220px;
+  min-width: 220px;
+  flex-shrink: 0;
   background: #f9fafb;
   padding: 16px 0;
   border-right: 1px solid #e5e7eb;
@@ -288,8 +279,10 @@ const filteredMenuItems = computed(() => {
 
 .content {
   flex: 1;
+  min-width: 0;
   padding: 24px;
   background: #ffffff;
+  overflow: hidden;
 }
 
 .collapse-btn {

@@ -1,23 +1,14 @@
 <template>
   <div class="xml-editor">
     <div class="editor-tabs">
-      <router-link
-        v-for="id in Object.keys(xmlEditorTabs)"
-        :key="id"
-        :to="{ name: 'XmlEditorTab', params: { id } }"
-        class="tab"
-        :class="{ active: id === $route.params.id }"
-      >
+      <router-link v-for="id in Object.keys(xmlEditorTabs)" :key="id" :to="{ name: 'XmlEditorTab', params: { id } }"
+        class="tab" :class="{ active: id === $route.params.id }">
         {{
           id === 'default'
             ? 'xml'
             : `xml ${Object.keys(xmlEditorTabs).indexOf(id)}`
         }}
-        <button
-          v-if="id !== 'default'"
-          class="close-tab"
-          @click.stop="closeTab(id)"
-        >
+        <button v-if="id !== 'default'" class="close-tab" @click.stop="closeTab(id)">
           ×
         </button>
       </router-link>
@@ -26,22 +17,13 @@
 
     <div class="toolbar">
       <div class="config-wrapper">
-        <button
-          class="tool-btn config-btn"
-          ref="configBtn"
-          @click="toggleSettings"
-        >
+        <button class="tool-btn config-btn" ref="configBtn" @click="toggleSettings">
           <span class="tool-icon">⚙️</span>
           配置
         </button>
 
         <!-- 配置面板 -->
-        <div
-          v-show="showSettings"
-          class="settings-panel"
-          ref="settingsPanel"
-          v-click-outside="closeSettings"
-        >
+        <div v-show="showSettings" class="settings-panel" ref="settingsPanel" v-click-outside="closeSettings">
           <label class="setting-item">
             <input type="checkbox" v-model="settings.autoFormat" />
             自动格式化
@@ -75,14 +57,8 @@
 
     <div class="editor-wrapper">
       <div v-for="id in Object.keys(xmlEditorTabs)" :key="id" class="editor-container" v-show="id === tabId">
-        <MonacoEditor
-          :ref="(el: any) => { if (el) editorRefs[id] = el }"
-          :value="xmlEditorTabs[id].code"
-          @change="(val: string) => handleChange(val, id)"
-          :options="options"
-          language="xml"
-          theme="vs"
-        />
+        <MonacoEditor :ref="(el: any) => { if (el) editorRefs[id] = el }" :value="xmlEditorTabs[id].code"
+          @change="(val: string) => handleChange(val, id)" :options="options" language="xml" theme="vs" />
       </div>
     </div>
   </div>
@@ -368,6 +344,7 @@ const closeTab = (id: string) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .toolbar {
@@ -378,11 +355,14 @@ const closeTab = (id: string) => {
   padding: 0 16px;
   border-bottom: 1px solid #eaecef;
   position: relative;
+  min-width: 0;
 }
 
 .tools-group {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .tool-btn {
@@ -512,6 +492,31 @@ const closeTab = (id: string) => {
   padding: 8px;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+  max-width: 100%;
+}
+
+/* 自定义滚动条样式 */
+.editor-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.editor-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor-tabs::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.editor-tabs::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 .tab {
@@ -525,6 +530,9 @@ const closeTab = (id: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .tab.active {
@@ -550,6 +558,8 @@ const closeTab = (id: string) => {
   border-radius: 4px;
   background: white;
   cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .new-tab:hover {

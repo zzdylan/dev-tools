@@ -556,6 +556,7 @@ const closeTab = (id: string) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .toolbar {
@@ -566,11 +567,14 @@ const closeTab = (id: string) => {
   padding: 0 16px;
   border-bottom: 1px solid #eaecef;
   position: relative;
+  min-width: 0;
 }
 
 .tools-group {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .tool-btn {
@@ -700,6 +704,31 @@ const closeTab = (id: string) => {
   padding: 8px;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+  max-width: 100%;
+}
+
+/* 自定义滚动条样式 */
+.editor-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.editor-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor-tabs::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.editor-tabs::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 .tab {
@@ -713,6 +742,9 @@ const closeTab = (id: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .tab.active {
@@ -738,6 +770,8 @@ const closeTab = (id: string) => {
   border-radius: 4px;
   background: white;
   cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .new-tab:hover {
