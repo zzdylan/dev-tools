@@ -1,0 +1,42 @@
+/* 禁用全局文本选择，让应用看起来更像原生桌面应用 */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+/* 允许输入框和可编辑内容选择文本 */
+input,
+textarea,
+[contenteditable="true"],
+.monaco-editor,
+.monaco-editor * {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  cursor: text !important;
+}
+
+/* 确保代码编辑器内容可选择 */
+.view-lines,
+.view-line {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  cursor: text !important;
+}
+
+/* 确保按钮和可点击元素显示正确的光标 */
+button,
+.tool-btn,
+.tab-item,
+.add-tab,
+.close-btn,
+[role="button"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
