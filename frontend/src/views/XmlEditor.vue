@@ -1,19 +1,11 @@
 <template>
   <div class="xml-editor">
-    <div class="editor-tabs">
-      <router-link v-for="id in Object.keys(xmlEditorTabs)" :key="id" :to="{ name: 'XmlEditorTab', params: { id } }"
-        class="tab" :class="{ active: id === $route.params.id }">
-        {{
-          id === 'default'
-            ? 'xml'
-            : `xml ${Object.keys(xmlEditorTabs).indexOf(id)}`
-        }}
-        <button v-if="id !== 'default'" class="close-tab" @click.stop="closeTab(id)">
-          ×
-        </button>
-      </router-link>
-      <button class="new-tab" @click="createTab">+</button>
-    </div>
+    <el-tabs v-model="activeTabName" type="border-card" addable closable @tab-add="createTab" @tab-remove="closeTab"
+      @tab-change="handleTabChange" class="editor-tabs-container">
+      <el-tab-pane v-for="(tab, id) in xmlEditorTabs" :key="id" :name="String(id)" :closable="String(id) !== 'default'"
+        :label="String(id) === 'default' ? 'XML 编辑器' : `XML 编辑器 ${Object.keys(xmlEditorTabs).indexOf(String(id))}`">
+      </el-tab-pane>
+    </el-tabs>
 
     <div class="toolbar">
       <div class="config-wrapper">
@@ -65,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, reactive } from 'vue'
+import { ref, onMounted, computed, nextTick, reactive, watch } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
@@ -81,6 +73,33 @@ const { xmlEditorTabs } = storeToRefs(store)
 const route = useRoute()
 const router = useRouter()
 const tabId = computed(() => route.params.id as string)
+
+// 活动标签页名称，用于 ElementPlus Tabs 组件
+const activeTabName = ref(tabId.value)
+
+// 标签页访问历史，用于删除标签页时回到上一个访问的标签页
+const tabHistory = ref<string[]>([tabId.value])
+
+// 监听路由变化，更新活动标签页和历史记录
+watch(tabId, (newTabId, oldTabId) => {
+  activeTabName.value = newTabId
+
+  // 更新访问历史
+  if (oldTabId && oldTabId !== newTabId) {
+    // 移除历史中的当前标签页（如果存在）
+    const index = tabHistory.value.indexOf(newTabId)
+    if (index > -1) {
+      tabHistory.value.splice(index, 1)
+    }
+    // 将新标签页添加到历史记录的开头
+    tabHistory.value.unshift(newTabId)
+
+    // 限制历史记录长度，保持最近的10个
+    if (tabHistory.value.length > 10) {
+      tabHistory.value = tabHistory.value.slice(0, 10)
+    }
+  }
+}, { immediate: true })
 
 // 为每个标签页保存编辑器引用
 const editorRefs = reactive<Record<string, any>>({})
@@ -320,20 +339,60 @@ const clearContent = () => {
   }
 }
 
+// 处理标签页切换
+const handleTabChange = (tabName: string) => {
+  router.push({ name: 'XmlEditorTab', params: { id: tabName } })
+}
+
 const createTab = () => {
   const newId = store.createXmlEditorTab()
   router.push({ name: 'XmlEditorTab', params: { id: newId } })
 }
 
-const closeTab = (id: string) => {
+const closeTab = (targetName: string | number) => {
+  const id = String(targetName)
+
+  // 如果要关闭的是当前标签页，需要找到下一个要切换的标签页
   if (id === tabId.value) {
-    router.push({ name: 'XmlEditorTab', params: { id: 'default' } })
+    // 从历史记录中移除当前要关闭的标签页
+    const historyIndex = tabHistory.value.indexOf(id)
+    if (historyIndex > -1) {
+      tabHistory.value.splice(historyIndex, 1)
+    }
+
+    // 寻找下一个可用的标签页
+    let nextTabId = 'default'
+
+    // 首先尝试从历史记录中找到最近访问的可用标签页
+    for (const historyTabId of tabHistory.value) {
+      if (historyTabId !== id && store.xmlEditorTabs[historyTabId]) {
+        nextTabId = historyTabId
+        break
+      }
+    }
+
+    // 如果历史记录中没有可用的标签页，则查找其他可用标签页
+    if (nextTabId === 'default' && !store.xmlEditorTabs['default']) {
+      const availableTabs = Object.keys(store.xmlEditorTabs).filter(tabId => tabId !== id)
+      if (availableTabs.length > 0) {
+        nextTabId = availableTabs[0]
+      }
+    }
+
+    // 切换到下一个标签页
+    router.push({ name: 'XmlEditorTab', params: { id: nextTabId } })
   }
+
   nextTick(() => {
     // 释放编辑器实例
     delete editorRefs[id]
     // 从存储中删除标签页
     delete store.xmlEditorTabs[id]
+
+    // 清理历史记录中已删除的标签页引用
+    tabHistory.value = tabHistory.value.filter(tabId =>
+      tabId !== id && store.xmlEditorTabs[tabId]
+    )
   })
 }
 </script>
@@ -486,83 +545,119 @@ const closeTab = (id: string) => {
   height: 14px;
 }
 
-.editor-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 8px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
+.editor-tabs-container {
   flex-shrink: 0;
-  scrollbar-width: thin;
-  scrollbar-color: #d1d5db transparent;
-  max-width: 100%;
 }
 
-/* 自定义滚动条样式 */
-.editor-tabs::-webkit-scrollbar {
-  height: 6px;
+:deep(.el-tabs__header) {
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+  border-bottom: 1px solid #dcdcdc;
 }
 
-.editor-tabs::-webkit-scrollbar-track {
+:deep(.el-tabs__content) {
+  display: none;
+}
+
+:deep(.el-tabs--border-card) {
+  border: none;
+  box-shadow: none;
+}
+
+:deep(.el-tabs--border-card > .el-tabs__header) {
+  border: none;
   background: transparent;
 }
 
-.editor-tabs::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
+:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__nav-wrap) {
+  padding: 0;
 }
 
-.editor-tabs::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__nav) {
+  border: none;
 }
 
-.tab {
-  padding: 6px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  background: white;
-  color: #374151;
-  text-decoration: none;
-  font-size: 14px;
+:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item) {
+  border: 1px solid #dcdcdc;
+  border-bottom: none;
+  margin: 0;
+  padding: 12px 20px;
+  border-radius: 0;
+  background: #f5f5f5;
+  color: #333333;
+  font-size: 13px;
+  line-height: 1;
+  transition: all 0.15s ease;
+  min-width: 120px;
+  text-align: center;
+  position: relative;
+}
+
+:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item:not(:first-child)) {
+  border-left: none;
+}
+
+:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item:hover:not(.is-active)) {
+  background: #eeeeee;
+  color: #000000;
+}
+
+:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active) {
+  background: #ffffff;
+  color: #1976d2;
+  font-weight: normal;
+  border-bottom: 1px solid #ffffff;
+  z-index: 1;
+}
+
+:deep(.el-tabs__nav-next),
+:deep(.el-tabs__nav-prev) {
+  background: #f5f5f5;
+  border: 1px solid #dcdcdc;
+  border-radius: 0;
+  color: #666666;
+  line-height: 1;
+}
+
+:deep(.el-tabs__nav-next:hover),
+:deep(.el-tabs__nav-prev:hover) {
+  background: #eeeeee;
+  color: #333333;
+}
+
+:deep(.el-tabs__new-tab) {
+  background: #f5f5f5;
+  border: 1px solid #dcdcdc;
+  border-left: none;
+  border-radius: 0;
+  color: #666666;
+  width: 40px;
+  height: 45px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  white-space: nowrap;
-  min-width: 0;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: normal;
+  transition: all 0.15s ease;
+  margin: 0;
 }
 
-.tab.active {
-  background: #e5e7eb;
-  font-weight: 500;
+:deep(.el-tabs__new-tab:hover) {
+  background: #eeeeee;
+  color: #333333;
 }
 
-.close-tab {
-  border: none;
-  background: none;
-  padding: 2px 6px;
-  cursor: pointer;
-  border-radius: 4px;
+:deep(.el-icon-close) {
+  transition: all 0.15s ease;
+  padding: 4px;
+  margin-left: 8px;
+  border-radius: 2px;
+  font-size: 12px;
 }
 
-.close-tab:hover {
-  background: #f3f4f6;
-}
-
-.new-tab {
-  padding: 6px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.new-tab:hover {
-  background: #f3f4f6;
+:deep(.el-icon-close:hover) {
+  background: #e0e0e0;
+  color: #333333;
 }
 </style>
