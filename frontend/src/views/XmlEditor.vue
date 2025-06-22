@@ -4,7 +4,7 @@
       <div class="tabs-nav">
         <div v-for="id in Object.keys(xmlEditorTabs)" :key="id" class="tab-item" :class="{ active: id === tabId }"
           @click="handleTabChange(id)">
-          {{ id === 'default' ? 'XML 编辑器' : `XML 编辑器 ${Object.keys(xmlEditorTabs).indexOf(id)}` }}
+          {{ id === 'default' ? '标签1' : `标签${Object.keys(xmlEditorTabs).indexOf(id) + 1}` }}
           <span v-if="id !== 'default'" class="close-btn" @click.stop="closeTab(id)">
             ×
           </span>
@@ -575,6 +575,7 @@ const closeTab = (targetName: string | number) => {
   cursor: pointer;
   min-width: 100px;
   max-width: 150px;
+  height: 45px;
   text-align: center;
   display: flex;
   align-items: center;
@@ -582,6 +583,7 @@ const closeTab = (targetName: string | number) => {
   gap: 6px;
   white-space: nowrap;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .tab-item:not(:first-child) {
@@ -625,10 +627,12 @@ const closeTab = (targetName: string | number) => {
   cursor: pointer;
   width: 40px;
   min-width: 40px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .add-tab:hover {
