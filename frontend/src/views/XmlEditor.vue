@@ -1,11 +1,17 @@
 <template>
   <div class="xml-editor">
-    <el-tabs v-model="activeTabName" type="border-card" addable closable @tab-add="createTab" @tab-remove="closeTab"
-      @tab-change="handleTabChange" class="editor-tabs-container">
-      <el-tab-pane v-for="(tab, id) in xmlEditorTabs" :key="id" :name="String(id)" :closable="String(id) !== 'default'"
-        :label="String(id) === 'default' ? 'XML 编辑器' : `XML 编辑器 ${Object.keys(xmlEditorTabs).indexOf(String(id))}`">
-      </el-tab-pane>
-    </el-tabs>
+    <div class="tabs-header">
+      <div class="tabs-nav">
+        <div v-for="id in Object.keys(xmlEditorTabs)" :key="id" class="tab-item" :class="{ active: id === tabId }"
+          @click="handleTabChange(id)">
+          {{ id === 'default' ? 'XML 编辑器' : `XML 编辑器 ${Object.keys(xmlEditorTabs).indexOf(id)}` }}
+          <span v-if="id !== 'default'" class="close-btn" @click.stop="closeTab(id)">
+            ×
+          </span>
+        </div>
+        <div class="add-tab" @click="createTab">+</div>
+      </div>
+    </div>
 
     <div class="toolbar">
       <div class="config-wrapper">
@@ -545,119 +551,88 @@ const closeTab = (targetName: string | number) => {
   height: 14px;
 }
 
-.editor-tabs-container {
+.tabs-header {
   flex-shrink: 0;
-}
-
-:deep(.el-tabs__header) {
-  margin: 0;
-  padding: 0;
   background: #f5f5f5;
   border-bottom: 1px solid #dcdcdc;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-:deep(.el-tabs__content) {
-  display: none;
+.tabs-nav {
+  display: flex;
+  align-items: flex-end;
+  min-width: max-content;
 }
 
-:deep(.el-tabs--border-card) {
-  border: none;
-  box-shadow: none;
-}
-
-:deep(.el-tabs--border-card > .el-tabs__header) {
-  border: none;
-  background: transparent;
-}
-
-:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__nav-wrap) {
-  padding: 0;
-}
-
-:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__nav) {
-  border: none;
-}
-
-:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item) {
+.tab-item {
   border: 1px solid #dcdcdc;
   border-bottom: none;
-  margin: 0;
-  padding: 12px 20px;
-  border-radius: 0;
+  padding: 12px 16px;
   background: #f5f5f5;
   color: #333333;
   font-size: 13px;
-  line-height: 1;
-  transition: all 0.15s ease;
-  min-width: 120px;
+  cursor: pointer;
+  min-width: 100px;
+  max-width: 150px;
   text-align: center;
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item:not(:first-child)) {
+.tab-item:not(:first-child) {
   border-left: none;
 }
 
-:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item:hover:not(.is-active)) {
+.tab-item:hover:not(.active) {
   background: #eeeeee;
   color: #000000;
 }
 
-:deep(.el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active) {
+.tab-item.active {
   background: #ffffff;
   color: #1976d2;
-  font-weight: normal;
+  font-weight: 500;
   border-bottom: 1px solid #ffffff;
   z-index: 1;
+  position: relative;
 }
 
-:deep(.el-tabs__nav-next),
-:deep(.el-tabs__nav-prev) {
-  background: #f5f5f5;
-  border: 1px solid #dcdcdc;
-  border-radius: 0;
-  color: #666666;
-  line-height: 1;
+.close-btn {
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 12px;
+  margin-left: 8px;
 }
 
-:deep(.el-tabs__nav-next:hover),
-:deep(.el-tabs__nav-prev:hover) {
-  background: #eeeeee;
+.close-btn:hover {
+  background: #e0e0e0;
   color: #333333;
 }
 
-:deep(.el-tabs__new-tab) {
-  background: #f5f5f5;
+.add-tab {
   border: 1px solid #dcdcdc;
   border-left: none;
-  border-radius: 0;
+  border-bottom: none;
+  padding: 12px 16px;
+  background: #f5f5f5;
   color: #666666;
+  font-size: 16px;
+  cursor: pointer;
   width: 40px;
-  height: 45px;
+  min-width: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: normal;
-  transition: all 0.15s ease;
-  margin: 0;
+  flex-shrink: 0;
 }
 
-:deep(.el-tabs__new-tab:hover) {
+.add-tab:hover {
   background: #eeeeee;
-  color: #333333;
-}
-
-:deep(.el-icon-close) {
-  transition: all 0.15s ease;
-  padding: 4px;
-  margin-left: 8px;
-  border-radius: 2px;
-  font-size: 12px;
-}
-
-:deep(.el-icon-close:hover) {
-  background: #e0e0e0;
   color: #333333;
 }
 </style>
