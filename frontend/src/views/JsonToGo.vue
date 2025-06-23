@@ -28,24 +28,13 @@
     <div class="editors-container">
       <div class="editor-container">
         <div class="editor-title">JSON</div>
-        <MonacoEditor
-          ref="jsonEditor"
-          :value="code"
-          @change="handleJsonChange"
-          :options="jsonOptions"
-          language="json"
-          theme="vs"
-        />
+        <MonacoEditor ref="jsonEditor" :value="code" @change="handleJsonChange" :options="jsonOptions" language="json"
+          theme="vs" />
       </div>
       <div class="editor-container">
         <div class="editor-title">Go 结构体</div>
-        <MonacoEditor
-          ref="goEditor"
-          :value="goResult"
-          :options="goOptions"
-          language="go"
-          theme="vs"
-        />
+        <MonacoEditor ref="goEditor" :value="goResult" @change="handleGoChange" :options="goOptions" language="go"
+          theme="vs" />
       </div>
     </div>
   </div>
@@ -78,7 +67,7 @@ const jsonOptions = {
 
 const goOptions = {
   ...jsonOptions,
-  readOnly: true
+  readOnly: false
 }
 
 const handleJsonChange = (value: string) => {
@@ -94,23 +83,27 @@ const handleJsonChange = (value: string) => {
   }
 }
 
+const handleGoChange = (value: string) => {
+  goResult.value = value
+}
+
 const convertToGo = () => {
   try {
     if (!code.value.trim()) {
       ElMessage.warning('请输入JSON内容')
       return
     }
-    
+
     // 解析JSON，确保是有效的
     JSON.parse(code.value)
-    
+
     // 将JSON转换为Go结构体，根据选项决定是否使用内联结构体
     const result = jsonToGo(code.value, 'MainType', useFlatten.value)
     if (result.error) {
       ElMessage.error('转换失败: ' + result.error)
       return
     }
-    
+
     // 使用转换结果
     goResult.value = result.go
   } catch (error: any) {
@@ -144,7 +137,7 @@ const loadSample = () => {
     ],
     last_login: null
   }, null, 2)
-  
+
   convertToGo()
 }
 
@@ -153,7 +146,7 @@ const copyToClipboard = (text: string) => {
     ElMessage.warning('没有内容可复制')
     return
   }
-  
+
   copy(text)
   ElMessage.success('已复制到剪贴板')
 }
@@ -250,4 +243,4 @@ onMounted(() => {
 :deep(.monaco-editor) {
   flex: 1;
 }
-</style> 
+</style>

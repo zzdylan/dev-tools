@@ -36,7 +36,23 @@ button,
 .tab-item,
 .add-tab,
 .close-btn,
+.nav-item,
+.tool-card,
+.tool-card *,
+a,
 [role="button"],
-.cursor-pointer {
+.cursor-pointer,
+.icon-btn,
+.collapse-btn {
+  cursor: pointer !important;
+}
+
+/* 特殊处理：某些元素应该保持特定的光标样式 */
+.drag-handle {
+  cursor: move !important;
+}
+
+.visibility-switch,
+.visibility-switch * {
   cursor: pointer !important;
 }
