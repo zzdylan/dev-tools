@@ -6,7 +6,7 @@
         <router-link to="/" class="logo">
           <h1>DevTools</h1>
         </router-link>
-        <button class="icon-btn collapse-btn" @click="toggleSidebar">
+        <button class="icon-btn collapse-btn" @click="toggleSidebar" :title="`${showSidebar ? '隐藏' : '显示'}菜单栏`">
           <MenuOutline class="collapse-icon" />
         </button>
       </div>
@@ -195,9 +195,12 @@ const filteredMenuItems = computed(() => {
 }
 
 .sidebar-hidden {
-  width: 0;
-  padding: 0;
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
   overflow: hidden;
+  border-right: none !important;
 }
 
 .search-box {
@@ -303,6 +306,11 @@ const filteredMenuItems = computed(() => {
   width: 20px;
   height: 20px;
   color: #666;
+}
+
+/* 当侧边栏隐藏时，旋转按钮图标 */
+.layout:not(.sidebar-collapsed) .collapse-icon {
+  transform: rotate(0deg);
 }
 
 .sidebar-collapsed .collapse-icon {
