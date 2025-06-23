@@ -4,12 +4,9 @@
       <div class="input-group">
         <div class="label">URL</div>
         <div class="input-with-buttons">
-          <textarea
-            v-model="urlText"
-            placeholder="输入需要解析的URL"
-            class="text-area"
-            @input="parseUrl"
-          ></textarea>
+          <textarea v-model="urlText"
+            placeholder="输入需要解析的URL或参数&#10;支持格式：&#10;- https://example.com?name=value&age=18&#10;- ?name=value&age=18&#10;- name=value&age=18"
+            class="text-area" @input="parseUrl"></textarea>
           <div class="button-group">
             <button class="tool-btn" @click="clear">清空</button>
             <button class="tool-btn" @click="copy(urlText)">复制</button>
@@ -18,18 +15,10 @@
       </div>
 
       <div class="view-tabs">
-        <button
-          class="tab-btn"
-          :class="{ active: viewMode === 'json' }"
-          @click="viewMode = 'json'"
-        >
+        <button class="tab-btn" :class="{ active: viewMode === 'json' }" @click="viewMode = 'json'">
           JSON
         </button>
-        <button
-          class="tab-btn"
-          :class="{ active: viewMode === 'table' }"
-          @click="viewMode = 'table'"
-        >
+        <button class="tab-btn" :class="{ active: viewMode === 'table' }" @click="viewMode = 'table'">
           表格
         </button>
       </div>
@@ -87,27 +76,82 @@ const parseUrl = () => {
       return
     }
 
-    const url = new URL(urlText.value)
     const params: Record<string, string> = {}
+    let inputText = urlText.value.trim()
 
-    // 解析基本URL信息
-    params.protocol = url.protocol.replace(':', '')
-    params.host = url.host
-    params.pathname = url.pathname
+    // 检查是否为完整的URL（包含协议）
+    if (inputText.match(/^https?:\/\//)) {
+      // 完整URL解析
+      const url = new URL(inputText)
 
-    // 解析查询参数
-    url.searchParams.forEach((value, key) => {
-      try {
-        // 尝试解码参数值
-        params[key] = decodeURIComponent(value)
-      } catch {
-        params[key] = value
+      // 解析基本URL信息
+      params.protocol = url.protocol.replace(':', '')
+      params.host = url.host
+      params.hostname = url.hostname
+      params.port = url.port || (url.protocol === 'https:' ? '443' : '80')
+      params.pathname = url.pathname
+      params.hash = url.hash
+
+      // 解析查询参数
+      url.searchParams.forEach((value, key) => {
+        try {
+          params[key] = decodeURIComponent(value)
+        } catch {
+          params[key] = value
+        }
+      })
+    } else {
+      // 处理纯参数或带问号的参数
+      let queryString = inputText
+
+      // 如果不以?开头，添加?
+      if (!queryString.startsWith('?')) {
+        queryString = '?' + queryString
       }
-    })
+
+      // 使用URLSearchParams解析查询参数
+      const searchParams = new URLSearchParams(queryString)
+
+      searchParams.forEach((value, key) => {
+        try {
+          params[key] = decodeURIComponent(value)
+        } catch {
+          params[key] = value
+        }
+      })
+    }
 
     parsedParams.value = params
   } catch (error) {
     console.error('URL解析错误:', error)
+    // 如果解析失败，尝试简单的手动解析
+    try {
+      const params: Record<string, string> = {}
+      let inputText = urlText.value.trim()
+
+      // 移除开头的?
+      if (inputText.startsWith('?')) {
+        inputText = inputText.substring(1)
+      }
+
+      // 按&分割参数
+      const pairs = inputText.split('&')
+      pairs.forEach(pair => {
+        const [key, value] = pair.split('=')
+        if (key) {
+          try {
+            params[decodeURIComponent(key)] = value ? decodeURIComponent(value) : ''
+          } catch {
+            params[key] = value || ''
+          }
+        }
+      })
+
+      parsedParams.value = params
+    } catch (fallbackError) {
+      console.error('手动解析也失败:', fallbackError)
+      parsedParams.value = {}
+    }
   }
 }
 
