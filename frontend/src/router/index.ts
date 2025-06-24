@@ -11,6 +11,7 @@ import TextDiff from '../views/TextDiff.vue'
 import CurlConverter from '../views/CurlConverter.vue'
 import UnicodeConverter from '../views/UnicodeConverter.vue'
 import JsonToGo from '../views/JsonToGo.vue'
+import JwtDecoder from '../views/JwtDecoder.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -106,6 +107,11 @@ const routes: RouteRecordRaw[] = [
         path: '/json-to-go',
         name: 'JsonToGo',
         component: JsonToGo
+      },
+      {
+        path: '/jwt-decoder',
+        name: 'JwtDecoder',
+        component: JwtDecoder
       }
     ]
   }
