@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { MenuOutline, SettingsOutline } from '@vicons/ionicons5'
 import { useToolsStore } from '../stores/tools'
@@ -70,6 +70,9 @@ const menuTitles: Record<string, string> = {
   '/number-converter': '进制转换',
   '/text-diff': '文本对比',
   '/curl-converter': 'cURL 转换',
+  '/unicode-converter': 'Unicode 转换',
+  '/json-to-go': 'JSON转Go',
+  '/jwt-decoder': 'JWT 解析',
 }
 
 // 监听路由变化更新标题
@@ -87,6 +90,11 @@ const toggleSidebar = () => {
 
 const store = useToolsStore()
 const { menuConfig } = storeToRefs(store)
+
+// 在组件挂载时初始化菜单
+onMounted(() => {
+  store.initializeMenu()
+})
 
 const menuItems = computed(() => {
   const home = { path: '/', icon: '🏠', title: '全部功能列表' }
