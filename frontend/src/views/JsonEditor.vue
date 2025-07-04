@@ -26,10 +26,6 @@
             <input type="checkbox" v-model="settings.autoDecodeUnicode" />
             自动解码 Unicode
           </label>
-          <label class="setting-item">
-            <input type="checkbox" v-model="settings.removeEscapes" />
-            去转义时删除换行符和制表符
-          </label>
         </div>
       </div>
 
@@ -368,27 +364,22 @@ const processJsonStrings = (value: any, isEscape?: boolean): any => {
   return value
 }
 
-// 修改转义函数，只处理引号和反斜杠
+// 使用原生 JSON 方法进行转义和去转义 - 最可靠的方案
 const escapeString = (str: string): string => {
-  return str
-    .replace(/\\/g, '\\\\') // 先处理反斜杠
-    .replace(/"/g, '\\"') // 再处理双引号
+  // 使用 JSON.stringify 然后去掉首尾引号
+  return JSON.stringify(str).slice(1, -1)
 }
 
-// 修改去转义函数，根据设置处理换行符和制表符
+// 标准 JSON 去转义函数
 const unescapeString = (str: string): string => {
-  let result = str
-    .replace(/\\"/g, '"') // 先处理双引号
-    .replace(/\\\\/g, '\\') // 再处理反斜杠
-
-  if (settings.value.removeEscapes) {
-    result = result
-      .replace(/\\n/g, '\n') // 换行符
-      .replace(/\\t/g, '\t') // 制表符
-      .replace(/\\r/g, '\r') // 回车符
+  try {
+    // 使用 JSON.parse 进行去转义，需要加上引号
+    return JSON.parse('"' + str + '"')
+  } catch (error) {
+    // 如果解析失败，返回原字符串
+    console.warn('去转义失败，返回原字符串:', error)
+    return str
   }
-
-  return result
 }
 
 const handleChange = (value: string, id: string) => {

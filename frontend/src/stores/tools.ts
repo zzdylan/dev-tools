@@ -4,7 +4,6 @@ interface JsonEditorTab {
   code: string
   settings: {
     autoDecodeUnicode: boolean
-    removeEscapes: boolean
   }
 }
 
@@ -56,8 +55,7 @@ export const useToolsStore = defineStore('tools', {
       default: {
         code: '',
         settings: {
-          autoDecodeUnicode: false,
-          removeEscapes: false
+          autoDecodeUnicode: false
         }
       }
     },
@@ -154,8 +152,7 @@ export const useToolsStore = defineStore('tools', {
       this.jsonEditorTabs[id] = {
         code: '',
         settings: {
-          autoDecodeUnicode: false,
-          removeEscapes: false
+          autoDecodeUnicode: false
         }
       }
       return id
