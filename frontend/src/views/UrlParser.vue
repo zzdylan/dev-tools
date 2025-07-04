@@ -1,50 +1,75 @@
 <template>
   <div class="url-parser">
-    <div class="parser-section">
-      <div class="input-group">
-        <div class="label">URL</div>
-        <div class="input-with-buttons">
-          <textarea v-model="urlText"
-            placeholder="输入需要解析的URL或参数&#10;支持格式：&#10;- https://example.com?name=value&age=18&#10;- ?name=value&age=18&#10;- name=value&age=18"
-            class="text-area" @input="parseUrl"></textarea>
-          <div class="button-group">
-            <button class="tool-btn" @click="clear">清空</button>
-            <button class="tool-btn" @click="copy(urlText)">复制</button>
-          </div>
+    <!-- URL输入区域 -->
+    <div class="input-section">
+      <div class="section-header">
+        <h3>URL 解析</h3>
+        <button v-if="urlText" class="btn-clear" @click="clear">清空</button>
+      </div>
+      <div class="input-wrapper">
+        <textarea 
+          v-model="urlText"
+          placeholder="输入需要解析的URL或参数...&#10;支持格式：&#10;• https://example.com?name=value&age=18&#10;• ?name=value&age=18&#10;• name=value&age=18"
+          class="url-input" 
+          @input="parseUrl"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- 解析结果区域 -->
+    <div class="result-section" v-if="urlText && Object.keys(parsedParams).length > 0">
+      <div class="section-header">
+        <h3>解析结果</h3>
+        <div class="view-tabs">
+          <button 
+            class="tab-btn" 
+            :class="{ active: viewMode === 'table' }" 
+            @click="viewMode = 'table'"
+          >
+            表格视图
+          </button>
+          <button 
+            class="tab-btn" 
+            :class="{ active: viewMode === 'json' }" 
+            @click="viewMode = 'json'"
+          >
+            JSON视图
+          </button>
         </div>
       </div>
+      
+      <div class="result-content">
+        <div v-if="viewMode === 'table'" class="table-view">
+          <div class="table-container">
+            <table class="params-table">
+              <thead>
+                <tr>
+                  <th class="index-col">#</th>
+                  <th class="key-col">参数名</th>
+                  <th class="value-col">参数值</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(value, key, index) in parsedParams" :key="key" class="param-row">
+                  <td class="index-cell">{{ index + 1 }}</td>
+                  <td class="key-cell">{{ key }}</td>
+                  <td class="value-cell">{{ value }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      <div class="view-tabs">
-        <button class="tab-btn" :class="{ active: viewMode === 'json' }" @click="viewMode = 'json'">
-          JSON
-        </button>
-        <button class="tab-btn" :class="{ active: viewMode === 'table' }" @click="viewMode = 'table'">
-          表格
-        </button>
+        <div v-else class="json-view">
+          <pre class="json-content">{{ formattedJson }}</pre>
+        </div>
       </div>
+    </div>
 
-      <div v-if="viewMode === 'json'" class="result-json">
-        <pre>{{ formattedJson }}</pre>
-      </div>
-
-      <div v-else class="result-table">
-        <table>
-          <thead>
-            <tr>
-              <th>-</th>
-              <th>参数名</th>
-              <th>参数值</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(value, key, index) in parsedParams" :key="key">
-              <td>{{ index + 1 }}</td>
-              <td>{{ key }}</td>
-              <td>{{ value }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- 空状态 -->
+    <div class="empty-state" v-if="!urlText || Object.keys(parsedParams).length === 0">
+      <div class="empty-icon">🔗</div>
+      <div class="empty-text">输入URL或参数字符串开始解析</div>
     </div>
   </div>
 </template>
@@ -162,161 +187,253 @@ const formattedJson = computed(() => {
 const clear = () => {
   urlText.value = ''
   parsedParams.value = {}
-  ElMessage.success('已清空')
-}
-
-const copy = async (text: string) => {
-  if (!text) {
-    ElMessage.warning('没有可复制的内容')
-    return
-  }
-  await copyToClipboard(text)
-  ElMessage.success('已复制到剪贴板')
 }
 </script>
 
 <style scoped>
 .url-parser {
-  padding: 20px;
-  max-width: 1200px;
+  padding: 24px;
+  max-width: 1400px;
   margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.parser-section {
+.input-section,
+.result-section {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.input-with-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.text-area {
-  flex: 1;
-  min-height: 100px;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: monospace;
-  resize: vertical;
-}
-
-.text-area:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
-}
-
-.button-group {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
 }
 
-.tool-btn {
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: white;
-  color: #374151;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.input-wrapper {
+  padding: 24px;
+}
+
+.url-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: all 0.2s;
+  background: #fafbfc;
+}
+
+.url-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.url-input::placeholder {
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.btn-clear {
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
-  white-space: nowrap;
 }
 
-.tool-btn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+.btn-clear:hover {
+  background: #fee2e2;
 }
 
 .view-tabs {
-  margin-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
 }
 
 .tab-btn {
   padding: 8px 16px;
-  border: none;
-  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  color: #64748b;
   font-size: 14px;
-  color: #6b7280;
+  font-weight: 500;
   cursor: pointer;
-  margin-right: 16px;
-  position: relative;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .tab-btn.active {
-  color: #2563eb;
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
 }
 
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
+.tab-btn.active:hover {
   background: #2563eb;
+  border-color: #2563eb;
 }
 
-.result-json {
-  background: #f8f9fa;
+.result-content {
+  flex: 1;
+}
+
+.table-view {
+  padding: 24px;
+}
+
+.table-container {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.params-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: white;
+}
+
+.params-table th {
+  background: #f8fafc;
   padding: 16px;
-  border-radius: 6px;
-  overflow: auto;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.result-json pre {
+.params-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+.index-col {
+  width: 60px;
+}
+
+.key-col {
+  width: 200px;
+}
+
+.value-col {
+  min-width: 200px;
+}
+
+.param-row:hover td {
+  background: #f8fafc;
+}
+
+.index-cell {
+  color: #94a3b8;
+  font-weight: 500;
+  text-align: center;
+}
+
+.key-cell {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.value-cell {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  word-break: break-all;
+}
+
+.json-view {
+  padding: 24px;
+}
+
+.json-content {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
   margin: 0;
-  font-family: monospace;
-  font-size: 12px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1e293b;
   white-space: pre-wrap;
   word-wrap: break-word;
-}
-
-.result-table {
   overflow-x: auto;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
+.empty-state {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  padding: 60px;
+  text-align: center;
 }
 
-th,
-td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
 }
 
-th {
-  background: #f9fafb;
+.empty-text {
+  font-size: 16px;
+  color: #64748b;
   font-weight: 500;
-  color: #374151;
 }
 
-td {
-  color: #4b5563;
-}
-
-tr:hover td {
-  background: #f9fafb;
+@media (max-width: 1024px) {
+  .url-parser {
+    padding: 16px;
+  }
+  
+  .view-tabs {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .tab-btn {
+    text-align: center;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .empty-state {
+    padding: 40px 20px;
+  }
 }
 </style>

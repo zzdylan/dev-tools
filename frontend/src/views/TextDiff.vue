@@ -1,37 +1,50 @@
 <template>
   <div class="text-diff">
-    <div class="diff-section">
+    <!-- 输入区域 -->
+    <div class="input-section">
       <div class="input-panels">
         <!-- 左侧文本 -->
         <div class="input-panel">
+          <div class="panel-header">
+            <h3>原始文本</h3>
+            <button v-if="oldText" class="btn-clear" @click="clearOldText">清空</button>
+          </div>
           <div ref="oldEditor" class="editor-container"></div>
         </div>
 
         <!-- 右侧文本 -->
         <div class="input-panel">
+          <div class="panel-header">
+            <h3>新文本</h3>
+            <button v-if="newText" class="btn-clear" @click="clearNewText">清空</button>
+          </div>
           <div ref="newEditor" class="editor-container"></div>
         </div>
       </div>
+    </div>
 
-      <!-- 对比结果 -->
-      <div class="diff-result">
-        <div class="panel-header">
-          <div class="panel-title">
-            <span class="title-text">差异对比结果</span>
-          </div>
-          <div class="diff-options">
-            <label class="option-item">
-              <input
-                type="checkbox"
-                v-model="ignoreWhitespace"
-                class="checkbox"
-              />
-              <span class="option-text">忽略空白字符</span>
-            </label>
-          </div>
+    <!-- 对比结果 -->
+    <div class="diff-result" v-if="(oldText || newText) && diffResult !== '无差异'">
+      <div class="result-header">
+        <h3>差异对比结果</h3>
+        <div class="diff-options">
+          <label class="option-item">
+            <input
+              type="checkbox"
+              v-model="ignoreWhitespace"
+              class="checkbox"
+            />
+            <span class="option-text">忽略空白字符</span>
+          </label>
         </div>
-        <div class="result-content" v-html="diffResult"></div>
       </div>
+      <div class="result-content" v-html="diffResult"></div>
+    </div>
+
+    <!-- 无差异提示 -->
+    <div class="no-diff" v-if="(oldText || newText) && diffResult === '无差异'">
+      <div class="no-diff-icon">✓</div>
+      <div class="no-diff-text">文本内容相同，没有差异</div>
     </div>
   </div>
 </template>
@@ -135,109 +148,189 @@ const generateDiff = () => {
 
 watch([oldText, newText, ignoreWhitespace], generateDiff, { immediate: true })
 
-const copy = async (text: string) => {
-  if (!text) {
-    ElMessage.warning('没有可复制的内容')
-    return
+const clearOldText = () => {
+  oldText.value = ''
+  if (oldEditorView) {
+    oldEditorView.dispatch({
+      changes: { from: 0, to: oldEditorView.state.doc.length, insert: '' }
+    })
   }
-  await copyToClipboard(text)
-  ElMessage.success('已复制到剪贴板')
+}
+
+const clearNewText = () => {
+  newText.value = ''
+  if (newEditorView) {
+    newEditorView.dispatch({
+      changes: { from: 0, to: newEditorView.state.doc.length, insert: '' }
+    })
+  }
 }
 </script>
 
 <style scoped>
 .text-diff {
-  padding: 20px;
-  max-width: 1200px;
+  padding: 24px;
+  max-width: 1400px;
   margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.diff-section {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.input-section {
+  margin-bottom: 24px;
 }
 
 .input-panels {
-  display: flex;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
 .input-panel {
-  flex: 1;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
   overflow: hidden;
+}
+
+.panel-header,
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.panel-header h3,
+.result-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.btn-clear {
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear:hover {
+  background: #fee2e2;
 }
 
 .editor-container {
   flex: 1;
-  min-height: 200px;
-  border: none;
-  font-size: 14px;
-  font-family: monospace;
+  min-height: 300px;
 }
 
 :deep(.cm-editor) {
   height: 100%;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 14px;
 }
 
 :deep(.cm-editor.cm-focused) {
   outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+:deep(.cm-content) {
+  padding: 20px;
 }
 
 .diff-result {
-  padding: 0;
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
   overflow: hidden;
 }
 
 .result-content {
-  padding: 12px;
-  font-family: monospace;
+  padding: 0;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   font-size: 14px;
-  line-height: 1.5;
-  white-space: pre;
-  background: #f9fafb;
+  line-height: 1.6;
+  background: white;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.no-diff {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  padding: 40px;
+  text-align: center;
+}
+
+.no-diff-icon {
+  font-size: 48px;
+  color: #10b981;
+  margin-bottom: 16px;
+}
+
+.no-diff-text {
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 :deep(.diff-line) {
   display: flex;
-  padding: 0 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s;
+}
+
+:deep(.diff-line:hover) {
+  background-color: #f8fafc;
 }
 
 :deep(.diff-line.added) {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: #ecfdf5;
+  border-left: 3px solid #10b981;
+  color: #065f46;
+}
+
+:deep(.diff-line.added:hover) {
+  background-color: #d1fae5;
 }
 
 :deep(.diff-line.removed) {
-  background-color: #fee2e2;
+  background-color: #fef2f2;
+  border-left: 3px solid #ef4444;
   color: #991b1b;
 }
 
+:deep(.diff-line.removed:hover) {
+  background-color: #fee2e2;
+}
+
 :deep(.line-number) {
-  width: 30px;
+  width: 40px;
   margin-right: 16px;
-  color: #6b7280;
+  color: #94a3b8;
   user-select: none;
   text-align: right;
-  padding-right: 8px;
+  padding-right: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 :deep(.line-number.old) {
-  border-right: 1px solid #d1d5db;
+  border-right: 1px solid #e2e8f0;
 }
 
 .diff-options {
@@ -250,17 +343,41 @@ const copy = async (text: string) => {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.option-item:hover {
+  background-color: #f1f5f9;
 }
 
 .checkbox {
   width: 16px;
   height: 16px;
   cursor: pointer;
+  accent-color: #3b82f6;
 }
 
 .option-text {
   font-size: 14px;
-  color: #374151;
+  color: #475569;
   user-select: none;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .input-panels {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .text-diff {
+    padding: 16px;
+  }
+  
+  .editor-container {
+    min-height: 200px;
+  }
 }
 </style>

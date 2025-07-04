@@ -1,53 +1,71 @@
 <template>
   <div class="number-converter">
-    <div class="converter-section">
-      <div class="input-group">
-        <div class="label">输入数值</div>
-        <div class="input-with-buttons">
-          <div class="base-select">
-            <select v-model="inputBase" class="select-control">
-              <option value="2">二进制</option>
-              <option value="8">八进制</option>
-              <option value="10">十进制</option>
-              <option value="16">十六进制</option>
-            </select>
-          </div>
-          <input
-            v-model="inputValue"
-            type="text"
-            placeholder="输入需要转换的数值"
-            class="input-area"
-            @input="handleInput"
-          />
-          <div class="button-group">
-            <button class="tool-btn" @click="clear">清空</button>
-          </div>
-        </div>
+    <div class="input-section">
+      <div class="section-header">
+        <h3>输入数值</h3>
+        <button v-if="inputValue" class="btn-clear" @click="clear">清空</button>
       </div>
+      <div class="input-content">
+        <div class="base-selector">
+          <div class="base-buttons">
+            <button 
+              v-for="base in bases" 
+              :key="base.value"
+              :class="['base-btn', { active: inputBase === base.value }]"
+              @click="inputBase = base.value"
+            >
+              {{ base.label }}
+            </button>
+          </div>
+        </div>
+        <input
+          v-model="inputValue"
+          type="text"
+          placeholder="输入需要转换的数值..."
+          class="number-input"
+        />
+      </div>
+    </div>
 
+    <div class="results-section" v-if="inputValue && !isNaN(decimalValue)">
+      <div class="section-header">
+        <h3>转换结果</h3>
+      </div>
       <div class="results-grid">
-        <div class="result-item">
-          <div class="result-label">二进制 (Binary)</div>
-          <div class="result-value">{{ binary }}</div>
-          <button class="copy-btn" @click="copy(binary)">复制</button>
+        <div class="result-card">
+          <div class="result-label">二进制</div>
+          <input 
+            :value="binary" 
+            readonly 
+            class="result-input"
+          />
         </div>
 
-        <div class="result-item">
-          <div class="result-label">八进制 (Octal)</div>
-          <div class="result-value">{{ octal }}</div>
-          <button class="copy-btn" @click="copy(octal)">复制</button>
+        <div class="result-card">
+          <div class="result-label">八进制</div>
+          <input 
+            :value="octal" 
+            readonly 
+            class="result-input"
+          />
         </div>
 
-        <div class="result-item">
-          <div class="result-label">十进制 (Decimal)</div>
-          <div class="result-value">{{ decimal }}</div>
-          <button class="copy-btn" @click="copy(decimal)">复制</button>
+        <div class="result-card">
+          <div class="result-label">十进制</div>
+          <input 
+            :value="decimal" 
+            readonly 
+            class="result-input"
+          />
         </div>
 
-        <div class="result-item">
-          <div class="result-label">十六进制 (Hex)</div>
-          <div class="result-value">{{ hex }}</div>
-          <button class="copy-btn" @click="copy(hex)">复制</button>
+        <div class="result-card">
+          <div class="result-label">十六进制</div>
+          <input 
+            :value="hex" 
+            readonly 
+            class="result-input"
+          />
         </div>
       </div>
     </div>
@@ -72,6 +90,14 @@ const inputBase = computed({
   get: () => numberConverter.value.inputBase,
   set: (val) => (numberConverter.value.inputBase = val),
 })
+
+// 进制选项
+const bases = [
+  { value: '2', label: '二进制' },
+  { value: '8', label: '八进制' },
+  { value: '10', label: '十进制' },
+  { value: '16', label: '十六进制' }
+]
 
 // 检测输入的是什么进制的数
 const detectBase = (value: string): number => {
@@ -123,148 +149,211 @@ const hex = computed(() => {
 
 const clear = () => {
   inputValue.value = ''
-  ElMessage.success('已清空')
-}
-
-const copy = async (text: string) => {
-  if (!text || text === '-') {
-    ElMessage.warning('没有可复制的内容')
-    return
-  }
-  await copyToClipboard(text)
-  ElMessage.success('已复制到剪贴板')
 }
 </script>
 
 <style scoped>
 .number-converter {
-  padding: 20px;
-  max-width: 800px;
+  padding: 24px;
+  max-width: 1200px;
   margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.converter-section {
+.input-section,
+.results-section {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.input-group {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   margin-bottom: 24px;
 }
 
-.label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.input-with-buttons {
+.section-header {
   display: flex;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 }
 
-.base-select {
-  min-width: 100px;
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
 }
 
-.select-control {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  background: white;
-  cursor: pointer;
-}
-
-.select-control:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
-}
-
-.input-area {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: monospace;
-}
-
-.input-area:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
-}
-
-.button-group {
+.input-content {
+  padding: 24px;
   display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.base-selector {
+  min-width: 200px;
+}
+
+.base-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 
-.tool-btn {
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
+.base-btn {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
   background: white;
-  color: #374151;
-  font-size: 14px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  white-space: nowrap;
+  text-align: center;
 }
 
-.tool-btn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+.base-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.base-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.base-btn.active:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.number-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  transition: all 0.2s;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.number-input::placeholder {
+  color: #94a3b8;
+}
+
+.btn-clear {
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear:hover {
+  background: #fee2e2;
 }
 
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 24px;
 }
 
-.result-item {
-  background: #f9fafb;
-  padding: 16px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  position: relative;
+.result-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.result-card:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .result-label {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-
-.result-value {
-  font-family: monospace;
   font-size: 14px;
-  color: #111827;
-  word-break: break-all;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.copy-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 4px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+.result-input {
+  width: 100%;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
   background: white;
-  color: #374151;
-  font-size: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  outline: none;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.copy-btn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+.result-input:hover {
+  border-color: #cbd5e1;
+}
+
+.result-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.result-input:focus {
+  user-select: all;
+}
+
+.result-input::selection {
+  background: #dbeafe;
+}
+
+@media (max-width: 768px) {
+  .input-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .base-selector {
+    min-width: auto;
+  }
+  
+  .base-buttons {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .number-converter {
+    padding: 16px;
+  }
 }
 </style>

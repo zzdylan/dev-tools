@@ -1,49 +1,63 @@
 <template>
   <div class="time-converter">
-    <div class="converter-section">
-      <div class="input-group">
-        <div class="label">时间戳</div>
-        <div class="input-with-buttons">
+    <div class="converter-container">
+      <!-- 时间戳输入区域 -->
+      <div class="input-section">
+        <div class="section-header">
+          <h3>时间戳</h3>
+          <button v-if="timestamp" class="btn-clear" @click="clearTimestamp">清空</button>
+        </div>
+        <div class="input-wrapper">
           <input
             type="text"
             v-model="timestamp"
-            placeholder="输入时间戳"
-            @input="handleTimestampInput"
+            placeholder="输入时间戳 (秒或毫秒)..."
+            class="time-input"
+            @input="convertToDateTime"
           />
-          <button class="tool-btn" @click="getCurrentTimestamp">
-            当前时间戳
-          </button>
         </div>
       </div>
 
-      <div class="input-group">
-        <div class="label">日期时间</div>
-        <div class="input-with-buttons">
+      <!-- 转换按钮 -->
+      <div class="controls-section">
+        <button class="btn-now" @click="getCurrentTime">当前时间</button>
+      </div>
+
+      <!-- 日期时间输入区域 -->
+      <div class="output-section">
+        <div class="section-header">
+          <h3>日期时间</h3>
+          <button v-if="datetime" class="btn-clear" @click="clearDateTime">清空</button>
+        </div>
+        <div class="output-wrapper">
           <input
             type="datetime-local"
             v-model="datetime"
             step="1"
-            @input="handleDateTimeInput"
+            class="time-input"
+            @input="convertToTimestamp"
           />
-          <button class="tool-btn" @click="getCurrentDateTime">当前时间</button>
         </div>
       </div>
     </div>
 
-    <div class="format-section">
-      <h3>格式化结果</h3>
-      <div class="format-results">
-        <div class="format-item">
-          <span class="format-label">UTC：</span>
-          <span class="format-value">{{ utcTime }}</span>
+    <!-- 格式化结果区域 -->
+    <div class="results-section" v-if="timestamp">
+      <div class="section-header">
+        <h3>格式化结果</h3>
+      </div>
+      <div class="results-content">
+        <div class="result-card">
+          <div class="result-label">UTC 时间</div>
+          <div class="result-value">{{ utcTime }}</div>
         </div>
-        <div class="format-item">
-          <span class="format-label">本地时间：</span>
-          <span class="format-value">{{ localTime }}</span>
+        <div class="result-card">
+          <div class="result-label">本地时间</div>
+          <div class="result-value">{{ localTime }}</div>
         </div>
-        <div class="format-item">
-          <span class="format-label">相对时间：</span>
-          <span class="format-value">{{ relativeTime }}</span>
+        <div class="result-card">
+          <div class="result-label">相对时间</div>
+          <div class="result-value">{{ relativeTime }}</div>
         </div>
       </div>
     </div>
@@ -74,8 +88,15 @@ const datetime = computed({
   set: (val) => (timeConverter.value.datetime = val),
 })
 
-const handleTimestampInput = () => {
-  if (!timestamp.value) {
+const getCurrentTime = () => {
+  const ts = Math.floor(Date.now() / 1000)
+  timestamp.value = ts.toString()
+  const milliseconds = ts * 1000
+  datetime.value = dayjs(milliseconds).format('YYYY-MM-DDTHH:mm:ss')
+}
+
+const convertToDateTime = () => {
+  if (!timestamp.value.trim()) {
     datetime.value = ''
     return
   }
@@ -87,7 +108,7 @@ const handleTimestampInput = () => {
   datetime.value = dayjs(milliseconds).format('YYYY-MM-DDTHH:mm:ss')
 }
 
-const handleDateTimeInput = () => {
+const convertToTimestamp = () => {
   if (!datetime.value) {
     timestamp.value = ''
     return
@@ -97,15 +118,14 @@ const handleDateTimeInput = () => {
   timestamp.value = ts.toString()
 }
 
-const getCurrentTimestamp = () => {
-  const ts = Math.floor(Date.now() / 1000)
-  timestamp.value = ts.toString()
-  handleTimestampInput()
+const clearTimestamp = () => {
+  timestamp.value = ''
+  datetime.value = ''
 }
 
-const getCurrentDateTime = () => {
-  datetime.value = dayjs().format('YYYY-MM-DDTHH:mm:ss')
-  handleDateTimeInput()
+const clearDateTime = () => {
+  datetime.value = ''
+  timestamp.value = ''
 }
 
 const utcTime = computed(() => {
@@ -135,102 +155,167 @@ const relativeTime = computed(() => {
 
 <style scoped>
 .time-converter {
-  padding: 20px;
-  max-width: 800px;
+  padding: 24px;
+  max-width: 1000px;
   margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.converter-section {
+.converter-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.results-section {
+  margin-top: 24px;
+}
+
+.input-section,
+.output-section,
+.results-section {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-group:last-child {
-  margin-bottom: 0;
-}
-
-.label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.input-with-buttons {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.input-wrapper,
+.output-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.results-content {
+  flex: 1;
+  padding: 24px;
+}
+
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
 }
 
-input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-input:focus {
+.time-input {
+  width: 100%;
+  padding: 20px;
+  border: none;
   outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  background: transparent;
+  color: #1e293b;
 }
 
-.tool-btn {
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: white;
-  color: #374151;
+.time-input::placeholder {
+  color: #94a3b8;
+}
+
+.btn-now {
+  padding: 12px 24px;
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 8px;
   font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.btn-now:hover {
+  background: #7c3aed;
+  transform: translateY(-1px);
+}
+
+
+.btn-clear {
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.tool-btn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+.btn-clear:hover {
+  background: #fee2e2;
 }
 
-.format-section {
-  margin-top: 24px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.format-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  color: #111827;
-}
-
-.format-results {
+.results-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
-.format-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.result-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
 }
 
-.format-label {
-  font-size: 14px;
-  color: #6b7280;
-  min-width: 80px;
+.result-card:hover {
+  background: #f1f5f9;
 }
 
-.format-value {
-  font-size: 14px;
-  color: #111827;
-  font-family: monospace;
+.result-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.result-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  word-break: break-all;
+}
+
+@media (max-width: 1024px) {
+  .converter-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .time-converter {
+    padding: 16px;
+  }
 }
 </style>

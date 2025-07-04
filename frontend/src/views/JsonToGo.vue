@@ -1,40 +1,49 @@
 <template>
   <div class="json-to-go">
-    <div class="toolbar">
-      <div class="tools-group">
-        <button class="tool-btn" @click="loadSample">
-          <span class="tool-icon">📝</span>
-          示例
-        </button>
-        <!-- <button class="tool-btn" @click="convertToGo">
-          <span class="tool-icon">🔄</span>
-          转换
-        </button> -->
-        <button class="tool-btn" @click="copyToClipboard(goResult)">
-          <span class="tool-icon">📋</span>
-          复制Go
-        </button>
-        <button class="tool-btn" @click="clearContent">
-          <span class="tool-icon">🗑️</span>
-          清空
-        </button>
-        <div class="switch-container">
-          <span>分开结构体:</span>
-          <el-switch v-model="useFlatten" @change="convertToGo" />
+    <div class="converter-container">
+      <!-- JSON输入区域 -->
+      <div class="input-section">
+        <div class="section-header">
+          <h3>JSON 数据</h3>
+          <div class="header-controls">
+            <button class="btn-sample" @click="loadSample">示例</button>
+            <button class="btn-clear" @click="clearContent">清空</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <MonacoEditor 
+            ref="jsonEditor" 
+            :value="code" 
+            @change="handleJsonChange" 
+            :options="jsonOptions" 
+            language="json"
+            theme="vs" 
+          />
         </div>
       </div>
-    </div>
 
-    <div class="editors-container">
-      <div class="editor-container">
-        <div class="editor-title">JSON</div>
-        <MonacoEditor ref="jsonEditor" :value="code" @change="handleJsonChange" :options="jsonOptions" language="json"
-          theme="vs" />
-      </div>
-      <div class="editor-container">
-        <div class="editor-title">Go 结构体</div>
-        <MonacoEditor ref="goEditor" :value="goResult" @change="handleGoChange" :options="goOptions" language="go"
-          theme="vs" />
+      <!-- Go结构体输出区域 -->
+      <div class="output-section">
+        <div class="section-header">
+          <h3>Go 结构体</h3>
+          <div class="header-controls">
+            <div class="switch-container">
+              <span>分开结构体</span>
+              <el-switch v-model="useFlatten" @change="convertToGo" size="small" />
+            </div>
+            <button class="btn-copy" @click="copyToClipboard(goResult)">复制结果</button>
+          </div>
+        </div>
+        <div class="editor-wrapper">
+          <MonacoEditor 
+            ref="goEditor" 
+            :value="goResult" 
+            @change="handleGoChange" 
+            :options="goOptions" 
+            language="go"
+            theme="vs" 
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -164,83 +173,125 @@ onMounted(() => {
 
 <style scoped>
 .json-to-go {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.converter-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  height: calc(100vh - 80px);
+}
+
+.input-section,
+.output-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: 100%;
+  overflow: hidden;
 }
 
-.toolbar {
+.section-header {
   display: flex;
-  justify-content: flex-end;
-  padding: 8px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #ddd;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 }
 
-.tools-group {
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.header-controls {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
 }
 
-.tool-btn {
-  display: flex;
-  align-items: center;
-  padding: 5px 10px;
+.btn-sample {
+  padding: 8px 16px;
+  background: #8b5cf6;
+  color: white;
   border: none;
-  border-radius: 4px;
-  background-color: #fff;
-  color: #333;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 12px;
   transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.tool-btn:hover {
-  background-color: #f0f0f0;
+.btn-sample:hover {
+  background: #7c3aed;
 }
 
-.tool-icon {
-  margin-right: 4px;
+.btn-clear {
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear:hover {
+  background: #fee2e2;
+}
+
+.btn-copy {
+  padding: 6px 12px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-copy:hover {
+  background: #e2e8f0;
 }
 
 .switch-container {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-left: 12px;
-  font-size: 12px;
-}
-
-.editors-container {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.editor-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid #ddd;
-  overflow: hidden;
-}
-
-.editor-container:last-child {
-  border-right: none;
-}
-
-.editor-title {
-  padding: 8px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #ddd;
   font-size: 14px;
-  font-weight: 500;
+  color: #64748b;
+}
+
+.editor-wrapper {
+  flex: 1;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
 }
 
 :deep(.monaco-editor) {
   flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .converter-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .json-to-go {
+    padding: 16px;
+  }
 }
 </style>
