@@ -1,6 +1,5 @@
 <template>
     <div class="jwt-decoder">
-        <div class="title">JWT 解析器</div>
 
         <div class="input-section">
             <div class="section-title">JWT Token</div>

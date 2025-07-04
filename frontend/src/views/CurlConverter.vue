@@ -1,48 +1,50 @@
 <template>
   <div class="curl-converter">
-    <div class="converter-section">
-      <div class="input-group">
-        <div class="label">cURL 命令</div>
-        <div class="input-with-buttons">
-          <textarea
-            v-model="curlCommand"
-            placeholder="输入 cURL 命令，例如: curl https://api.example.com -H 'Authorization: Bearer token'"
-            class="text-area"
-          ></textarea>
-          <div class="button-group">
+    <div class="converter-container">
+      <!-- 输入区域 -->
+      <div class="input-section">
+        <div class="section-header">
+          <h3>cURL 命令</h3>
+          <div class="header-controls">
             <select v-model="targetLang" class="lang-select">
-              <option value="javascript">JavaScript (Fetch)</option>
-              <option value="python">Python (requests)</option>
-              <option value="go">Go (net/http)</option>
-              <option value="go-resty">Go (resty)</option>
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="go">Go</option>
+              <option value="go-resty">Go (Resty)</option>
               <option value="java">Java</option>
               <option value="php">PHP</option>
-              <option value="nodejs">Node.js (Axios)</option>
+              <option value="nodejs">Node.js</option>
             </select>
-            <button class="tool-btn" @click="convert">转换</button>
-            <button class="tool-btn" @click="clear">清空</button>
-            <button class="tool-btn" @click="copy(curlCommand)">复制</button>
+            <button class="btn-convert" @click="convert">转换</button>
+          </div>
+        </div>
+        <div class="input-wrapper">
+          <textarea
+            v-model="curlCommand"
+            placeholder="粘贴 cURL 命令..."
+            class="curl-input"
+          ></textarea>
+          <div class="input-actions">
+            <button class="btn-clear" @click="clear">清空</button>
+            <button class="btn-copy" @click="copy(curlCommand)">复制</button>
           </div>
         </div>
       </div>
 
-      <div class="input-group">
-        <div class="label">转换结果</div>
-        <div class="input-with-buttons">
-          <div class="editor-container">
-            <MonacoEditor
-              ref="monacoEditor"
-              :value="convertedCode"
-              :options="editorOptions"
-              :language="getEditorLanguage"
-              theme="vs"
-            />
-          </div>
-          <div class="button-group">
-            <button class="tool-btn" @click="copy(convertedCode)">
-              复制结果
-            </button>
-          </div>
+      <!-- 输出区域 -->
+      <div class="output-section">
+        <div class="section-header">
+          <h3>转换结果</h3>
+          <button class="btn-copy" @click="copy(convertedCode)">复制结果</button>
+        </div>
+        <div class="output-wrapper">
+          <MonacoEditor
+            ref="monacoEditor"
+            :value="convertedCode"
+            :options="editorOptions"
+            :language="getEditorLanguage"
+            theme="vs"
+          />
         </div>
       </div>
     </div>
@@ -122,7 +124,9 @@ const convert = () => {
 
     // 解析 curl 命令
     const cmd = curlCommand.value.trim()
-    const url = cmd.match(/curl\s+['"]?([^'"]\S+)['"]?/)?.[1]
+    // 修复URL匹配正则，排除选项参数
+    const url = cmd.match(/curl\s+(?:-\w+\s+\w+\s+)*['"]?([^'"]\S+)['"]?/)?.[1] || 
+                cmd.match(/curl\s+.*?['"]?(https?:\/\/[^'"\s]+)['"]?/)?.[1]
     const headers = Array.from(cmd.matchAll(/-H\s+['"]([^'"]+)['"]/g)).map(
       (m) => m[1]
     )
@@ -180,11 +184,13 @@ const generateJavaScriptCode = (
     return acc
   }, {} as Record<string, string>)
 
-  return `fetch("${url}", {
-  method: "${method}",
-  headers: ${JSON.stringify(headerObj, null, 2)},
-  ${data ? `body: '${data}',` : ''}
-})
+  const config = {
+    method: method,
+    headers: headerObj,
+    ...(data && { body: data })
+  }
+
+  return `fetch("${url}", ${JSON.stringify(config, null, 2)})
   .then(response => response.json())
   .then(data => console.log(data))
   .catch(error => console.error('Error:', error));`
@@ -200,15 +206,20 @@ const generatePythonCode = (
     .map((h) => `    "${h.split(': ')[0]}": "${h.split(': ')[1]}"`)
     .join(',\n')
 
+  // 检查是否是JSON数据
+  const isJson = headers.some(h => h.toLowerCase().includes('content-type') && h.toLowerCase().includes('json'))
+  const dataParam = data ? (isJson ? `json=${data}` : `data='${data}'`) : ''
+
   return `import requests
 
 response = requests.${method.toLowerCase()}(
     "${url}",
     headers={
 ${headerStr}
-    }${data ? `,\n    data='${data}'` : ''}
+    }${dataParam ? `,\n    ${dataParam}` : ''}
 )
 
+response.raise_for_status()  # 检查响应状态码
 print(response.json())`
 }
 
@@ -226,7 +237,7 @@ const generateGoCode = (
 
 import (
 \t"fmt"
-\t"io/ioutil"
+\t"io"
 \t"net/http"
 \t"strings"
 )
@@ -259,8 +270,13 @@ ${headerStr}
 \t}
 \tdefer resp.Body.Close()
 
+\t// 检查响应状态码
+\tif resp.StatusCode >= 400 {
+\t\tfmt.Printf("请求失败，状态码: %d\\n", resp.StatusCode)
+\t}
+
 \t// 读取响应
-\tbody, err := ioutil.ReadAll(resp.Body)
+\tbody, err := io.ReadAll(resp.Body)
 \tif err != nil {
 \t\tfmt.Printf("读取响应失败: %s\\n", err)
 \t\treturn
@@ -297,13 +313,18 @@ ${headerStr}
 \t}
 
 \t// 发送请求
-\tresp, err := client.R().
-\t\tSetHeaders(headers).
-${data ? `\t\tSetBody(\`${data}\`).` : ''}\t\t${method.toLowerCase()}("${url}")
+\treq := client.R().SetHeaders(headers)
+${data ? `\treq.SetBody(\`${data}\`)` : ''}
+\tresp, err := req.${method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()}("${url}")
 
 \tif err != nil {
 \t\tfmt.Printf("请求失败: %s\\n", err)
 \t\treturn
+\t}
+
+\t// 检查响应状态码
+\tif resp.StatusCode() >= 400 {
+\t\tfmt.Printf("请求失败，状态码: %d\\n", resp.StatusCode())
 \t}
 
 \tfmt.Println(string(resp.Body()))
@@ -317,8 +338,11 @@ const generateJavaCode = (
   data?: string
 ) => {
   const headerStr = headers
-    .map((h) => `    .addHeader("${h.split(': ')[0]}", "${h.split(': ')[1]}")`)
+    .map((h) => `            .addHeader("${h.split(': ')[0]}", "${h.split(': ')[1]}")`)
     .join('\n')
+
+  // 检查Content-Type来确定MediaType
+  const contentType = headers.find(h => h.toLowerCase().startsWith('content-type'))?.split(': ')[1] || 'application/json'
 
   return `import okhttp3.*;
 import java.io.IOException;
@@ -331,13 +355,16 @@ public class HttpClient {
             .url("${url}")
             .method("${method}", ${
     data
-      ? `RequestBody.create(MediaType.parse("application/json"), "${data}")`
+      ? `RequestBody.create(MediaType.parse("${contentType}"), "${data}")`
       : 'null'
   })
 ${headerStr}
             .build();
 
         try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                System.out.println("请求失败，状态码: " + response.code());
+            }
             System.out.println(response.body().string());
         } catch (IOException e) {
             e.printStackTrace();
@@ -353,8 +380,8 @@ const generatePHPCode = (
   data?: string
 ) => {
   const headerStr = headers
-    .map((h) => `"${h.split(': ')[0]}: ${h.split(': ')[1]}"`)
-    .join(',\n    ')
+    .map((h) => `        "${h.split(': ')[0]}: ${h.split(': ')[1]}"`)
+    .join(',\n')
 
   return `<?php
 $curl = curl_init();
@@ -368,20 +395,25 @@ curl_setopt_array($curl, array(
     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
     CURLOPT_CUSTOMREQUEST => "${method}",
     CURLOPT_HTTPHEADER => array(
-    ${headerStr}
+${headerStr}
     )${data ? `,\n    CURLOPT_POSTFIELDS => '${data}'` : ''}
 ));
 
 $response = curl_exec($curl);
 $err = curl_error($curl);
+$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
 curl_close($curl);
 
 if ($err) {
-    echo "cURL Error #:" . $err;
+    echo "cURL Error: " . $err;
 } else {
+    if ($httpCode >= 400) {
+        echo "请求失败，状态码: " . $httpCode . "\\n";
+    }
     echo $response;
-}`
+}
+?>`
 }
 
 const generateNodejsCode = (
@@ -396,22 +428,43 @@ const generateNodejsCode = (
     return acc
   }, {} as Record<string, string>)
 
+  // 检查是否是JSON数据
+  const isJson = headers.some(h => h.toLowerCase().includes('content-type') && h.toLowerCase().includes('json'))
+  let dataValue = ''
+  if (data) {
+    if (isJson) {
+      try {
+        dataValue = JSON.stringify(JSON.parse(data), null, 2)
+      } catch {
+        dataValue = `'${data}'`
+      }
+    } else {
+      dataValue = `'${data}'`
+    }
+  }
+
   return `const axios = require('axios');
 
 const config = {
   method: '${method.toLowerCase()}',
   url: '${url}',
   headers: ${JSON.stringify(headerObj, null, 2)}${
-    data ? `,\n  data: ${JSON.stringify(JSON.parse(data), null, 2)}` : ''
+    data ? `,\n  data: ${dataValue}` : ''
   }
 };
 
 axios(config)
   .then(function (response) {
-    console.log(JSON.stringify(response.data, null, 2));
+    console.log('状态码:', response.status);
+    console.log('响应数据:', JSON.stringify(response.data, null, 2));
   })
   .catch(function (error) {
-    console.log(error);
+    if (error.response) {
+      console.log('请求失败，状态码:', error.response.status);
+      console.log('错误信息:', error.response.data);
+    } else {
+      console.log('请求错误:', error.message);
+    }
   });`
 }
 
@@ -443,102 +496,182 @@ const copy = async (text: string) => {
 
 <style scoped>
 .curl-converter {
-  padding: 20px;
-  max-width: 800px;
+  padding: 24px;
+  max-width: 1200px;
   margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.converter-section {
+.converter-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  height: calc(100vh - 80px);
+}
+
+.input-section,
+.output-section {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-group:last-child {
-  margin-bottom: 0;
-}
-
-.label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.input-with-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.text-area {
-  flex: 1;
-  min-height: 120px;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: monospace;
-  resize: vertical;
-}
-
-.code-area {
-  background: #f8f9fa;
-}
-
-.text-area:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
-}
-
-.button-group {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  overflow: hidden;
 }
 
-.tool-btn {
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: white;
-  color: #374151;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 }
 
-.tool-btn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .lang-select {
-  padding: 8px;
+  padding: 8px 12px;
+  padding-right: 32px;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 8px;
   background: white;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
   color: #374151;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   outline: none;
+  transition: all 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .lang-select:focus {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
 
-.editor-container {
-  flex: 1;
-  height: 300px;
-  border: 1px solid #d1d5db;
+.lang-select:hover {
+  border-color: #9ca3af;
+}
+
+.btn-convert {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-convert:hover {
+  background: #2563eb;
+}
+
+.btn-copy {
+  padding: 6px 12px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
-  overflow: hidden;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-copy:hover {
+  background: #e2e8f0;
+}
+
+.btn-clear {
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear:hover {
+  background: #fee2e2;
+}
+
+.input-wrapper,
+.output-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.curl-input {
+  flex: 1;
+  padding: 20px;
+  border: none;
+  outline: none;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  background: transparent;
+  color: #1e293b;
+}
+
+.curl-input::placeholder {
+  color: #94a3b8;
+}
+
+.input-actions {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.output-wrapper {
+  position: relative;
+}
+
+.output-wrapper .btn-copy {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+}
+
+@media (max-width: 1024px) {
+  .converter-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .curl-converter {
+    padding: 16px;
+  }
 }
 </style>
