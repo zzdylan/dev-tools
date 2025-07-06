@@ -1,10 +1,18 @@
-/* 禁用全局文本选择，让应用看起来更像原生桌面应用 */
+/* 禁用全局文本选择和拖拽滚动，让应用看起来更像原生桌面应用 */
 * {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
   cursor: default;
+}
+
+/* 禁用拖拽滚动效果 */
+html,
+body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+  scroll-behavior: auto;
 }
 
 /* 允许输入框和可编辑内容选择文本 */
