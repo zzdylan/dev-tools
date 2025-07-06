@@ -1,13 +1,62 @@
 <template>
   <div class="base64-image">
     <div class="tool-section">
-      <div class="tool-layout">
-        <!-- 左侧：图片上传和预览 -->
-        <div class="left-panel">
-          <div class="section-header">
-            <h3>图片</h3>
-            <button v-if="imageUrl" class="btn-clear" @click="clearImage">清空</button>
+      <!-- 顶部：标签页按钮 -->
+      <div class="top-header">
+        <div class="tab-nav">
+          <button
+            class="tab-btn"
+            :class="{ active: activeTab === 'original' }"
+            @click="activeTab = 'original'"
+          >
+            原始
+          </button>
+          <button
+            class="tab-btn"
+            :class="{ active: activeTab === 'data' }"
+            @click="activeTab = 'data'"
+          >
+            数据
+          </button>
+          <button
+            class="tab-btn"
+            :class="{ active: activeTab === 'css' }"
+            @click="activeTab = 'css'"
+          >
+            CSS
+          </button>
+        </div>
+        <div class="tab-actions">
+          <button class="tab-btn clear-btn" @click="clearBase64" title="清空">
+            × 清空
+          </button>
+        </div>
+      </div>
+
+      <!-- 底部：内容区域 -->
+      <div class="content-layout">
+        <!-- 左侧：文本区域 -->
+        <div class="text-panel">
+          <textarea
+            :value="getTabContent()"
+            @input="
+              updateTabContent(
+                ($event.target as HTMLTextAreaElement)?.value || ''
+              )
+            "
+            :placeholder="getTabPlaceholder()"
+            class="result-area"
+            autocomplete="off"
+            spellcheck="false"
+          ></textarea>
+          <div class="status-bar">
+            <span class="byte-info">{{ getByteInfo() }}</span>
+            <span v-if="imageSize" class="size-info">{{ imageSize }}</span>
           </div>
+        </div>
+
+        <!-- 右侧：图片区域 -->
+        <div class="image-panel">
           <div class="upload-area" @drop.prevent="handleDrop" @dragover.prevent>
             <input
               type="file"
@@ -27,27 +76,13 @@
                 <div class="upload-hint">支持 jpg、png、gif 格式</div>
               </div>
             </div>
-            <img v-else :src="imageUrl" class="preview-image" @click="triggerFileInput" />
+            <img
+              v-else
+              :src="imageUrl"
+              class="preview-image"
+              @click="triggerFileInput"
+            />
           </div>
-        </div>
-
-        <!-- 中间：转换按钮 -->
-        <div class="controls-section">
-          <button class="btn-encode" @click="encodeImageToBase64">编码</button>
-          <button class="btn-decode" @click="decodeBase64ToImage">解码</button>
-        </div>
-
-        <!-- 右侧：Base64 结果 -->
-        <div class="right-panel">
-          <div class="section-header">
-            <h3>Base64 结果</h3>
-            <button v-if="base64Result" class="btn-clear" @click="clearBase64">清空</button>
-          </div>
-          <textarea
-            v-model="base64Result"
-            placeholder="Base64 编码结果将显示在这里..."
-            class="result-area"
-          ></textarea>
         </div>
       </div>
     </div>
@@ -55,115 +90,217 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useClipboard } from '@vueuse/core'
-import { useToolsStore } from '../stores/tools'
-import { storeToRefs } from 'pinia'
+import { ref, computed, watch } from "vue";
+import { ElMessage } from "element-plus";
+import { useClipboard } from "@vueuse/core";
+import { useToolsStore } from "../stores/tools";
+import { storeToRefs } from "pinia";
 
-const { copy } = useClipboard()
-const store = useToolsStore()
-const { base64Image } = storeToRefs(store)
+const { copy } = useClipboard();
+const store = useToolsStore();
+const { base64Image } = storeToRefs(store);
 const imageUrl = computed({
   get: () => base64Image.value.imageUrl,
   set: (val) => (base64Image.value.imageUrl = val),
-})
+});
 const base64Result = computed({
   get: () => base64Image.value.base64Result,
   set: (val) => (base64Image.value.base64Result = val),
-})
-const fileInput = ref<HTMLInputElement | null>(null)
+});
+const fileInput = ref<HTMLInputElement | null>(null);
+const activeTab = ref("original");
+const imageSize = ref("");
+
+// 标签页内容
+const originalData = ref("");
+const cssData = ref("");
+const exampleData = ref("");
 
 const triggerFileInput = () => {
-  fileInput.value?.click()
-}
+  fileInput.value?.click();
+};
 
 const handleFileSelect = (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
+  const file = (event.target as HTMLInputElement).files?.[0];
   if (file) {
-    handleImage(file)
+    handleImage(file);
   }
-}
+};
 
 const handleDrop = (event: DragEvent) => {
-  const file = event.dataTransfer?.files[0]
+  const file = event.dataTransfer?.files[0];
   if (file) {
-    handleImage(file)
+    handleImage(file);
   }
-}
+};
 
 const handleImage = (file: File) => {
-  if (!file.type.startsWith('image/')) {
-    ElMessage.error('请选择图片文件')
-    return
+  if (!file.type.startsWith("image/")) {
+    ElMessage.error("请选择图片文件");
+    return;
   }
 
-  const reader = new FileReader()
+  const reader = new FileReader();
   reader.onload = (e) => {
-    const result = e.target?.result as string
-    imageUrl.value = result
-    // 不自动转换，只显示图片
-  }
-  reader.readAsDataURL(file)
-}
+    const result = e.target?.result as string;
+    imageUrl.value = result;
 
-// 手动编码图片为Base64
+    // 创建临时图片获取尺寸
+    const img = new Image();
+    img.onload = () => {
+      imageSize.value = `${img.width}x${img.height}`;
+      // 自动编码
+      encodeImageToBase64();
+    };
+    img.src = result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// 自动编码图片为Base64
 const encodeImageToBase64 = () => {
   if (!imageUrl.value) {
-    ElMessage.warning('请先上传图片')
-    return
+    return;
   }
-  
-  try {
-    base64Result.value = imageUrl.value
-    ElMessage.success('编码成功')
-  } catch (error) {
-    ElMessage.error('编码失败')
-  }
-}
 
-// 手动解码Base64为图片
-const decodeBase64ToImage = () => {
-  if (!base64Result.value || !base64Result.value.trim()) {
-    ElMessage.warning('请输入Base64字符串')
-    return
+  try {
+    const dataUrl = imageUrl.value;
+    const base64Data = dataUrl.split(",")[1] || "";
+
+    // 更新各个标签页的内容
+    originalData.value = base64Data;
+    base64Result.value = dataUrl;
+
+    // 生成CSS格式
+    cssData.value = `background-image: url('${dataUrl}');`;
+  } catch (error) {
+    console.error("编码失败:", error);
   }
-  
+};
+
+// 自动解码Base64为图片
+const decodeBase64ToImage = (base64String: string) => {
+  if (!base64String || !base64String.trim()) {
+    return;
+  }
+
   try {
     // 清理Base64字符串，移除换行符和空格
-    const cleanBase64 = base64Result.value.replace(/\s+/g, '')
-    
+    const cleanBase64 = base64String.replace(/\s+/g, "");
+
     // 如果已经是完整的data URL格式
-    if (cleanBase64.startsWith('data:image/')) {
-      imageUrl.value = cleanBase64
-      ElMessage.success('解码成功')
-    } 
+    if (cleanBase64.startsWith("data:image/")) {
+      imageUrl.value = cleanBase64;
+
+      // 获取图片尺寸
+      const img = new Image();
+      img.onload = () => {
+        imageSize.value = `${img.width}x${img.height}`;
+      };
+      img.src = cleanBase64;
+    }
     // 如果只是Base64字符串，尝试添加data URL前缀
     else if (cleanBase64.length > 100) {
       // 默认尝试jpeg格式
-      const dataUrl = `data:image/jpeg;base64,${cleanBase64}`
-      imageUrl.value = dataUrl
-      ElMessage.success('解码成功')
-    } else {
-      ElMessage.error('无效的Base64字符串')
+      const dataUrl = `data:image/jpeg;base64,${cleanBase64}`;
+      imageUrl.value = dataUrl;
+
+      // 获取图片尺寸
+      const img = new Image();
+      img.onload = () => {
+        imageSize.value = `${img.width}x${img.height}`;
+      };
+      img.onerror = () => {
+        // 如果jpeg失败，尝试png
+        const pngDataUrl = `data:image/png;base64,${cleanBase64}`;
+        imageUrl.value = pngDataUrl;
+      };
+      img.src = dataUrl;
     }
   } catch (error) {
-    ElMessage.error('解码失败')
+    console.error("解码失败:", error);
   }
-}
+};
 
 // 清空图片
 const clearImage = () => {
-  imageUrl.value = ''
+  imageUrl.value = "";
   if (fileInput.value) {
-    fileInput.value.value = ''
+    fileInput.value.value = "";
   }
-}
+};
 
 // 清空 Base64
 const clearBase64 = () => {
-  base64Result.value = ''
-}
+  base64Result.value = "";
+  originalData.value = "";
+  cssData.value = "";
+  imageUrl.value = "";
+  imageSize.value = "";
+  if (fileInput.value) {
+    fileInput.value.value = "";
+  }
+};
+
+// 获取当前标签页内容
+const getTabContent = () => {
+  switch (activeTab.value) {
+    case "original":
+      return originalData.value;
+    case "data":
+      return base64Result.value;
+    case "css":
+      return cssData.value;
+    default:
+      return "";
+  }
+};
+
+// 更新当前标签页内容
+const updateTabContent = (value: string) => {
+  switch (activeTab.value) {
+    case "original":
+      originalData.value = value;
+      // 尝试解码Base64
+      if (value && value.length > 100) {
+        decodeBase64ToImage(value);
+      }
+      break;
+    case "data":
+      base64Result.value = value;
+      // 尝试解码Base64
+      if (value && value.length > 100) {
+        decodeBase64ToImage(value);
+      }
+      break;
+    case "css":
+      cssData.value = value;
+      break;
+  }
+};
+
+// 获取标签页占位符
+const getTabPlaceholder = () => {
+  switch (activeTab.value) {
+    case "original":
+      return "纯Base64数据（不包含data:image前缀）...";
+    case "data":
+      return "data:image/...格式的完整Base64数据...";
+    case "css":
+      return "CSS background-image 格式...";
+    default:
+      return "";
+  }
+};
+
+// 获取字节信息
+const getByteInfo = () => {
+  const content = getTabContent();
+  if (!content) return "0 bytes";
+
+  const bytes = new TextEncoder().encode(content).length;
+  return `${bytes} bytes`;
+};
 </script>
 
 <style scoped>
@@ -173,23 +310,31 @@ const clearBase64 = () => {
 
 .tool-section {
   background: white;
-  border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   height: 100%;
 }
 
-.tool-layout {
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+  height: 28px;
+  margin-bottom: 16px;
+}
+
+.content-layout {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 24px;
-  height: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: calc(100% - 48px);
   align-items: stretch;
 }
 
-.left-panel,
-.right-panel {
+.text-panel,
+.image-panel {
   background: white;
-  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
   display: flex;
@@ -213,48 +358,90 @@ const clearBase64 = () => {
   color: #1e293b;
 }
 
-.controls-section {
+.tab-nav {
   display: flex;
-  flex-direction: column;
+  align-items: stretch;
+  border: 1px solid #d1d5db;
+}
+
+.tab-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  min-width: 45px;
+  height: 100%;
 }
 
-.btn-encode {
-  padding: 12px 24px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #212529;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 80px;
 }
 
-.btn-encode:hover {
-  background: #059669;
-  transform: translateY(-1px);
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: #ffffff;
 }
 
-.btn-decode {
-  padding: 12px 24px;
-  background: #3b82f6;
-  color: white;
+.clear-btn {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  min-width: 45px;
+}
+
+.clear-btn:hover {
+  background: #e9ecef;
+}
+
+.text-panel {
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 80px;
+  box-shadow: none;
 }
 
-.btn-decode:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
+.text-panel .result-area {
+  flex: 1;
+  border: 1px solid #d1d5db;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 12px;
+  background: #f3f4f6;
+  border-top: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6b7280;
+  height: 20px;
+  min-height: 20px;
+}
+
+.byte-info,
+.size-info {
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
+    "Courier New", monospace;
+  font-size: 10px;
 }
 
 .btn-clear {
@@ -262,7 +449,6 @@ const clearBase64 = () => {
   background: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
-  border-radius: 6px;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
@@ -272,11 +458,10 @@ const clearBase64 = () => {
   background: #fee2e2;
 }
 
-.upload-area {
+.image-panel .upload-area {
   flex: 1;
-  margin: 20px;
+  margin: 16px;
   border: 2px dashed #d1d5db;
-  border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -322,22 +507,29 @@ const clearBase64 = () => {
 
 .result-area {
   flex: 1;
-  padding: 20px;
+  padding: 8px;
   border: none;
   outline: none;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
+    "Courier New", monospace;
+  font-size: 10px;
+  line-height: 1.3;
   resize: none;
-  background: transparent;
-  color: #1e293b;
-  white-space: normal;
+  background: #ffffff;
+  color: #111827;
+  white-space: pre-wrap;
   word-wrap: break-word;
-  word-break: normal;
+  word-break: break-all;
 }
 
 .result-area::placeholder {
-  color: #94a3b8;
+  color: #9ca3af;
+  font-size: 10px;
+}
+
+.result-area:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .preview-image {

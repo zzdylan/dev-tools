@@ -12,14 +12,18 @@
             v-model="rawText"
             placeholder="输入需要编码/解码的URL文本..."
             class="text-input"
+            autocomplete="off"
+            spellcheck="false"
           ></textarea>
         </div>
       </div>
 
       <!-- 转换按钮 -->
       <div class="controls-section">
-        <button class="btn-encode" @click="encode">编码</button>
-        <button class="btn-decode" @click="decode">解码</button>
+        <div class="control-buttons">
+          <button class="btn-encode" @click="encode">编码</button>
+          <button class="btn-decode" @click="decode">解码</button>
+        </div>
       </div>
 
       <!-- 输出区域 -->
@@ -34,6 +38,8 @@
             readonly
             placeholder="转换结果将显示在这里..."
             class="text-output"
+            autocomplete="off"
+            spellcheck="false"
           ></textarea>
         </div>
       </div>
@@ -105,11 +111,10 @@ const clearResult = () => {
 }
 
 .converter-container {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   height: calc(100vh - 60px);
-  align-items: stretch;
 }
 
 .input-section,
@@ -121,6 +126,7 @@ const clearResult = () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex: 1;
 }
 
 .section-header {
@@ -141,14 +147,18 @@ const clearResult = () => {
 
 .controls-section {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.control-buttons {
+  display: flex;
   gap: 12px;
 }
 
 .btn-encode {
-  padding: 12px 24px;
+  padding: 10px 20px;
   background: #10b981;
   color: white;
   border: none;
@@ -166,7 +176,7 @@ const clearResult = () => {
 }
 
 .btn-decode {
-  padding: 12px 24px;
+  padding: 10px 20px;
   background: #3b82f6;
   color: white;
   border: none;
@@ -217,6 +227,12 @@ const clearResult = () => {
   resize: none;
   background: transparent;
   color: #1e293b;
+}
+
+.text-input:focus,
+.text-output:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .text-input::placeholder,
