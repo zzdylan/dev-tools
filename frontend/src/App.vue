@@ -14,7 +14,8 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1.4;
   color: #374151;
+  font-size: 13px;
 }
 </style>

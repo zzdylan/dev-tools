@@ -322,7 +322,7 @@ const copyText = async () => {
 
 <style scoped>
 .qrcode-tool {
-  padding: 24px;
+  padding: 16px;
   max-width: 1200px;
   margin: 0 auto;
   background: #f8fafc;
@@ -332,14 +332,14 @@ const copyText = async () => {
 .tool-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  height: calc(100vh - 80px);
+  gap: 16px;
+  height: calc(100vh - 60px);
 }
 
 .input-section,
 .qrcode-section {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
   display: flex;
@@ -351,25 +351,25 @@ const copyText = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
 
 .section-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #1e293b;
 }
 
 .btn-clear {
-  padding: 6px 12px;
+  padding: 4px 8px;
   background: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -379,12 +379,12 @@ const copyText = async () => {
 }
 
 .btn-download {
-  padding: 6px 12px;
+  padding: 4px 8px;
   background: #f1f5f9;
   color: #475569;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -395,12 +395,12 @@ const copyText = async () => {
 
 .text-input {
   flex: 1;
-  padding: 20px;
+  padding: 14px;
   border: none;
   outline: none;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
   resize: none;
   background: transparent;
   color: #1e293b;
@@ -415,14 +415,14 @@ const copyText = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 14px;
   transition: all 0.3s ease;
 }
 
 .qrcode-display.drag-over {
   background: #f0f9ff;
   border: 2px dashed #3b82f6;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .qrcode-canvas-wrapper {
@@ -434,9 +434,9 @@ const copyText = async () => {
 }
 
 .qrcode-canvas {
-  width: 300px;
-  height: 300px;
-  border-radius: 8px;
+  width: 250px;
+  height: 250px;
+  border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.2s;
@@ -448,8 +448,8 @@ const copyText = async () => {
 }
 
 .qrcode-hint {
-  margin-top: 12px;
-  font-size: 12px;
+  margin-top: 8px;
+  font-size: 11px;
   color: #64748b;
   text-align: center;
 }
@@ -459,25 +459,25 @@ const copyText = async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   color: #94a3b8;
   text-align: center;
 }
 
 .placeholder-icon {
-  font-size: 48px;
+  font-size: 36px;
   opacity: 0.6;
 }
 
 .placeholder-text {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
 }
 
 .placeholder-hint {
-  font-size: 14px;
+  font-size: 12px;
   color: #64748b;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .hidden {
@@ -494,7 +494,7 @@ const copyText = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 6px;
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -509,12 +509,12 @@ const copyText = async () => {
 }
 
 .overlay-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
+  font-size: 24px;
+  margin-bottom: 6px;
 }
 
 .overlay-text {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -525,7 +525,7 @@ const copyText = async () => {
 
 .qrcode-placeholder:hover {
   background: #f1f5f9;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 @media (max-width: 1024px) {

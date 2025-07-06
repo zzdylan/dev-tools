@@ -192,7 +192,7 @@ const clear = () => {
 
 <style scoped>
 .url-parser {
-  padding: 24px;
+  padding: 16px;
   max-width: 1400px;
   margin: 0 auto;
   background: #f8fafc;
@@ -202,44 +202,44 @@ const clear = () => {
 .input-section,
 .result-section {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
 
 .section-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #1e293b;
 }
 
 .input-wrapper {
-  padding: 24px;
+  padding: 16px;
 }
 
 .url-input {
   width: 100%;
-  min-height: 120px;
-  padding: 16px;
+  min-height: 80px;
+  padding: 12px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 6px;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
   resize: vertical;
   transition: all 0.2s;
   background: #fafbfc;
@@ -258,12 +258,12 @@ const clear = () => {
 }
 
 .btn-clear {
-  padding: 6px 12px;
+  padding: 4px 8px;
   background: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -278,12 +278,12 @@ const clear = () => {
 }
 
 .tab-btn {
-  padding: 8px 16px;
+  padding: 6px 12px;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 4px;
   background: white;
   color: #64748b;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -310,11 +310,11 @@ const clear = () => {
 }
 
 .table-view {
-  padding: 24px;
+  padding: 16px;
 }
 
 .table-container {
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #e2e8f0;
   overflow: hidden;
 }
@@ -322,7 +322,7 @@ const clear = () => {
 .params-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
   background: white;
   user-select: text;
   -webkit-user-select: text;
@@ -332,7 +332,7 @@ const clear = () => {
 
 .params-table th {
   background: #f8fafc;
-  padding: 16px;
+  padding: 12px;
   text-align: left;
   font-weight: 600;
   color: #475569;
@@ -340,7 +340,7 @@ const clear = () => {
 }
 
 .params-table td {
-  padding: 16px;
+  padding: 12px;
   border-bottom: 1px solid #f1f5f9;
   color: #1e293b;
 }
@@ -387,18 +387,18 @@ const clear = () => {
 }
 
 .json-view {
-  padding: 24px;
+  padding: 16px;
 }
 
 .json-content {
   background: #f8fafc;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 14px;
+  border-radius: 6px;
   border: 1px solid #e2e8f0;
   margin: 0;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   color: #1e293b;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -407,21 +407,21 @@ const clear = () => {
 
 .empty-state {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
-  padding: 60px;
+  padding: 40px;
   text-align: center;
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: 36px;
+  margin-bottom: 12px;
   opacity: 0.6;
 }
 
 .empty-text {
-  font-size: 16px;
+  font-size: 14px;
   color: #64748b;
   font-weight: 500;
 }

@@ -62,13 +62,13 @@ onMounted(() => {
 
 <style scoped>
 .home {
-  padding: 20px;
+  padding: 16px;
 }
 
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
 }
 
 .tool-card {
@@ -76,7 +76,7 @@ onMounted(() => {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 20px;
+  padding: 16px;
   text-decoration: none;
   color: inherit;
   transition: all 0.2s;
@@ -88,19 +88,19 @@ onMounted(() => {
 }
 
 .tool-icon {
-  font-size: 24px;
-  margin-bottom: 12px;
+  font-size: 20px;
+  margin-bottom: 10px;
 }
 
 .tool-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 16px;
+  margin: 0 0 6px 0;
+  font-size: 14px;
   color: #111827;
 }
 
 .tool-card p {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   color: #6b7280;
 }
 

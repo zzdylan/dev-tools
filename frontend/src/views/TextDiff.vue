@@ -169,7 +169,7 @@ const clearNewText = () => {
 
 <style scoped>
 .text-diff {
-  padding: 24px;
+  padding: 16px;
   max-width: 1400px;
   margin: 0 auto;
   background: #f8fafc;
@@ -177,18 +177,18 @@ const clearNewText = () => {
 }
 
 .input-section {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .input-panels {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 16px;
 }
 
 .input-panel {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
   display: flex;
@@ -201,7 +201,7 @@ const clearNewText = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -209,18 +209,18 @@ const clearNewText = () => {
 .panel-header h3,
 .result-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #1e293b;
 }
 
 .btn-clear {
-  padding: 6px 12px;
+  padding: 4px 8px;
   background: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -231,13 +231,13 @@ const clearNewText = () => {
 
 .editor-container {
   flex: 1;
-  min-height: 300px;
+  min-height: 250px;
 }
 
 :deep(.cm-editor) {
   height: 100%;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 :deep(.cm-editor.cm-focused) {
@@ -245,12 +245,12 @@ const clearNewText = () => {
 }
 
 :deep(.cm-content) {
-  padding: 20px;
+  padding: 14px;
 }
 
 .diff-result {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
   overflow: hidden;
@@ -259,37 +259,37 @@ const clearNewText = () => {
 .result-content {
   padding: 0;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   background: white;
-  max-height: 500px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
 .no-diff {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
-  padding: 40px;
+  padding: 30px;
   text-align: center;
 }
 
 .no-diff-icon {
-  font-size: 48px;
+  font-size: 36px;
   color: #10b981;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .no-diff-text {
-  font-size: 16px;
+  font-size: 14px;
   color: #64748b;
   font-weight: 500;
 }
 
 :deep(.diff-line) {
   display: flex;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-bottom: 1px solid #f1f5f9;
   transition: background-color 0.2s;
 }
@@ -319,13 +319,13 @@ const clearNewText = () => {
 }
 
 :deep(.line-number) {
-  width: 40px;
-  margin-right: 16px;
+  width: 36px;
+  margin-right: 12px;
   color: #94a3b8;
   user-select: none;
   text-align: right;
-  padding-right: 12px;
-  font-size: 12px;
+  padding-right: 8px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -335,16 +335,16 @@ const clearNewText = () => {
 
 .diff-options {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .option-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 3px 6px;
+  border-radius: 4px;
   transition: background-color 0.2s;
 }
 
@@ -353,14 +353,14 @@ const clearNewText = () => {
 }
 
 .checkbox {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   cursor: pointer;
   accent-color: #3b82f6;
 }
 
 .option-text {
-  font-size: 14px;
+  font-size: 12px;
   color: #475569;
   user-select: none;
   font-weight: 500;

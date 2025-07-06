@@ -155,7 +155,7 @@ const relativeTime = computed(() => {
 
 <style scoped>
 .time-converter {
-  padding: 24px;
+  padding: 16px;
   max-width: 1000px;
   margin: 0 auto;
   background: #f8fafc;
@@ -165,19 +165,19 @@ const relativeTime = computed(() => {
 .converter-container {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .results-section {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .input-section,
 .output-section,
 .results-section {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
   display: flex;
@@ -189,14 +189,14 @@ const relativeTime = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
 
 .section-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #1e293b;
 }
@@ -206,12 +206,12 @@ const relativeTime = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 14px;
 }
 
 .results-content {
   flex: 1;
-  padding: 24px;
+  padding: 16px;
 }
 
 .controls-section {
@@ -219,17 +219,17 @@ const relativeTime = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .time-input {
   width: 100%;
-  padding: 20px;
+  padding: 14px;
   border: none;
   outline: none;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
   resize: none;
   background: transparent;
   color: #1e293b;
@@ -240,16 +240,16 @@ const relativeTime = computed(() => {
 }
 
 .btn-now {
-  padding: 12px 24px;
+  padding: 8px 16px;
   background: #8b5cf6;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .btn-now:hover {
@@ -259,12 +259,12 @@ const relativeTime = computed(() => {
 
 
 .btn-clear {
-  padding: 6px 12px;
+  padding: 4px 8px;
   background: #fef2f2;
   color: #dc2626;
   border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -276,14 +276,14 @@ const relativeTime = computed(() => {
 .results-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .result-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 6px;
+  padding: 12px;
   transition: all 0.2s;
 }
 
@@ -292,16 +292,16 @@ const relativeTime = computed(() => {
 }
 
 .result-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .result-value {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: #1e293b;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
