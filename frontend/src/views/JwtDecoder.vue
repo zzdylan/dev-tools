@@ -150,7 +150,7 @@ watch(() => jwtToken.value, () => {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 60px);
 }
 
 .input-section,

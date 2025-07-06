@@ -322,18 +322,18 @@ const copyText = async () => {
 
 <style scoped>
 .qrcode-tool {
-  padding: 16px;
+  padding: 12px;
   max-width: 1200px;
   margin: 0 auto;
   background: #f8fafc;
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
 }
 
 .tool-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  height: calc(100vh - 60px);
+  gap: 12px;
+  height: calc(100vh - 80px);
 }
 
 .input-section,
@@ -351,7 +351,7 @@ const copyText = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -395,7 +395,7 @@ const copyText = async () => {
 
 .text-input {
   flex: 1;
-  padding: 14px;
+  padding: 10px;
   border: none;
   outline: none;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -415,7 +415,7 @@ const copyText = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 14px;
+  padding: 10px;
   transition: all 0.3s ease;
 }
 
@@ -434,8 +434,8 @@ const copyText = async () => {
 }
 
 .qrcode-canvas {
-  width: 250px;
-  height: 250px;
+  width: 200px;
+  height: 200px;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   cursor: pointer;

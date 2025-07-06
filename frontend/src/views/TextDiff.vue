@@ -231,7 +231,7 @@ const clearNewText = () => {
 
 .editor-container {
   flex: 1;
-  min-height: 250px;
+  min-height: 200px;
 }
 
 :deep(.cm-editor) {
@@ -262,7 +262,7 @@ const clearNewText = () => {
   font-size: 13px;
   line-height: 1.5;
   background: white;
-  max-height: 400px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
@@ -377,7 +377,7 @@ const clearNewText = () => {
   }
   
   .editor-container {
-    min-height: 200px;
+    min-height: 150px;
   }
 }
 </style>

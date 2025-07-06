@@ -155,18 +155,18 @@ const relativeTime = computed(() => {
 
 <style scoped>
 .time-converter {
-  padding: 16px;
+  padding: 12px;
   max-width: 1000px;
   margin: 0 auto;
   background: #f8fafc;
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
 }
 
 .converter-container {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .results-section {
@@ -189,7 +189,7 @@ const relativeTime = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -206,12 +206,12 @@ const relativeTime = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 14px;
+  padding: 10px;
 }
 
 .results-content {
   flex: 1;
-  padding: 16px;
+  padding: 12px;
 }
 
 .controls-section {

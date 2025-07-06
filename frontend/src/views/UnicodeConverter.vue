@@ -118,7 +118,7 @@ const clearResult = () => {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 24px;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 60px);
   align-items: stretch;
 }
 

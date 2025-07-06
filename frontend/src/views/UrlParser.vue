@@ -192,11 +192,11 @@ const clear = () => {
 
 <style scoped>
 .url-parser {
-  padding: 16px;
+  padding: 12px;
   max-width: 1400px;
   margin: 0 auto;
   background: #f8fafc;
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
 }
 
 .input-section,
@@ -215,7 +215,7 @@ const clear = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -228,13 +228,13 @@ const clear = () => {
 }
 
 .input-wrapper {
-  padding: 16px;
+  padding: 12px;
 }
 
 .url-input {
   width: 100%;
-  min-height: 80px;
-  padding: 12px;
+  min-height: 60px;
+  padding: 10px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -310,7 +310,7 @@ const clear = () => {
 }
 
 .table-view {
-  padding: 16px;
+  padding: 12px;
 }
 
 .table-container {
@@ -387,7 +387,7 @@ const clear = () => {
 }
 
 .json-view {
-  padding: 16px;
+  padding: 12px;
 }
 
 .json-content {

@@ -616,11 +616,11 @@ const closeTab = (targetName: string | number) => {
 }
 
 .toolbar {
-  flex: 0 0 42px;
+  flex: 0 0 36px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 8px;
   border-bottom: 1px solid #eaecef;
   position: relative;
   min-width: 0;
@@ -636,14 +636,14 @@ const closeTab = (targetName: string | number) => {
 .tool-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 28px;
-  padding: 0 8px;
+  gap: 3px;
+  height: 24px;
+  padding: 0 6px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   background: #fff;
   color: #24292f;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -771,19 +771,19 @@ const closeTab = (targetName: string | number) => {
 .tab-item {
   border: 1px solid #dcdcdc;
   border-bottom: none;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: #f5f5f5;
   color: #333333;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
-  min-width: 80px;
-  max-width: 120px;
-  height: 36px;
+  min-width: 70px;
+  max-width: 110px;
+  height: 30px;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -823,14 +823,14 @@ const closeTab = (targetName: string | number) => {
   border: 1px solid #dcdcdc;
   border-left: none;
   border-bottom: none;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: #f5f5f5;
   color: #666666;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
-  width: 32px;
-  min-width: 32px;
-  height: 36px;
+  width: 28px;
+  min-width: 28px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
