@@ -14,8 +14,11 @@
         <h1 class="title">{{ currentMenuTitle }}</h1>
       </div>
       <div class="header-right">
-        <button class="icon-btn">
-          <!-- <i class="settings-icon">⚙️</i> -->
+        <button class="window-btn minimize-btn" @click="minimizeWindow" title="最小化">
+          <span class="window-icon">−</span>
+        </button>
+        <button class="window-btn close-btn" @click="closeWindow" title="关闭">
+          <span class="window-icon">×</span>
         </button>
       </div>
     </header>
@@ -50,6 +53,7 @@ import { useRoute } from 'vue-router'
 import { MenuOutline, SettingsOutline } from '@vicons/ionicons5'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
+import { MinimizeWindow, CloseWindow } from '../../wailsjs/go/main/App'
 
 const route = useRoute()
 const currentMenuTitle = ref('')
@@ -139,13 +143,23 @@ const isActiveRoute = (path: string) => {
   // 普通路由匹配
   return currentPath === path
 }
+
+// 窗口控制方法
+const minimizeWindow = () => {
+  MinimizeWindow()
+}
+
+const closeWindow = () => {
+  CloseWindow()
+}
 </script>
 
 <style scoped>
 .layout {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .top-header {
@@ -191,6 +205,7 @@ const isActiveRoute = (path: string) => {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .icon-btn {
@@ -205,6 +220,44 @@ const isActiveRoute = (path: string) => {
   background: #f3f4f6;
 }
 
+.window-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.window-btn:hover {
+  background: #f3f4f6;
+}
+
+.minimize-btn:hover {
+  background: #e5e7eb;
+}
+
+.close-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.window-icon {
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
+  line-height: 1;
+}
+
+.close-btn:hover .window-icon {
+  color: #dc2626;
+}
+
 .settings-icon {
   font-size: 1.2rem;
 }
@@ -213,6 +266,8 @@ const isActiveRoute = (path: string) => {
   flex: 1;
   display: flex;
   background: #ffffff;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -313,9 +368,10 @@ const isActiveRoute = (path: string) => {
 .content {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   padding: 24px;
   background: #ffffff;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .collapse-btn {

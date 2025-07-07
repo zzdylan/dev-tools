@@ -62,13 +62,14 @@ onMounted(() => {
 
 <style scoped>
 .home {
-  padding: 16px;
+  /* 移除不必要的 flex 和 overflow 设置，让父容器 .content 处理滚动 */
 }
 
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
+  padding: 16px;
 }
 
 .tool-card {
