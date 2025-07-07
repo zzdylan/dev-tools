@@ -27,7 +27,7 @@
           </button>
         </div>
         <div class="tab-actions">
-          <button class="tab-btn clear-btn" @click="clearBase64" title="清空">
+          <button class="clear-btn" @click="clearBase64" title="清空">
             × 清空
           </button>
         </div>
@@ -403,11 +403,18 @@ const getByteInfo = () => {
 }
 
 .clear-btn {
+  padding: 0 10px;
   background: #f8f9fa;
-  color: #6c757d;
   border: 1px solid #d1d5db;
   font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 45px;
+  height: 100%;
 }
 
 .clear-btn:hover {
