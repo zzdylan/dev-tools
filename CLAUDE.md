@@ -111,3 +111,99 @@ make clean
 - 工具状态和偏好设置通过 Pinia 存储管理
 - 应用支持拖拽重排序工具卡片
 - 所有工具都支持实时处理和预览
+
+## UI 设计规范
+
+### 统一的模块布局风格
+
+所有工具模块都应该采用统一的布局风格，参考 `Base64Text.vue` 作为标准模板：
+
+**顶部导航栏结构：**
+```vue
+<div class="top-header">
+  <div class="tab-nav">
+    <!-- 左侧：功能按钮/标签页 -->
+    <button class="tab-btn" :class="{ active: condition }">标签</button>
+    <button class="action-btn">示例</button>
+    <!-- 其他控件如下拉框 -->
+  </div>
+  <div class="tab-actions">
+    <!-- 右侧：清空按钮 -->
+    <button class="clear-btn" title="清空">× 清空</button>
+  </div>
+</div>
+```
+
+**内容区域结构：**
+```vue
+<div class="content-layout">
+  <div class="input-panel">
+    <textarea class="text-area" />
+  </div>
+  <div class="output-panel">
+    <textarea class="text-area" />
+  </div>
+</div>
+```
+
+### 样式规范
+
+**按钮样式：**
+- 统一高度：`height: 28px`
+- 字体大小：`font-size: 10px`
+- 颜色：`color: #6c757d`
+- 背景：`background: #f8f9fa`
+- 边框：`border: 1px solid #d1d5db`
+- 圆角：`border-radius: 0` （无圆角）
+- 内边距：`padding: 0 10px`
+- 最小宽度：`min-width: 45px`
+- hover 状态：`background: #e9ecef`
+- active 状态：`background: #ffffff; color: #212529`
+
+**文本区域样式：**
+- 字体：`font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace`
+- 字体大小：`font-size: 11px`
+- 行高：`line-height: 1.4`
+- 颜色：`color: #212529`
+- 内边距：`padding: 12px`
+- 占位符颜色：`color: #9ca3af`
+
+**布局样式：**
+- 容器内边距：`padding: 16px`
+- 顶部导航栏：`height: 28px; margin-bottom: 16px`
+- 左右面板间距：`gap: 16px`
+- 边框：`border: 1px solid #d1d5db`
+- 背景：`background: #ffffff`
+
+**响应式断点：**
+- 桌面端：默认左右布局
+- 移动端：`@media (max-width: 768px)` 改为上下布局
+
+### 功能规范
+
+**自动处理：**
+- 输入变化时自动处理/转换，不需要手动点击转换按钮
+- 提供示例按钮，点击加载预设示例数据
+- 清空按钮清除所有输入输出内容
+- 从其他页面切换回来时，如果有内容应自动处理
+
+**Monaco Editor 配置：**
+```javascript
+const editorOptions = {
+  fontSize: 11,
+  tabSize: 2,
+  minimap: { enabled: false },
+  scrollBeyondLastLine: true,
+  automaticLayout: true,
+  wordWrap: 'on',
+  lineNumbers: 'on',
+  readOnly: true // 输出区域设为只读
+}
+```
+
+### 重要提醒
+
+- 新增工具模块时必须遵循以上设计规范
+- 所有按钮、文本框、布局都要与现有模块保持一致
+- 避免添加不必要的 UI 元素，保持界面简洁
+- 优先考虑自动化处理，减少用户手动操作
