@@ -1,81 +1,59 @@
 <template>
   <div class="url-parser">
-    <!-- URL输入区域 -->
-    <div class="input-section">
-      <div class="section-header">
-        <h3>URL 解析</h3>
-        <button v-if="urlText" class="btn-clear" @click="clear">清空</button>
+    <!-- 顶部：标签导航 -->
+    <div class="top-header">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{ active: viewMode === 'table' }" @click="viewMode = 'table'">表格视图</button>
+        <button class="tab-btn" :class="{ active: viewMode === 'json' }" @click="viewMode = 'json'">JSON视图</button>
       </div>
-      <div class="input-wrapper">
-        <textarea 
-          v-model="urlText"
-          placeholder="输入需要解析的URL或参数...&#10;支持格式：&#10;• https://example.com?name=value&age=18&#10;• ?name=value&age=18&#10;• name=value&age=18"
-          class="url-input" 
-          @input="parseUrl"
-        ></textarea>
+      <div class="tab-actions">
+        <button class="clear-btn" @click="clear" title="清空">× 清空</button>
       </div>
     </div>
 
-    <!-- 解析结果区域 -->
-    <div class="result-section" v-if="urlText && Object.keys(parsedParams).length > 0">
-      <div class="section-header">
-        <h3>解析结果</h3>
-        <div class="view-tabs">
-          <button 
-            class="tab-btn" 
-            :class="{ active: viewMode === 'table' }" 
-            @click="viewMode = 'table'"
-          >
-            表格视图
-          </button>
-          <button 
-            class="tab-btn" 
-            :class="{ active: viewMode === 'json' }" 
-            @click="viewMode = 'json'"
-          >
-            JSON视图
-          </button>
+    <!-- URL输入 -->
+    <textarea 
+      v-model="urlText"
+      placeholder="输入需要解析的URL或参数...&#10;支持格式：&#10;• https://example.com?name=value&age=18&#10;• ?name=value&age=18&#10;• name=value&age=18"
+      class="url-input" 
+      @input="parseUrl"
+    ></textarea>
+
+    <!-- 结果区域 -->
+    <div class="result-content">
+      <div v-if="viewMode === 'table'" class="table-view">
+        <div class="table-container">
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th class="index-col">#</th>
+                <th class="key-col">参数名</th>
+                <th class="value-col">参数值</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="Object.keys(parsedParams).length === 0" class="empty-row">
+                <td colspan="3" class="empty-cell">暂无数据</td>
+              </tr>
+              <tr v-else v-for="(value, key, index) in parsedParams" :key="key" class="param-row">
+                <td class="index-cell">{{ index + 1 }}</td>
+                <td class="key-cell">{{ key }}</td>
+                <td class="value-cell">{{ value }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      
-      <div class="result-content">
-        <div v-if="viewMode === 'table'" class="table-view">
-          <div class="table-container">
-            <table class="params-table">
-              <thead>
-                <tr>
-                  <th class="index-col">#</th>
-                  <th class="key-col">参数名</th>
-                  <th class="value-col">参数值</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(value, key, index) in parsedParams" :key="key" class="param-row">
-                  <td class="index-cell">{{ index + 1 }}</td>
-                  <td class="key-cell">{{ key }}</td>
-                  <td class="value-cell">{{ value }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        <div v-else class="json-view">
-          <pre class="json-content">{{ formattedJson }}</pre>
-        </div>
+      <div v-else class="json-view">
+        <pre class="json-content">{{ Object.keys(parsedParams).length === 0 ? '暂无数据' : formattedJson }}</pre>
       </div>
-    </div>
-
-    <!-- 空状态 -->
-    <div class="empty-state" v-if="!urlText || Object.keys(parsedParams).length === 0">
-      <div class="empty-icon">🔗</div>
-      <div class="empty-text">输入URL或参数字符串开始解析</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
@@ -106,18 +84,10 @@ const parseUrl = () => {
 
     // 检查是否为完整的URL（包含协议）
     if (inputText.match(/^https?:\/\//)) {
-      // 完整URL解析
+      // 完整URL解析，只提取查询参数
       const url = new URL(inputText)
 
-      // 解析基本URL信息
-      params.protocol = url.protocol.replace(':', '')
-      params.host = url.host
-      params.hostname = url.hostname
-      params.port = url.port || (url.protocol === 'https:' ? '443' : '80')
-      params.pathname = url.pathname
-      params.hash = url.hash
-
-      // 解析查询参数
+      // 只解析查询参数
       url.searchParams.forEach((value, key) => {
         try {
           params[key] = decodeURIComponent(value)
@@ -188,141 +158,160 @@ const clear = () => {
   urlText.value = ''
   parsedParams.value = {}
 }
+
+// 组件加载时解析已有的URL
+onMounted(() => {
+  if (urlText.value) {
+    parseUrl()
+  }
+})
+
+// 监听urlText变化，自动解析
+watch(urlText, () => {
+  parseUrl()
+})
 </script>
 
 <style scoped>
 .url-parser {
-  padding: 12px;
-  max-width: 1400px;
-  margin: 0 auto;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
+  height: 100%;
+  background: #ffffff;
+  padding: 16px;
 }
 
-.input-section,
-.result-section {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
+
+.top-header {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+  height: 28px;
   margin-bottom: 16px;
 }
 
-.section-header {
+.tab-nav {
   display: flex;
-  justify-content: space-between;
+  align-items: stretch;
+  border: 1px solid #d1d5db;
+}
+
+.tab-actions {
+  display: flex;
   align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
+  gap: 8px;
+  padding: 0 12px;
+  background: #ffffff;
+  height: 100%;
 }
 
-.section-header h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
+.tab-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
 }
 
-.input-wrapper {
-  padding: 12px;
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #212529;
+  font-weight: 500;
+}
+
+.tab-btn.active:hover {
+  background: #ffffff;
+}
+
+.clear-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.clear-btn:hover {
+  background: #e9ecef;
 }
 
 .url-input {
   width: 100%;
-  min-height: 60px;
-  padding: 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  height: 120px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 0;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 11px;
   line-height: 1.4;
   resize: vertical;
   transition: all 0.2s;
-  background: #fafbfc;
+  background: white;
+  outline: none;
 }
 
 .url-input:focus {
   outline: none;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background: white;
 }
 
 .url-input::placeholder {
-  color: #94a3b8;
-  line-height: 1.4;
+  color: #9ca3af;
+  font-size: 11px;
 }
 
-.btn-clear {
-  padding: 4px 8px;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-clear:hover {
-  background: #fee2e2;
-}
-
-.view-tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.tab-btn {
-  padding: 6px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  background: white;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-}
-
-.tab-btn.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: white;
-}
-
-.tab-btn.active:hover {
-  background: #2563eb;
-  border-color: #2563eb;
-}
 
 .result-content {
   flex: 1;
+  background: white;
+  border: 1px solid #d1d5db;
+  overflow: hidden;
+}
+
+.empty-row .empty-cell {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 20px;
 }
 
 .table-view {
-  padding: 12px;
+  flex: 1;
+  overflow: auto;
 }
 
 .table-container {
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .params-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 11px;
   background: white;
   user-select: text;
   -webkit-user-select: text;
@@ -332,17 +321,19 @@ const clear = () => {
 
 .params-table th {
   background: #f8fafc;
-  padding: 12px;
+  padding: 8px 12px;
   text-align: left;
   font-weight: 600;
   color: #475569;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #d1d5db;
+  position: sticky;
+  top: 0;
 }
 
 .params-table td {
-  padding: 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
+  color: #212529;
 }
 
 .index-col {
@@ -369,8 +360,7 @@ const clear = () => {
 
 .key-cell {
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-weight: 600;
-  color: #3b82f6;
+  color: #212529;
   user-select: text;
   -webkit-user-select: text;
   -moz-user-select: text;
@@ -387,65 +377,41 @@ const clear = () => {
 }
 
 .json-view {
-  padding: 12px;
+  flex: 1;
+  overflow: auto;
 }
 
 .json-content {
-  background: #f8fafc;
-  padding: 14px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
+  background: transparent;
+  padding: 12px;
   margin: 0;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #1e293b;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #212529;
   white-space: pre-wrap;
   word-wrap: break-word;
-  overflow-x: auto;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.empty-state {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
-  padding: 40px;
-  text-align: center;
-}
 
-.empty-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-  opacity: 0.6;
-}
-
-.empty-text {
-  font-size: 14px;
-  color: #64748b;
-  font-weight: 500;
-}
-
-@media (max-width: 1024px) {
-  .url-parser {
-    padding: 16px;
-  }
-  
-  .view-tabs {
+@media (max-width: 768px) {
+  .tab-nav {
     flex-direction: column;
-    gap: 4px;
   }
   
   .tab-btn {
-    text-align: center;
+    border-right: none;
+    border-bottom: 1px solid #d1d5db;
+  }
+  
+  .tab-btn:last-child {
+    border-bottom: none;
   }
   
   .table-container {
     overflow-x: auto;
-  }
-  
-  .empty-state {
-    padding: 40px 20px;
   }
 }
 </style>
