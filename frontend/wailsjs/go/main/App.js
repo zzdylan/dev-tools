@@ -13,3 +13,7 @@ export function Greet(arg1) {
 export function MinimizeWindow() {
   return window['go']['main']['App']['MinimizeWindow']();
 }
+
+export function ToggleFullscreen() {
+  return window['go']['main']['App']['ToggleFullscreen']();
+}

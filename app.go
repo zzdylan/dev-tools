@@ -37,3 +37,8 @@ func (a *App) MinimizeWindow() {
 func (a *App) CloseWindow() {
 	runtime.Quit(a.ctx)
 }
+
+// ToggleFullscreen toggles the window fullscreen state
+func (a *App) ToggleFullscreen() {
+	// runtime.WindowToggleFullscreen(a.ctx)
+}

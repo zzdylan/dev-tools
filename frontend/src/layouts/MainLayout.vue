@@ -1,7 +1,14 @@
 <template>
-  <div class="layout" :class="{ 'sidebar-collapsed': !showSidebar }">
+  <div class="layout" :class="{ 'sidebar-collapsed': !showSidebar, 'mac-layout': isMac }">
     <!-- 头部 -->
     <header class="top-header">
+      <!-- Mac风格的窗口控制按钮 - 左边 -->
+      <div v-if="isMac" class="mac-window-controls">
+        <button class="mac-btn mac-close-btn" @click="closeWindow" title="关闭"></button>
+        <button class="mac-btn mac-minimize-btn" @click="minimizeWindow" title="最小化"></button>
+        <button class="mac-btn mac-fullscreen-btn" @click="toggleFullscreen" title="全屏"></button>
+      </div>
+      
       <div class="logo-section">
         <!-- 移除DevTools文字 -->
       </div>
@@ -15,7 +22,9 @@
       <div class="header-title">
         <h1 class="title">{{ currentMenuTitle }}</h1>
       </div>
-      <div class="header-right">
+      
+      <!-- Windows风格的窗口控制按钮 - 右边 -->
+      <div v-if="!isMac" class="header-right">
         <button
           class="window-btn minimize-btn"
           @click="minimizeWindow"
@@ -77,6 +86,13 @@ import { MinimizeWindow, CloseWindow } from "../../wailsjs/go/main/App";
 const route = useRoute();
 const currentMenuTitle = ref("");
 const showSidebar = ref(true);
+
+// 检测是否是Mac平台
+const isMac = ref(false);
+onMounted(() => {
+  // 检测用户代理或使用Wails API检测平台
+  isMac.value = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+});
 
 // 菜单标题映射
 const menuTitles: Record<string, string> = {
@@ -170,6 +186,11 @@ const minimizeWindow = () => {
 
 const closeWindow = () => {
   CloseWindow();
+};
+
+const toggleFullscreen = () => {
+  // TODO: Implement when wails bindings are updated
+  console.log('Toggle fullscreen');
 };
 </script>
 
@@ -393,7 +414,6 @@ const closeWindow = () => {
 }
 
 .collapse-btn {
-  margin-left: 210px;
   padding: 4px 8px;
   display: flex;
   align-items: center;
@@ -419,5 +439,87 @@ const closeWindow = () => {
 
 .sidebar-collapsed .collapse-icon {
   transform: rotate(180deg);
+}
+
+/* Mac风格窗口控制按钮 */
+.mac-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+}
+
+.mac-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.mac-btn:hover {
+  opacity: 0.8;
+}
+
+.mac-close-btn {
+  background: #ff5f57;
+  position: relative;
+}
+
+.mac-close-btn:hover::after {
+  content: '×';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #4a0e0e;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.mac-minimize-btn {
+  background: #ffbd2e;
+  position: relative;
+}
+
+.mac-minimize-btn:hover::after {
+  content: '−';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #7a5200;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.mac-fullscreen-btn {
+  background: #28ca42;
+  position: relative;
+}
+
+.mac-fullscreen-btn:hover::after {
+  content: '⤢';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #0f3e17;
+  font-size: 8px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Mac环境下调整collapse按钮位置 */
+.layout.mac-layout .collapse-btn {
+  margin-left: 150px; /* Mac环境下减少margin，因为左边有窗口控制按钮 */
+}
+
+/* Windows/Linux环境下的collapse按钮位置 */
+.layout:not(.mac-layout) .collapse-btn {
+  margin-left: 210px;
 }
 </style>
