@@ -29,7 +29,7 @@
         </div>
         <nav class="side-nav">
           <router-link v-for="item in filteredMenuItems" :key="item.path" :to="item.path" class="nav-item"
-            :exact="item.path === '/'" exact-active-class="router-link-active">
+            :exact="item.path === '/'" :class="{ 'router-link-active': isActiveRoute(item.path) }">
             <span class="nav-icon">{{ item.icon }}</span>
             {{ item.title }}
           </router-link>
@@ -118,6 +118,22 @@ const filteredMenuItems = computed(() => {
     item.title.toLowerCase().includes(query)
   )
 })
+
+// 检查路由是否激活，处理重定向情况
+const isActiveRoute = (path: string) => {
+  const currentPath = route.path
+  
+  // 处理重定向路由的特殊情况
+  if (path === '/json-editor' && currentPath.startsWith('/json-editor')) {
+    return true
+  }
+  if (path === '/xml-editor' && currentPath.startsWith('/xml-editor')) {
+    return true
+  }
+  
+  // 普通路由匹配
+  return currentPath === path
+}
 </script>
 
 <style scoped>
