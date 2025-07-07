@@ -1,55 +1,49 @@
 <template>
-    <div class="jwt-decoder">
-        <div class="decoder-container">
-            <!-- JWT输入区域 -->
-            <div class="input-section">
-                <div class="section-header">
-                    <h3>JWT Token</h3>
-                    <button class="btn-decode" @click="decodeJwt">解析</button>
-                </div>
-                <div class="input-wrapper">
-                    <textarea 
-                        v-model="jwtToken" 
-                        placeholder="粘贴JWT Token..."
-                        class="jwt-input"
-                    ></textarea>
-                </div>
-            </div>
-
-            <!-- 解析结果区域 -->
-            <div class="output-section">
-                <div class="section-header">
-                    <h3>解析结果</h3>
-                    <button 
-                        v-if="jwtData" 
-                        class="btn-copy" 
-                        @click="copyToClipboard(JSON.stringify(jwtData, null, 2))"
-                    >
-                        复制结果
-                    </button>
-                </div>
-                <div class="output-wrapper">
-                    <div v-if="error" class="error-message">
-                        <div class="error-icon">⚠️</div>
-                        <div class="error-text">{{ error }}</div>
-                    </div>
-
-                    <div v-else-if="jwtData" class="result-content">
-                        <pre class="json-result">{{ JSON.stringify(jwtData, null, 2) }}</pre>
-                    </div>
-
-                    <div v-else class="placeholder">
-                        <div class="placeholder-icon">🔍</div>
-                        <div class="placeholder-text">输入JWT Token开始解析</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="jwt-decoder">
+    <!-- 顶部：标签导航 -->
+    <div class="top-header">
+      <div class="tab-nav">
+        <button class="action-btn" @click="loadSample" title="示例">示例</button>
+      </div>
+      <div class="tab-actions">
+        <button class="clear-btn" @click="clearAll" title="清空">× 清空</button>
+      </div>
     </div>
+
+    <!-- 底部：内容区域 -->
+    <div class="content-layout">
+      <!-- 输入区域 -->
+      <div class="input-panel">
+        <textarea
+          v-model="jwtToken"
+          placeholder="粘贴JWT Token..."
+          class="text-area"
+          @input="autoDecodeIfValid"
+        ></textarea>
+      </div>
+
+      <!-- 输出区域 -->
+      <div class="output-panel">
+        <div v-if="error" class="error-message">
+          <div class="error-icon">⚠️</div>
+          <div class="error-text">{{ error }}</div>
+        </div>
+
+        <div v-else-if="jwtData" class="result-content">
+          <pre class="json-result">{{ JSON.stringify(jwtData, null, 2) }}</pre>
+        </div>
+
+        <div v-else class="placeholder">
+          <div class="placeholder-icon">🔍</div>
+          <div class="placeholder-text">输入JWT Token开始解析</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 import { useToolsStore } from '../stores/tools'
@@ -102,26 +96,31 @@ const decodeJwt = () => {
             signature
         }
 
-        ElMessage.success('JWT解析成功')
     } catch (err) {
         error.value = 'JWT解析失败：' + (err instanceof Error ? err.message : '未知错误')
     }
 }
 
-// 复制到剪贴板
-const copyToClipboard = async (text: string) => {
-    try {
-        await copy(text)
-        ElMessage.success('已复制到剪贴板')
-    } catch (err) {
-        ElMessage.error('复制失败')
-    }
+// 加载示例
+const loadSample = () => {
+    jwtToken.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvIjp7InV1aWQiOiI1NDEzMjA4ODIyMTYyODc3OTgiLCJzZXNzaW9uX2lkIjoiZjA1NGIxMjQtZTZmNy00NGM1LTk2NmUtMzdiNWVhMDc4Y2M3IiwidGVhbV9pZCI6OX0sImV4cCI6MTc1MDgxNjExNX0.-EkJqr10jm_YmkMc0pmjuIq-hV51dthXOaJ0ClpUWsQ'
+    autoDecodeIfValid()
+}
+
+// 清空所有
+const clearAll = () => {
+    jwtToken.value = ''
+    jwtData.value = null
+    error.value = ''
 }
 
 // 自动解析（当输入变化时）
 const autoDecodeIfValid = () => {
     if (jwtToken.value.trim() && jwtToken.value.split('.').length === 3) {
         decodeJwt()
+    } else if (!jwtToken.value.trim()) {
+        jwtData.value = null
+        error.value = ''
     }
 }
 
@@ -135,176 +134,198 @@ watch(() => jwtToken.value, () => {
         error.value = ''
     }
 })
+
+// 组件挂载时检查是否有内容需要解析
+onMounted(() => {
+    if (jwtToken.value.trim()) {
+        autoDecodeIfValid()
+    }
+})
 </script>
 
 <style scoped>
 .jwt-decoder {
-    padding: 24px;
-    max-width: 1200px;
-    margin: 0 auto;
-    background: #f8fafc;
-    min-height: 100vh;
+  height: 100%;
+  background: #ffffff;
+  padding: 16px;
 }
 
-.decoder-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    height: calc(100vh - 60px);
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+  height: 28px;
+  margin-bottom: 16px;
 }
 
-.input-section,
-.output-section {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    border: 1px solid #e2e8f0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+.tab-nav {
+  display: flex;
+  align-items: stretch;
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: #ffffff;
 }
 
-.section-header h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1e293b;
+.action-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
 }
 
-.btn-decode {
-    padding: 8px 16px;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
+.action-btn:hover {
+  background: #e9ecef;
 }
 
-.btn-decode:hover {
-    background: #2563eb;
+.clear-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
 }
 
-.btn-copy {
-    padding: 6px 12px;
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
+.clear-btn:hover {
+  background: #e9ecef;
 }
 
-.btn-copy:hover {
-    background: #e2e8f0;
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: calc(100% - 44px);
+  align-items: stretch;
 }
 
-.input-wrapper,
-.output-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+.input-panel,
+.output-panel {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.jwt-input {
-    flex: 1;
-    padding: 20px;
-    border: none;
-    outline: none;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.5;
-    resize: none;
-    background: transparent;
-    color: #1e293b;
+.text-area {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  border: none;
+  outline: none;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  resize: none;
+  background: transparent;
+  color: #212529;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-.jwt-input::placeholder {
-    color: #94a3b8;
+.text-area::placeholder {
+  color: #9ca3af;
+  font-size: 11px;
 }
 
-.output-wrapper {
-    padding: 20px;
+.text-area:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.output-panel {
+  padding: 12px;
 }
 
 .error-message {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
-    color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  margin-bottom: 16px;
 }
 
 .error-icon {
-    font-size: 20px;
+  font-size: 20px;
 }
 
 .error-text {
-    font-size: 14px;
-    font-weight: 500;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .result-content {
-    flex: 1;
+  flex: 1;
+  overflow: auto;
 }
 
 .json-result {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 16px;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.5;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    color: #1e293b;
-    margin: 0;
+  background: transparent;
+  padding: 0;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: #212529;
+  margin: 0;
+  border: none;
 }
 
 .placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 12px;
-    color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: #9ca3af;
 }
 
 .placeholder-icon {
-    font-size: 48px;
-    opacity: 0.5;
+  font-size: 48px;
+  opacity: 0.5;
 }
 
 .placeholder-text {
-    font-size: 16px;
-    font-weight: 500;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 @media (max-width: 1024px) {
-    .decoder-container {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .jwt-decoder {
-        padding: 16px;
-    }
+  .content-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .jwt-decoder {
+    padding: 12px;
+  }
 }
 </style>
