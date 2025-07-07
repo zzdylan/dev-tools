@@ -40,5 +40,17 @@ func (a *App) CloseWindow() {
 
 // ToggleFullscreen toggles the window fullscreen state
 func (a *App) ToggleFullscreen() {
-	// runtime.WindowToggleFullscreen(a.ctx)
+	fmt.Println("ToggleFullscreen")
+	if runtime.WindowIsFullscreen(a.ctx) {
+		fmt.Println("Unfullscreen")
+		runtime.WindowUnfullscreen(a.ctx)
+	} else {
+		fmt.Println("Fullscreen")
+		runtime.WindowFullscreen(a.ctx)
+	}
+}
+
+// IsFullscreen returns whether the window is fullscreen
+func (a *App) IsFullscreen() bool {
+	return runtime.WindowIsFullscreen(a.ctx)
 }

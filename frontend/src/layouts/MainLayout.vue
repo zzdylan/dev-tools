@@ -1,14 +1,29 @@
 <template>
-  <div class="layout" :class="{ 'sidebar-collapsed': !showSidebar, 'mac-layout': isMac }">
+  <div
+    class="layout"
+    :class="{ 'sidebar-collapsed': !showSidebar, 'mac-layout': isMac }"
+  >
     <!-- 头部 -->
     <header class="top-header">
       <!-- Mac风格的窗口控制按钮 - 左边 -->
       <div v-if="isMac" class="mac-window-controls">
-        <button class="mac-btn mac-close-btn" @click="closeWindow" title="关闭"></button>
-        <button class="mac-btn mac-minimize-btn" @click="minimizeWindow" title="最小化"></button>
-        <button class="mac-btn mac-fullscreen-btn" @click="toggleFullscreen" title="全屏"></button>
+        <button
+          class="mac-btn mac-close-btn"
+          @click="closeWindow"
+          title="关闭"
+        ></button>
+        <button
+          class="mac-btn mac-minimize-btn"
+          @click="minimizeWindow"
+          title="最小化"
+        ></button>
+        <button
+          class="mac-btn mac-fullscreen-btn"
+          @click="toggleFullscreen"
+          title="全屏"
+        ></button>
       </div>
-      
+
       <div class="logo-section">
         <!-- 移除DevTools文字 -->
       </div>
@@ -22,7 +37,7 @@
       <div class="header-title">
         <h1 class="title">{{ currentMenuTitle }}</h1>
       </div>
-      
+
       <!-- Windows风格的窗口控制按钮 - 右边 -->
       <div v-if="!isMac" class="header-right">
         <button
@@ -81,7 +96,11 @@ import { useRoute } from "vue-router";
 import { MenuOutline, SettingsOutline } from "@vicons/ionicons5";
 import { useToolsStore } from "../stores/tools";
 import { storeToRefs } from "pinia";
-import { MinimizeWindow, CloseWindow } from "../../wailsjs/go/main/App";
+import {
+  MinimizeWindow,
+  CloseWindow,
+  ToggleFullscreen,
+} from "../../wailsjs/go/main/App";
 
 const route = useRoute();
 const currentMenuTitle = ref("");
@@ -91,7 +110,7 @@ const showSidebar = ref(true);
 const isMac = ref(false);
 onMounted(() => {
   // 检测用户代理或使用Wails API检测平台
-  isMac.value = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  isMac.value = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 });
 
 // 菜单标题映射
@@ -190,7 +209,8 @@ const closeWindow = () => {
 
 const toggleFullscreen = () => {
   // TODO: Implement when wails bindings are updated
-  console.log('Toggle fullscreen');
+  // console.log("Toggle fullscreen");
+  ToggleFullscreen();
 };
 </script>
 
@@ -468,7 +488,7 @@ const toggleFullscreen = () => {
 }
 
 .mac-close-btn:hover::after {
-  content: '×';
+  content: "×";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -485,7 +505,7 @@ const toggleFullscreen = () => {
 }
 
 .mac-minimize-btn:hover::after {
-  content: '−';
+  content: "−";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -502,7 +522,7 @@ const toggleFullscreen = () => {
 }
 
 .mac-fullscreen-btn:hover::after {
-  content: '⤢';
+  content: "⤢";
   position: absolute;
   top: 50%;
   left: 50%;

@@ -5,6 +5,8 @@ export function CloseWindow():Promise<void>;
 
 export function Greet(arg1:string):Promise<string>;
 
+export function IsFullscreen():Promise<boolean>;
+
 export function MinimizeWindow():Promise<void>;
 
 export function ToggleFullscreen():Promise<void>;
