@@ -1,48 +1,42 @@
 <template>
   <div class="unicode-converter">
-    <div class="converter-container">
-      <!-- 输入区域 -->
-      <div class="input-section">
-        <div class="section-header">
-          <h3>原始文本</h3>
-          <button v-if="rawText" class="btn-clear" @click="clearRawText">清空</button>
-        </div>
-        <div class="input-wrapper">
-          <textarea
-            v-model="rawText"
-            placeholder="输入需要编码/解码的Unicode文本..."
-            class="text-input"
-          ></textarea>
-        </div>
+    <!-- 顶部：标签导航 -->
+    <div class="top-header">
+      <div class="tab-nav">
+        <button class="tab-btn" :class="{ active: currentMode === 'encode' }" @click="setMode('encode')">编码</button>
+        <button class="tab-btn" :class="{ active: currentMode === 'decode' }" @click="setMode('decode')">解码</button>
       </div>
+      <div class="tab-actions">
+        <button class="clear-btn" @click="clearAll" title="清空">× 清空</button>
+      </div>
+    </div>
 
-      <!-- 转换按钮 -->
-      <div class="controls-section">
-        <button class="btn-encode" @click="encode">编码</button>
-        <button class="btn-decode" @click="decode">解码</button>
+    <!-- 底部：内容区域 -->
+    <div class="content-layout">
+      <!-- 输入区域 -->
+      <div class="input-panel">
+        <textarea
+          v-model="rawText"
+          placeholder="输入需要编码/解码的Unicode文本..."
+          class="text-area"
+        ></textarea>
       </div>
 
       <!-- 输出区域 -->
-      <div class="output-section">
-        <div class="section-header">
-          <h3>转换结果</h3>
-          <button v-if="result" class="btn-clear" @click="clearResult">清空</button>
-        </div>
-        <div class="output-wrapper">
-          <textarea
-            v-model="result"
-            readonly
-            placeholder="转换结果将显示在这里..."
-            class="text-output"
-          ></textarea>
-        </div>
+      <div class="output-panel">
+        <textarea
+          v-model="result"
+          readonly
+          placeholder="转换结果将显示在这里..."
+          class="text-area"
+        ></textarea>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
@@ -61,6 +55,19 @@ const result = computed({
   get: () => unicodeConverter.value.result,
   set: (val) => (unicodeConverter.value.result = val),
 })
+
+const currentMode = ref('encode')
+
+const setMode = (mode: string) => {
+  currentMode.value = mode
+  if (rawText.value) {
+    if (mode === 'encode') {
+      encode()
+    } else {
+      decode()
+    }
+  }
+}
 
 const encode = () => {
   try {
@@ -94,158 +101,163 @@ const decode = () => {
   }
 }
 
-// 清空原始文本
-const clearRawText = () => {
+// 清空所有
+const clearAll = () => {
   rawText.value = ''
-}
-
-// 清空结果
-const clearResult = () => {
   result.value = ''
 }
+
+// 监听输入变化，自动转换
+const autoConvert = () => {
+  if (!rawText.value.trim()) {
+    result.value = ''
+    return
+  }
+  
+  if (currentMode.value === 'encode') {
+    encode()
+  } else {
+    decode()
+  }
+}
+
+// 监听输入文本变化
+watch(rawText, autoConvert)
 </script>
 
 <style scoped>
 .unicode-converter {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: #f8fafc;
-  min-height: 100vh;
+  height: 100%;
+  background: #ffffff;
+  padding: 16px;
 }
 
-.converter-container {
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+  height: 28px;
+  margin-bottom: 16px;
+}
+
+.tab-nav {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #d1d5db;
+}
+
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: #ffffff;
+}
+
+.tab-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #212529;
+  font-weight: 500;
+}
+
+.tab-btn.active:hover {
+  background: #ffffff;
+}
+
+.clear-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.clear-btn:hover {
+  background: #e9ecef;
+}
+
+.content-layout {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 24px;
-  height: calc(100vh - 60px);
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: calc(100% - 44px);
   align-items: stretch;
 }
 
-.input-section,
-.output-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.input-panel,
+.output-panel {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.input-wrapper,
-.output-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.text-input,
-.text-output {
-  flex: 1;
-  padding: 20px;
+.text-area {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
   border: none;
   outline: none;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.4;
   resize: none;
   background: transparent;
-  color: #1e293b;
+  color: #212529;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-.text-input::placeholder,
-.text-output::placeholder {
-  color: #94a3b8;
+.text-area::placeholder {
+  color: #9ca3af;
+  font-size: 11px;
 }
 
-.text-output {
-  background: #f8fafc;
+.text-area:focus {
+  outline: none;
+  box-shadow: none;
 }
 
-.controls-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.btn-encode {
-  padding: 12px 24px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 80px;
-}
-
-.btn-encode:hover {
-  background: #059669;
-  transform: translateY(-1px);
-}
-
-.btn-decode {
-  padding: 12px 24px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 80px;
-}
-
-.btn-decode:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
-}
-
-.btn-clear {
-  padding: 6px 12px;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-clear:hover {
-  background: #fee2e2;
-}
 
 @media (max-width: 1024px) {
-  .converter-container {
+  .content-layout {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 12px;
   }
   
   .unicode-converter {
-    padding: 16px;
+    padding: 12px;
   }
 }
 </style>
