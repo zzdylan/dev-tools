@@ -135,6 +135,7 @@ const filteredMenuItems = computed(() => {
   align-items: center;
   padding: 0 16px;
   justify-content: space-between;
+  --wails-draggable: drag;
 }
 
 .logo-section {

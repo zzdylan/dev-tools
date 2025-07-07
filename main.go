@@ -21,7 +21,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title: "dev tools",
+		Title:  "dev tools",
 		Width:  1000,
 		Height: 700,
 		AssetServer: &assetserver.Options{
@@ -34,6 +34,7 @@ func main() {
 			jsonProcessor,
 			xmlProcessor,
 		},
+		Frameless: true, //不显示标题栏
 	})
 
 	if err != nil {
