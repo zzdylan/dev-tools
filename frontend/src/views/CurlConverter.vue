@@ -1,43 +1,41 @@
 <template>
   <div class="curl-converter">
-    <div class="converter-container">
+    <!-- 顶部：标签导航 -->
+    <div class="top-header">
+      <div class="tab-nav">
+        <button class="action-btn" @click="loadSample" title="示例">示例</button>
+        <div class="lang-selector">
+          <select v-model="targetLang" class="lang-select">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="go">Go</option>
+            <option value="go-resty">Go (Resty)</option>
+            <option value="java">Java</option>
+            <option value="php">PHP</option>
+            <option value="nodejs">Node.js</option>
+          </select>
+        </div>
+      </div>
+      <div class="tab-actions">
+        <button class="clear-btn" @click="clear" title="清空">× 清空</button>
+      </div>
+    </div>
+
+    <!-- 底部：内容区域 -->
+    <div class="content-layout">
       <!-- 输入区域 -->
-      <div class="input-section">
-        <div class="section-header">
-          <h3>cURL 命令</h3>
-          <div class="header-controls">
-            <select v-model="targetLang" class="lang-select">
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="go">Go</option>
-              <option value="go-resty">Go (Resty)</option>
-              <option value="java">Java</option>
-              <option value="php">PHP</option>
-              <option value="nodejs">Node.js</option>
-            </select>
-            <button class="btn-convert" @click="convert">转换</button>
-          </div>
-        </div>
-        <div class="input-wrapper">
-          <textarea
-            v-model="curlCommand"
-            placeholder="粘贴 cURL 命令..."
-            class="curl-input"
-          ></textarea>
-          <div class="input-actions">
-            <button class="btn-clear" @click="clear">清空</button>
-            <button class="btn-copy" @click="copy(curlCommand)">复制</button>
-          </div>
-        </div>
+      <div class="input-panel">
+        <textarea
+          v-model="curlCommand"
+          placeholder="粘贴 cURL 命令..."
+          class="text-area"
+          @input="autoConvert"
+        ></textarea>
       </div>
 
       <!-- 输出区域 -->
-      <div class="output-section">
-        <div class="section-header">
-          <h3>转换结果</h3>
-          <button class="btn-copy" @click="copy(convertedCode)">复制结果</button>
-        </div>
-        <div class="output-wrapper">
+      <div class="output-panel">
+        <div class="editor-wrapper">
           <MonacoEditor
             ref="monacoEditor"
             :value="convertedCode"
@@ -52,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useClipboard } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
@@ -81,7 +79,7 @@ const convertedCode = computed({
 const monacoEditor = ref()
 
 const editorOptions = {
-  fontSize: 14,
+  fontSize: 11,
   tabSize: 2,
   minimap: {
     enabled: false,
@@ -115,10 +113,29 @@ const getEditorLanguage = computed(() => {
   }
 })
 
+const loadSample = () => {
+  curlCommand.value = `curl -X POST https://api.example.com/users \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer your-token-here" \\
+  -d '{
+    "name": "张三",
+    "email": "zhangsan@example.com",
+    "age": 28
+  }'`
+  autoConvert()
+}
+
+const autoConvert = () => {
+  if (!curlCommand.value.trim()) {
+    convertedCode.value = ''
+    return
+  }
+  convert()
+}
+
 const convert = () => {
   try {
     if (!curlCommand.value.trim()) {
-      ElMessage.warning('请输入 cURL 命令')
       return
     }
 
@@ -164,7 +181,6 @@ const convert = () => {
     }
 
     convertedCode.value = code
-    ElMessage.success('转换成功')
   } catch (error) {
     ElMessage.error(
       '转换失败：' + (error instanceof Error ? error.message : '未知错误')
@@ -475,203 +491,182 @@ const clear = () => {
   if (editor) {
     editor.setValue('')
   }
-  ElMessage.success('已清空')
 }
 
-const copy = async (text: string) => {
-  if (!text) {
-    ElMessage.warning('没有可复制的内容')
-    return
+// 监听语言变化，自动重新转换
+watch(targetLang, () => {
+  if (curlCommand.value.trim()) {
+    autoConvert()
   }
-  if (text === convertedCode.value) {
-    const editor = monacoEditor.value?.editor
-    if (editor) {
-      text = editor.getValue()
-    }
-  }
-  await copyToClipboard(text)
-  ElMessage.success('已复制到剪贴板')
-}
+})
 </script>
 
 <style scoped>
 .curl-converter {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: #f8fafc;
-  min-height: 100vh;
+  height: 100%;
+  background: #ffffff;
+  padding: 16px;
 }
 
-.converter-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  height: calc(100vh - 60px);
-}
-
-.input-section,
-.output-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.section-header {
+.top-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+  height: 28px;
+  margin-bottom: 16px;
 }
 
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.header-controls {
+.tab-nav {
   display: flex;
-  gap: 12px;
+  align-items: stretch;
+  gap: 0;
+}
+
+.tab-actions {
+  display: flex;
   align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: #ffffff;
+}
+
+.action-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.action-btn:hover {
+  background: #e9ecef;
+}
+
+.lang-selector {
+  display: flex;
+  align-items: stretch;
 }
 
 .lang-select {
-  padding: 8px 12px;
-  padding-right: 32px;
+  height: 100%;
+  padding: 0 10px;
+  padding-right: 24px;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: white;
+  border-left: none;
+  border-radius: 0;
+  background: #f8f9fa;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 8px center;
+  background-position: right 6px center;
   background-repeat: no-repeat;
-  background-size: 16px;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
+  background-size: 12px;
+  color: #6c757d;
+  font-size: 10px;
   cursor: pointer;
   outline: none;
   transition: all 0.2s;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-}
-
-.lang-select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  min-width: 80px;
 }
 
 .lang-select:hover {
-  border-color: #9ca3af;
+  background-color: #e9ecef;
 }
 
-.btn-convert {
-  padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+.lang-select:focus {
+  background-color: #e9ecef;
+}
+
+.clear-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
 }
 
-.btn-convert:hover {
-  background: #2563eb;
+.clear-btn:hover {
+  background: #e9ecef;
 }
 
-.btn-copy {
-  padding: 6px 12px;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: calc(100% - 44px);
+  align-items: stretch;
 }
 
-.btn-copy:hover {
-  background: #e2e8f0;
-}
-
-.btn-clear {
-  padding: 6px 12px;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-clear:hover {
-  background: #fee2e2;
-}
-
-.input-wrapper,
-.output-wrapper {
-  flex: 1;
+.input-panel,
+.output-panel {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
-  position: relative;
+  overflow: hidden;
 }
 
-.curl-input {
-  flex: 1;
-  padding: 20px;
+.text-area {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
   border: none;
   outline: none;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.4;
   resize: none;
   background: transparent;
-  color: #1e293b;
+  color: #212529;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-.curl-input::placeholder {
-  color: #94a3b8;
+.text-area::placeholder {
+  color: #9ca3af;
+  font-size: 11px;
 }
 
-.input-actions {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  display: flex;
-  gap: 8px;
+.text-area:focus {
+  outline: none;
+  box-shadow: none;
 }
 
-.output-wrapper {
-  position: relative;
+.editor-wrapper {
+  flex: 1;
+  overflow: hidden;
 }
 
-.output-wrapper .btn-copy {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 10;
+:deep(.monaco-editor) {
+  flex: 1;
 }
 
-@media (max-width: 1024px) {
-  .converter-container {
+@media (max-width: 768px) {
+  .content-layout {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 12px;
   }
   
   .curl-converter {
-    padding: 16px;
+    padding: 12px;
   }
 }
 </style>
