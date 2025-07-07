@@ -1,15 +1,23 @@
 <template>
   <div class="json-to-go">
-    <div class="converter-container">
-      <!-- JSON输入区域 -->
-      <div class="input-section">
-        <div class="section-header">
-          <h3>JSON 数据</h3>
-          <div class="header-controls">
-            <button class="btn-sample" @click="loadSample">示例</button>
-            <button class="btn-clear" @click="clearContent">清空</button>
-          </div>
+    <!-- 顶部：标签导航 -->
+    <div class="top-header">
+      <div class="tab-nav">
+        <button class="action-btn" @click="loadSample" title="示例">示例</button>
+        <div class="switch-container">
+          <span>分开结构体</span>
+          <el-switch v-model="useFlatten" @change="convertToGo" size="small" />
         </div>
+      </div>
+      <div class="tab-actions">
+        <button class="clear-btn" @click="clearContent" title="清空">× 清空</button>
+      </div>
+    </div>
+
+    <!-- 底部：内容区域 -->
+    <div class="content-layout">
+      <!-- JSON输入区域 -->
+      <div class="input-panel">
         <div class="editor-wrapper">
           <MonacoEditor 
             ref="jsonEditor" 
@@ -23,17 +31,7 @@
       </div>
 
       <!-- Go结构体输出区域 -->
-      <div class="output-section">
-        <div class="section-header">
-          <h3>Go 结构体</h3>
-          <div class="header-controls">
-            <div class="switch-container">
-              <span>分开结构体</span>
-              <el-switch v-model="useFlatten" @change="convertToGo" size="small" />
-            </div>
-            <button class="btn-copy" @click="copyToClipboard(goResult)">复制结果</button>
-          </div>
-        </div>
+      <div class="output-panel">
         <div class="editor-wrapper">
           <MonacoEditor 
             ref="goEditor" 
@@ -52,12 +50,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
-import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 // @ts-ignore
 import jsonToGo from '../utils/jsonToGo.js'
-
-const { copy } = useClipboard()
 const code = ref('')
 const goResult = ref('')
 const jsonEditor = ref()
@@ -120,6 +115,7 @@ const convertToGo = () => {
   }
 }
 
+
 const loadSample = () => {
   code.value = JSON.stringify({
     name: "测试用户",
@@ -150,16 +146,6 @@ const loadSample = () => {
   convertToGo()
 }
 
-const copyToClipboard = (text: string) => {
-  if (!text.trim()) {
-    ElMessage.warning('没有内容可复制')
-    return
-  }
-
-  copy(text)
-  ElMessage.success('已复制到剪贴板')
-}
-
 const clearContent = () => {
   code.value = ''
   goResult.value = ''
@@ -169,114 +155,118 @@ onMounted(() => {
   // 组件加载时自动加载示例
   loadSample()
 })
+
 </script>
 
 <style scoped>
 .json-to-go {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: #f8fafc;
-  min-height: 100vh;
+  height: 100%;
+  background: #ffffff;
+  padding: 16px;
 }
 
-.converter-container {
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+  height: 28px;
+  margin-bottom: 16px;
+}
+
+.tab-nav {
+  display: flex;
+  align-items: stretch;
+}
+
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: #ffffff;
+}
+
+.action-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.action-btn:hover {
+  background: #e9ecef;
+}
+
+
+.clear-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.clear-btn:hover {
+  background: #e9ecef;
+}
+
+.content-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  height: calc(100vh - 60px);
+  gap: 16px;
+  height: calc(100% - 44px);
+  align-items: stretch;
 }
 
-.input-section,
-.output-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
+.input-panel,
+.output-panel {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.header-controls {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.btn-sample {
-  padding: 8px 16px;
-  background: #8b5cf6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-sample:hover {
-  background: #7c3aed;
-}
-
-.btn-clear {
-  padding: 6px 12px;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-clear:hover {
-  background: #fee2e2;
-}
-
-.btn-copy {
-  padding: 6px 12px;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-copy:hover {
-  background: #e2e8f0;
-}
 
 .switch-container {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  color: #64748b;
+  padding: 0 12px;
+  height: 28px;
+  border: 1px solid #d1d5db;
+  border-left: none;
+  background: #f8f9fa;
+  font-size: 11px;
+  color: #6c757d;
+  border-radius: 0;
+  transition: all 0.2s;
+}
+
+.switch-container:hover {
+  background: #e9ecef;
 }
 
 .editor-wrapper {
   flex: 1;
-  border-radius: 0 0 12px 12px;
   overflow: hidden;
 }
 
@@ -285,13 +275,27 @@ onMounted(() => {
 }
 
 @media (max-width: 1024px) {
-  .converter-container {
+  .content-layout {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 12px;
   }
   
   .json-to-go {
-    padding: 16px;
+    padding: 12px;
+  }
+  
+  .tab-actions {
+    gap: 4px;
+  }
+  
+  .switch-container {
+    padding: 0 8px;
+    gap: 6px;
+    font-size: 10px;
+  }
+  
+  .switch-container span {
+    font-size: 9px;
   }
 }
 </style>
