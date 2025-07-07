@@ -108,13 +108,32 @@ const base64Result = computed({
   set: (val) => (base64Image.value.base64Result = val),
 });
 const fileInput = ref<HTMLInputElement | null>(null);
-const activeTab = ref("original");
-const imageSize = ref("");
+
+const activeTab = computed({
+  get: () => base64Image.value.activeTab || 'original',
+  set: (val) => (base64Image.value.activeTab = val),
+})
+
+const imageSize = computed({
+  get: () => base64Image.value.imageSize || '',
+  set: (val) => (base64Image.value.imageSize = val),
+})
 
 // 标签页内容
-const originalData = ref("");
-const cssData = ref("");
-const exampleData = ref("");
+const originalData = computed({
+  get: () => base64Image.value.originalData || '',
+  set: (val) => (base64Image.value.originalData = val),
+})
+
+const cssData = computed({
+  get: () => base64Image.value.cssData || '',
+  set: (val) => (base64Image.value.cssData = val),
+})
+
+const exampleData = computed({
+  get: () => base64Image.value.exampleData || '',
+  set: (val) => (base64Image.value.exampleData = val),
+})
 
 const triggerFileInput = () => {
   fileInput.value?.click();

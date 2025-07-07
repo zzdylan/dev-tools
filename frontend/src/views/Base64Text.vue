@@ -60,9 +60,21 @@ import { storeToRefs } from 'pinia'
 
 const store = useToolsStore()
 const { base64Text } = storeToRefs(store)
-const activeTab = ref('encode')
-const inputText = ref('')
-const outputText = ref('')
+
+const activeTab = computed({
+  get: () => base64Text.value.activeTab || 'encode',
+  set: (val) => (base64Text.value.activeTab = val),
+})
+
+const inputText = computed({
+  get: () => base64Text.value.inputText || '',
+  set: (val) => (base64Text.value.inputText = val),
+})
+
+const outputText = computed({
+  get: () => base64Text.value.outputText || '',
+  set: (val) => (base64Text.value.outputText = val),
+})
 
 // 自动转换
 const autoConvert = () => {

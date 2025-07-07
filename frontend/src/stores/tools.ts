@@ -68,12 +68,18 @@ export const useToolsStore = defineStore('tools', {
       viewMode: 'json'
     },
     base64Text: {
-      rawText: '',
-      result: ''
+      activeTab: 'encode',
+      inputText: '',
+      outputText: ''
     },
     base64Image: {
       imageUrl: '',
-      base64Result: ''
+      base64Result: '',
+      activeTab: 'original',
+      imageSize: '',
+      originalData: '',
+      cssData: '',
+      exampleData: ''
     },
     numberConverter: {
       inputValue: '',
