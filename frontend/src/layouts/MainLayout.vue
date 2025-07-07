@@ -3,18 +3,24 @@
     <!-- 头部 -->
     <header class="top-header">
       <div class="logo-section">
-        <router-link to="/" class="logo">
-          <h1>DevTools</h1>
-        </router-link>
-        <button class="icon-btn collapse-btn" @click="toggleSidebar" :title="`${showSidebar ? '隐藏' : '显示'}菜单栏`">
-          <MenuOutline class="collapse-icon" />
-        </button>
+        <!-- 移除DevTools文字 -->
       </div>
+      <button
+        class="icon-btn collapse-btn"
+        @click="toggleSidebar"
+        :title="`${showSidebar ? '隐藏' : '显示'}菜单栏`"
+      >
+        <MenuOutline class="collapse-icon" />
+      </button>
       <div class="header-title">
         <h1 class="title">{{ currentMenuTitle }}</h1>
       </div>
       <div class="header-right">
-        <button class="window-btn minimize-btn" @click="minimizeWindow" title="最小化">
+        <button
+          class="window-btn minimize-btn"
+          @click="minimizeWindow"
+          title="最小化"
+        >
           <span class="window-icon">−</span>
         </button>
         <button class="window-btn close-btn" @click="closeWindow" title="关闭">
@@ -28,11 +34,24 @@
       <aside class="sidebar" :class="{ 'sidebar-hidden': !showSidebar }">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" v-model="searchQuery" placeholder="Search..." class="search-input" />
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search..."
+            class="search-input"
+          />
         </div>
         <nav class="side-nav">
-          <router-link v-for="item in filteredMenuItems" :key="item.path" :to="item.path" class="nav-item"
-            :exact="item.path === '/'" active-class="" exact-active-class="" :class="{ 'router-link-active': isActiveRoute(item.path) }">
+          <router-link
+            v-for="item in filteredMenuItems"
+            :key="item.path"
+            :to="item.path"
+            class="nav-item"
+            :exact="item.path === '/'"
+            active-class=""
+            exact-active-class=""
+            :class="{ 'router-link-active': isActiveRoute(item.path) }"
+          >
             <span class="nav-icon">{{ item.icon }}</span>
             {{ item.title }}
           </router-link>
@@ -48,110 +67,110 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { MenuOutline, SettingsOutline } from '@vicons/ionicons5'
-import { useToolsStore } from '../stores/tools'
-import { storeToRefs } from 'pinia'
-import { MinimizeWindow, CloseWindow } from '../../wailsjs/go/main/App'
+import { ref, watch, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { MenuOutline, SettingsOutline } from "@vicons/ionicons5";
+import { useToolsStore } from "../stores/tools";
+import { storeToRefs } from "pinia";
+import { MinimizeWindow, CloseWindow } from "../../wailsjs/go/main/App";
 
-const route = useRoute()
-const currentMenuTitle = ref('')
-const showSidebar = ref(true)
+const route = useRoute();
+const currentMenuTitle = ref("");
+const showSidebar = ref(true);
 
 // 菜单标题映射
 const menuTitles: Record<string, string> = {
-  '/': '全部功能列表',
-  '/json-editor': 'JSON 编辑器',
-  '/xml-editor': 'XML 编辑器',
-  '/time-converter': '时间戳转换',
+  "/": "全部功能列表",
+  "/json-editor": "JSON 编辑器",
+  "/xml-editor": "XML 编辑器",
+  "/time-converter": "时间戳转换",
   // '/settings': '设置',
-  '/url-converter': 'URL 编解码',
-  '/url-parser': 'URL 解析',
-  '/qrcode': '二维码工具',
-  '/base64-image': 'Base64 图像',
-  '/base64-text': 'Base64 文本',
-  '/number-converter': '进制转换',
-  '/text-diff': '文本对比',
-  '/curl-converter': 'cURL 转换',
-  '/unicode-converter': 'Unicode 转换',
-  '/json-to-go': 'JSON转Go',
-  '/jwt-decoder': 'JWT 解析',
-}
+  "/url-converter": "URL 编解码",
+  "/url-parser": "URL 解析",
+  "/qrcode": "二维码工具",
+  "/base64-image": "Base64 图像",
+  "/base64-text": "Base64 文本",
+  "/number-converter": "进制转换",
+  "/text-diff": "文本对比",
+  "/curl-converter": "cURL 转换",
+  "/unicode-converter": "Unicode 转换",
+  "/json-to-go": "JSON转Go",
+  "/jwt-decoder": "JWT 解析",
+};
 
 // 监听路由变化更新标题
 watch(
   () => route.path,
   (path) => {
-    currentMenuTitle.value = menuTitles[path] || ''
+    currentMenuTitle.value = menuTitles[path] || "";
   },
   { immediate: true }
-)
+);
 
 const toggleSidebar = () => {
-  showSidebar.value = !showSidebar.value
-}
+  showSidebar.value = !showSidebar.value;
+};
 
-const store = useToolsStore()
-const { menuConfig } = storeToRefs(store)
+const store = useToolsStore();
+const { menuConfig } = storeToRefs(store);
 
 // 在组件挂载时初始化菜单
 onMounted(() => {
-  store.initializeMenu()
-})
+  store.initializeMenu();
+});
 
 const menuItems = computed(() => {
-  const home = { path: '/', icon: '🏠', title: '全部功能列表' }
+  const home = { path: "/", icon: "🏠", title: "全部功能列表" };
   const visibleItems = menuConfig.value.items
     .filter((item) => item.visible)
     .sort((a, b) => {
       // 确保排序稳定性
-      const orderDiff = a.order - b.order
-      return orderDiff !== 0 ? orderDiff : a.id.localeCompare(b.id)
-    })
-  return [home, ...visibleItems]
-})
+      const orderDiff = a.order - b.order;
+      return orderDiff !== 0 ? orderDiff : a.id.localeCompare(b.id);
+    });
+  return [home, ...visibleItems];
+});
 
-const searchQuery = ref('')
+const searchQuery = ref("");
 
 // 过滤后的菜单项
 const filteredMenuItems = computed(() => {
-  const query = searchQuery.value.toLowerCase().trim()
-  if (!query) return menuItems.value
+  const query = searchQuery.value.toLowerCase().trim();
+  if (!query) return menuItems.value;
   return menuItems.value.filter((item) =>
     item.title.toLowerCase().includes(query)
-  )
-})
+  );
+});
 
 // 检查路由是否激活，处理重定向情况
 const isActiveRoute = (path: string) => {
-  const currentPath = route.path
-  
+  const currentPath = route.path;
+
   // 首页只有完全匹配才激活
-  if (path === '/') {
-    return currentPath === '/'
+  if (path === "/") {
+    return currentPath === "/";
   }
-  
+
   // 处理重定向路由的特殊情况
-  if (path === '/json-editor' && currentPath.startsWith('/json-editor')) {
-    return true
+  if (path === "/json-editor" && currentPath.startsWith("/json-editor")) {
+    return true;
   }
-  if (path === '/xml-editor' && currentPath.startsWith('/xml-editor')) {
-    return true
+  if (path === "/xml-editor" && currentPath.startsWith("/xml-editor")) {
+    return true;
   }
-  
+
   // 普通路由匹配
-  return currentPath === path
-}
+  return currentPath === path;
+};
 
 // 窗口控制方法
 const minimizeWindow = () => {
-  MinimizeWindow()
-}
+  MinimizeWindow();
+};
 
 const closeWindow = () => {
-  CloseWindow()
-}
+  CloseWindow();
+};
 </script>
 
 <style scoped>
@@ -169,7 +188,6 @@ const closeWindow = () => {
   display: flex;
   align-items: center;
   padding: 0 16px;
-  justify-content: space-between;
   --wails-draggable: drag;
 }
 
@@ -375,7 +393,7 @@ const closeWindow = () => {
 }
 
 .collapse-btn {
-  margin-left: 8px;
+  margin-left: 210px;
   padding: 4px 8px;
   display: flex;
   align-items: center;
