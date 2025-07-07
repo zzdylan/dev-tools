@@ -29,7 +29,7 @@
         </div>
         <nav class="side-nav">
           <router-link v-for="item in filteredMenuItems" :key="item.path" :to="item.path" class="nav-item"
-            :exact="item.path === '/'" :class="{ 'router-link-active': isActiveRoute(item.path) }">
+            :exact="item.path === '/'" active-class="" exact-active-class="" :class="{ 'router-link-active': isActiveRoute(item.path) }">
             <span class="nav-icon">{{ item.icon }}</span>
             {{ item.title }}
           </router-link>
@@ -122,6 +122,11 @@ const filteredMenuItems = computed(() => {
 // 检查路由是否激活，处理重定向情况
 const isActiveRoute = (path: string) => {
   const currentPath = route.path
+  
+  // 首页只有完全匹配才激活
+  if (path === '/') {
+    return currentPath === '/'
+  }
   
   // 处理重定向路由的特殊情况
   if (path === '/json-editor' && currentPath.startsWith('/json-editor')) {
