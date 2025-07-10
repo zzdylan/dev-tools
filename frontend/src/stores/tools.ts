@@ -51,6 +51,7 @@ export const useToolsStore = defineStore('tools', {
         }
       }
     },
+    currentXmlEditorTab: 'default',
     jsonEditorTabs: <JsonEditorTabs>{
       default: {
         code: '',
@@ -59,6 +60,7 @@ export const useToolsStore = defineStore('tools', {
         }
       }
     },
+    currentJsonEditorTab: 'default',
     urlConverter: {
       rawText: '',
       result: ''
@@ -163,6 +165,9 @@ export const useToolsStore = defineStore('tools', {
       }
       return id
     },
+    setCurrentJsonEditorTab(id: string) {
+      this.currentJsonEditorTab = id
+    },
     createXmlEditorTab() {
       const id = Date.now().toString()
       this.xmlEditorTabs[id] = {
@@ -172,6 +177,9 @@ export const useToolsStore = defineStore('tools', {
         }
       }
       return id
+    },
+    setCurrentXmlEditorTab(id: string) {
+      this.currentXmlEditorTab = id
     },
     updateMenuItemVisibility(id: string, visible: boolean) {
       const item = this.menuConfig.items.find(item => item.id === id)

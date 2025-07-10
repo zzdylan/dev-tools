@@ -89,6 +89,9 @@ const tabHistory = ref<string[]>([tabId.value])
 // 监听路由变化，更新活动标签页和历史记录
 watch(tabId, (newTabId, oldTabId) => {
   activeTabName.value = newTabId
+  
+  // 更新store中的当前标签页
+  store.setCurrentXmlEditorTab(newTabId)
 
   // 更新访问历史
   if (oldTabId && oldTabId !== newTabId) {

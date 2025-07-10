@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import { useToolsStore } from '../stores/tools'
 import MainLayout from '../layouts/MainLayout.vue'
 import TimeConverter from '../views/TimeConverter.vue'
 import UrlConverter from '../views/UrlConverter.vue'
@@ -26,7 +27,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'json-editor',
         name: 'JsonEditor',
-        redirect: { name: 'JsonEditorTab', params: { id: 'default' } }
+        redirect: () => {
+          const store = useToolsStore()
+          return { name: 'JsonEditorTab', params: { id: store.currentJsonEditorTab } }
+        }
       },
       {
         path: 'json-editor/:id',
@@ -36,7 +40,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'xml-editor',
         name: 'XmlEditor',
-        redirect: { name: 'XmlEditorTab', params: { id: 'default' } }
+        redirect: () => {
+          const store = useToolsStore()
+          return { name: 'XmlEditorTab', params: { id: store.currentXmlEditorTab } }
+        }
       },
       {
         path: 'xml-editor/:id',
