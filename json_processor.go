@@ -104,7 +104,7 @@ func decodeUnicode(s string) string {
 	chars := []rune(s)
 	for i := 0; i < len(chars); i++ {
 		// 检查是否是非转义的 Unicode 序列（前面不是反斜杠）
-		if i+5 < len(chars) && chars[i] == '\\' && chars[i+1] == 'u' &&
+		if i+5 <= len(chars) && chars[i] == '\\' && chars[i+1] == 'u' &&
 			(i == 0 || chars[i-1] != '\\') {
 			// 尝试解析 4 位十六进制数
 			hex := string(chars[i+2 : i+6])
