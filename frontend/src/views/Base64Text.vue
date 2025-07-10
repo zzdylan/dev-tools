@@ -137,7 +137,6 @@ watch(activeTab, switchMode)
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   height: 100%;
-  padding: 8px;
 }
 
 .top-header {
@@ -147,7 +146,7 @@ watch(activeTab, switchMode)
   padding: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .tab-nav {
@@ -217,7 +216,7 @@ watch(activeTab, switchMode)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  height: calc(100% - 36px);
+  height: calc(100% - 40px);
   align-items: stretch;
 }
 
