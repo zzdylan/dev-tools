@@ -110,7 +110,7 @@ func decodeUnicode(s string) string {
 			hex := string(chars[i+2 : i+6])
 			// 验证是否是有效的十六进制字符
 			if isValidHex(hex) {
-				num, err := parseInt(hex, 16, 16)
+				num, err := parseInt(hex, 16, 32)
 				if err == nil {
 					result.WriteRune(rune(num))
 					i += 5 // 跳过已处理的字符
