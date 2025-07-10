@@ -304,7 +304,6 @@ const copyText = async () => {
 <style scoped>
 .qrcode-tool {
   height: 100%;
-  padding: 16px;
 }
 
 .tool-section {
@@ -320,7 +319,7 @@ const copyText = async () => {
   padding: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .tab-nav {
@@ -351,7 +350,7 @@ const copyText = async () => {
 .tab-actions {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 8px;
   padding: 0 12px;
   background: #ffffff;
 }
@@ -361,7 +360,6 @@ const copyText = async () => {
   padding: 0 10px;
   background: #f8f9fa;
   border: 1px solid #d1d5db;
-  border-left: none;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -378,15 +376,12 @@ const copyText = async () => {
   background: #e9ecef;
 }
 
-.tab-actions .download-btn {
-  border-left: 1px solid #d1d5db;
-}
 
 .content-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  height: calc(100% - 48px);
+  gap: 8px;
+  height: calc(100% - 40px);
   align-items: stretch;
 }
 

@@ -1,7 +1,8 @@
 <template>
   <div class="base64-text">
-    <!-- 顶部：标签页按钮 -->
-    <div class="top-header">
+    <div class="tool-section">
+      <!-- 顶部：标签页按钮 -->
+      <div class="top-header">
       <div class="tab-nav">
         <button 
           class="tab-btn"
@@ -48,6 +49,7 @@
           spellcheck="false"
         ></textarea>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -129,8 +131,13 @@ watch(activeTab, switchMode)
 <style scoped>
 .base64-text {
   height: 100%;
-  background: #ffffff;
-  padding: 16px;
+}
+
+.tool-section {
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  padding: 8px;
 }
 
 .top-header {
@@ -140,7 +147,7 @@ watch(activeTab, switchMode)
   padding: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 }
 
 .tab-nav {
@@ -209,8 +216,8 @@ watch(activeTab, switchMode)
 .content-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  height: calc(100% - 44px);
+  gap: 8px;
+  height: calc(100% - 36px);
   align-items: stretch;
 }
 

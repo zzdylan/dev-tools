@@ -515,7 +515,7 @@ watch(targetLang, () => {
   padding: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .tab-nav {
@@ -610,8 +610,8 @@ watch(targetLang, () => {
 .content-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  height: calc(100% - 44px);
+  gap: 8px;
+  height: calc(100% - 40px);
   align-items: stretch;
 }
 

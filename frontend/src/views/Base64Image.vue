@@ -58,7 +58,7 @@
 
         <!-- 右侧：图片区域 -->
         <div class="image-panel">
-          <div class="upload-area" :class="{ 'has-image': !!imageUrl }" @drop.prevent="handleDrop" @dragover.prevent>
+          <div class="upload-area" @drop.prevent="handleDrop" @dragover.prevent>
             <input
               type="file"
               ref="fileInput"
@@ -72,10 +72,8 @@
               @click="triggerFileInput"
             >
               <div class="upload-icon">📤</div>
-              <div class="upload-text">
-                点击或拖拽图片到此处
-                <div class="upload-hint">支持 jpg、png、gif 格式</div>
-              </div>
+              <div class="upload-text">点击或拖拽图片到此处</div>
+              <div class="upload-hint">支持 jpg、png、gif 格式</div>
             </div>
             <img
               v-else
@@ -370,14 +368,14 @@ const saveImage = async () => {
   padding: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .content-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  height: calc(100% - 48px);
+  gap: 8px;
+  height: calc(100% - 40px);
   align-items: stretch;
 }
 
@@ -385,7 +383,7 @@ const saveImage = async () => {
 .image-panel {
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d1d5db;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -396,7 +394,7 @@ const saveImage = async () => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #d1d5db;
   background: #f8fafc;
 }
 
@@ -456,7 +454,6 @@ const saveImage = async () => {
   padding: 0 10px;
   background: #f8f9fa;
   border: 1px solid #d1d5db;
-  border-left: none;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -473,9 +470,6 @@ const saveImage = async () => {
   background: #e9ecef;
 }
 
-.tab-actions .download-btn {
-  border-left: 1px solid #d1d5db;
-}
 
 .text-panel {
   border: none;
@@ -523,8 +517,6 @@ const saveImage = async () => {
 
 .image-panel .upload-area {
   flex: 1;
-  margin: 16px;
-  border: 2px dashed #d1d5db;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -533,19 +525,6 @@ const saveImage = async () => {
   overflow: hidden;
 }
 
-.upload-area:hover {
-  border-color: #60a5fa;
-  background: #f8fafc;
-}
-
-.upload-area.has-image {
-  border: none;
-  margin: 0;
-}
-
-.upload-area.has-image:hover {
-  background: transparent;
-}
 
 .preview-image {
   max-width: 100%;
@@ -557,24 +536,33 @@ const saveImage = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  color: #9ca3af;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
   padding: 40px;
 }
 
+.upload-content:hover {
+  background: #f8f9fa;
+}
+
 .upload-icon {
-  font-size: 48px;
+  font-size: 36px;
+  opacity: 0.6;
 }
 
 .upload-text {
-  color: #374151;
   font-size: 14px;
-  text-align: center;
+  font-weight: 500;
 }
 
 .upload-hint {
-  color: #6b7280;
   font-size: 12px;
-  margin-top: 4px;
+  color: #6b7280;
+  margin-top: 6px;
 }
 
 .result-area {
