@@ -1,60 +1,62 @@
 <template>
   <div class="qrcode-tool">
-    <div class="tool-container">
-      <!-- 左侧：文本输入 -->
-      <div class="input-section">
-        <div class="section-header">
-          <h3>文本内容</h3>
-          <button v-if="text" class="btn-clear" @click="clear">清空</button>
+    <div class="tool-section">
+      <!-- 顶部导航栏 -->
+      <div class="top-header">
+        <div class="tab-nav">
+          <button class="action-btn" @click="loadExample">示例</button>
         </div>
-        <textarea
-          v-model="text"
-          placeholder="输入要生成二维码的文本内容..."
-          class="text-input"
-        ></textarea>
+        <div class="tab-actions">
+          <button v-if="text" class="download-btn" @click="downloadQR">保存图片</button>
+          <button class="clear-btn" @click="clear" title="清空">× 清空</button>
+        </div>
       </div>
 
-      <!-- 右侧：二维码显示 -->
-      <div class="qrcode-section">
-        <div class="section-header">
-          <h3>二维码</h3>
-          <button v-if="text" class="btn-download" @click="downloadQR">
-            保存图片
-          </button>
+      <!-- 内容区域 -->
+      <div class="content-layout">
+        <!-- 左侧：文本输入 -->
+        <div class="input-panel">
+          <textarea
+            v-model="text"
+            placeholder="输入要生成二维码的文本内容..."
+            class="text-area"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          ></textarea>
         </div>
-        <div 
-          class="qrcode-display" 
-          @drop.prevent="handleDrop" 
-          @dragover.prevent="handleDragOver"
-          @dragenter.prevent="handleDragEnter"
-          @dragleave.prevent="handleDragLeave"
-          :class="{ 'drag-over': isDragOver }"
-        >
-          <input
-            type="file"
-            ref="fileInput"
-            accept="image/*"
-            class="hidden"
-            @change="handleFileSelect"
-          />
-          <div v-if="text" class="qrcode-canvas-wrapper" @click="triggerFileInput">
-            <canvas
-              ref="canvasRef"
-              width="300"
-              height="300"
-              class="qrcode-canvas"
-            ></canvas>
-            <div class="qrcode-overlay">
-              <div class="overlay-content">
-                <div class="overlay-icon">📤</div>
-                <div class="overlay-text">点击上传图片解析二维码</div>
-              </div>
+
+        <!-- 右侧：二维码显示 -->
+        <div class="output-panel">
+          <div 
+            class="qrcode-display" 
+            @drop.prevent="handleDrop" 
+            @dragover.prevent="handleDragOver"
+            @dragenter.prevent="handleDragEnter"
+            @dragleave.prevent="handleDragLeave"
+            :class="{ 'drag-over': isDragOver }"
+          >
+            <input
+              type="file"
+              ref="fileInput"
+              accept="image/*"
+              class="hidden"
+              @change="handleFileSelect"
+            />
+            <div v-if="text" class="qrcode-canvas-wrapper" @click="triggerFileInput">
+              <canvas
+                ref="canvasRef"
+                width="300"
+                height="300"
+                class="qrcode-canvas"
+              ></canvas>
             </div>
-          </div>
-          <div v-else class="qrcode-placeholder" @click="triggerFileInput">
-            <div class="placeholder-icon">📱</div>
-            <div class="placeholder-text">输入文本生成二维码</div>
-            <div class="placeholder-hint">或点击/拖拽图片解析二维码</div>
+            <div v-else class="qrcode-placeholder" @click="triggerFileInput">
+              <div class="placeholder-icon">📱</div>
+              <div class="placeholder-text">输入文本生成二维码</div>
+              <div class="placeholder-hint">或点击/拖拽图片解析二维码</div>
+            </div>
           </div>
         </div>
       </div>
@@ -70,6 +72,7 @@ import jsQR from 'jsqr'
 import QRCode from 'qrcode'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
+import { saveImage } from '../utils/fileUtils'
 
 const { copy } = useClipboard()
 const store = useToolsStore()
@@ -114,7 +117,12 @@ onMounted(generateQRCode)
 
 const clear = () => {
   text.value = ''
-  // ElMessage.success('已清空')
+}
+
+const loadExample = async () => {
+  text.value = 'https://www.baidu.com'
+  await nextTick()
+  generateQRCode()
 }
 
 const downloadQR = async () => {
@@ -153,55 +161,28 @@ const downloadQR = async () => {
           return
         }
 
-        // 转换为 PNG 并下载
-        canvas.toBlob(async (blob) => {
-          if (blob) {
-            // 尝试使用现代的文件保存API
-            if ('showSaveFilePicker' in window) {
-              try {
-                const fileHandle = await (window as any).showSaveFilePicker({
-                  suggestedName: 'qrcode.png',
-                  types: [{
-                    description: 'PNG图片',
-                    accept: { 'image/png': ['.png'] }
-                  }]
-                })
-                const writable = await fileHandle.createWritable()
-                await writable.write(blob)
-                await writable.close()
-                ElMessage.success('二维码已保存')
-              } catch (err) {
-                // 用户取消了保存
-                if ((err as Error).name !== 'AbortError') {
-                  // 降级到传统下载方式
-                  fallbackDownload(blob)
-                }
-              }
-            } else {
-              // 降级到传统下载方式
-              fallbackDownload(blob)
-            }
+        try {
+          // 获取canvas的base64数据
+          const dataURL = canvas.toDataURL('image/png')
+          const base64Data = dataURL.split(',')[1]
+          
+          // 使用通用保存工具
+          const savedPath = await saveImage(base64Data, 'qrcode.png', '保存二维码图片')
+          ElMessage.success(`二维码已保存到: ${savedPath}`)
+        } catch (saveError) {
+          const errorMsg = saveError?.toString() || ''
+          if (errorMsg.includes('用户取消保存')) {
+            // 用户取消，不显示错误提示
+          } else {
+            ElMessage.error(`保存失败: ${saveError}`)
           }
-        }, 'image/png')
+        }
       }
     )
   } catch (error) {
     console.error('下载失败:', error)
     ElMessage.error('下载失败')
   }
-}
-
-// 传统下载方式
-const fallbackDownload = (blob: Blob) => {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'qrcode.png'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
-  ElMessage.success('二维码已下载到默认下载目录')
 }
 
 // 触发文件选择
@@ -322,112 +303,138 @@ const copyText = async () => {
 
 <style scoped>
 .qrcode-tool {
-  padding: 12px;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
+  height: 100%;
+  padding: 16px;
 }
 
-.tool-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  height: calc(100vh - 80px);
-}
-
-.input-section,
-.qrcode-section {
+.tool-section {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 100%;
 }
 
-.section-header {
+.top-header {
   display: flex;
   justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  background: #ffffff;
+  height: 28px;
+  margin-bottom: 16px;
+}
+
+.tab-nav {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #d1d5db;
+}
+
+.action-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: none;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
   align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
 }
 
-.section-header h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
+.action-btn:hover {
+  background: #e9ecef;
 }
 
-.btn-clear {
-  padding: 4px 8px;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  border-radius: 4px;
-  font-size: 12px;
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 12px;
+  background: #ffffff;
+}
+
+.clear-btn,
+.download-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  border-left: none;
+  font-size: 10px;
+  color: #6c757d;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
 }
 
-.btn-clear:hover {
-  background: #fee2e2;
+.clear-btn:hover,
+.download-btn:hover {
+  background: #e9ecef;
 }
 
-.btn-download {
-  padding: 4px 8px;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
+.tab-actions .download-btn {
+  border-left: 1px solid #d1d5db;
 }
 
-.btn-download:hover {
-  background: #e2e8f0;
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: calc(100% - 48px);
+  align-items: stretch;
 }
 
-.text-input {
+.input-panel,
+.output-panel {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-area {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   border: none;
   outline: none;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 11px;
   line-height: 1.4;
   resize: none;
   background: transparent;
-  color: #1e293b;
+  color: #212529;
 }
 
-.text-input::placeholder {
-  color: #94a3b8;
+.text-area::placeholder {
+  color: #9ca3af;
 }
 
 .qrcode-display {
   flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 10px;
+  padding: 16px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .qrcode-display.drag-over {
   background: #f0f9ff;
   border: 2px dashed #3b82f6;
-  border-radius: 6px;
 }
 
 .qrcode-canvas-wrapper {
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   cursor: pointer;
@@ -436,23 +443,16 @@ const copyText = async () => {
 .qrcode-canvas {
   width: 200px;
   height: 200px;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #d1d5db;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .qrcode-canvas:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  opacity: 0.8;
 }
 
-.qrcode-hint {
-  margin-top: 8px;
-  font-size: 11px;
-  color: #64748b;
-  text-align: center;
-}
+
 
 .qrcode-placeholder {
   display: flex;
@@ -460,8 +460,15 @@ const copyText = async () => {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: #94a3b8;
+  color: #9ca3af;
   text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 40px;
+}
+
+.qrcode-placeholder:hover {
+  background: #f8f9fa;
 }
 
 .placeholder-icon {
@@ -476,7 +483,7 @@ const copyText = async () => {
 
 .placeholder-hint {
   font-size: 12px;
-  color: #64748b;
+  color: #6b7280;
   margin-top: 6px;
 }
 
@@ -484,58 +491,10 @@ const copyText = async () => {
   display: none;
 }
 
-.qrcode-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.qrcode-canvas-wrapper:hover .qrcode-overlay {
-  opacity: 1;
-}
-
-.overlay-content {
-  text-align: center;
-  color: white;
-}
-
-.overlay-icon {
-  font-size: 24px;
-  margin-bottom: 6px;
-}
-
-.overlay-text {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.qrcode-placeholder {
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.qrcode-placeholder:hover {
-  background: #f1f5f9;
-  border-radius: 6px;
-}
-
-@media (max-width: 1024px) {
-  .tool-container {
+@media (max-width: 768px) {
+  .content-layout {
     grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .qrcode-tool {
-    padding: 16px;
+    gap: 16px;
   }
   
   .qrcode-canvas {

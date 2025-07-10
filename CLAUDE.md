@@ -207,3 +207,169 @@ const editorOptions = {
 - 所有按钮、文本框、布局都要与现有模块保持一致
 - 避免添加不必要的 UI 元素，保持界面简洁
 - 优先考虑自动化处理，减少用户手动操作
+
+## 文件保存功能
+
+### 后端实现 (app.go)
+
+使用通用的 `SaveFile` 方法，支持保存任何类型的文件：
+
+```go
+// 文件过滤器类型
+type FileFilter struct {
+	DisplayName string `json:"displayName"`
+	Pattern     string `json:"pattern"`
+}
+
+// 保存文件选项
+type SaveFileOptions struct {
+	Title           string       `json:"title"`
+	DefaultFilename string       `json:"defaultFilename"`
+	Filters         []FileFilter `json:"filters"`
+}
+
+// 通用保存文件方法
+func (a *App) SaveFile(content string, options SaveFileOptions, isBase64 bool) (string, error) {
+	// 转换过滤器格式
+	var filters []runtime.FileFilter
+	for _, filter := range options.Filters {
+		filters = append(filters, runtime.FileFilter{
+			DisplayName: filter.DisplayName,
+			Pattern:     filter.Pattern,
+		})
+	}
+
+	// 弹出原生保存对话框
+	fileName, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		DefaultFilename: options.DefaultFilename,
+		Title:          options.Title,
+		Filters:        filters,
+	})
+	
+	if err != nil || fileName == "" {
+		return "", fmt.Errorf("用户取消保存")
+	}
+
+	var data []byte
+	if isBase64 {
+		// 解码base64数据
+		data, err = base64.StdEncoding.DecodeString(content)
+		if err != nil {
+			return "", fmt.Errorf("解码base64数据失败: %v", err)
+		}
+	} else {
+		// 普通文本
+		data = []byte(content)
+	}
+
+	// 写入文件
+	err = os.WriteFile(fileName, data, 0644)
+	if err != nil {
+		return "", fmt.Errorf("写入文件失败: %v", err)
+	}
+
+	return fileName, nil
+}
+```
+
+### 前端工具库 (frontend/src/utils/fileUtils.ts)
+
+提供完整的文件保存工具库：
+
+```typescript
+import { SaveFile } from '../../wailsjs/go/main/App'
+import { main } from '../../wailsjs/go/models'
+import { ElMessage } from 'element-plus'
+
+// 常用文件过滤器
+export const FILE_FILTERS = {
+  IMAGE_PNG: { displayName: 'PNG图片 (*.png)', pattern: '*.png' },
+  IMAGE_JPG: { displayName: 'JPEG图片 (*.jpg)', pattern: '*.jpg' },
+  TEXT: { displayName: '文本文件 (*.txt)', pattern: '*.txt' },
+  JSON: { displayName: 'JSON文件 (*.json)', pattern: '*.json' },
+  XML: { displayName: 'XML文件 (*.xml)', pattern: '*.xml' },
+  CSV: { displayName: 'CSV文件 (*.csv)', pattern: '*.csv' },
+  ALL: { displayName: '所有文件 (*.*)', pattern: '*.*' }
+}
+
+// 保存图片（base64格式）
+export async function saveImage(
+  base64Data: string,
+  filename: string = 'image.png',
+  title: string = '保存图片'
+): Promise<string> {
+  const filters = [
+    new main.FileFilter(FILE_FILTERS.IMAGE_PNG),
+    new main.FileFilter(FILE_FILTERS.ALL)
+  ]
+  
+  const options = new main.SaveFileOptions({
+    title,
+    defaultFilename: filename,
+    filters
+  })
+
+  const savedPath = await SaveFile(base64Data, options, true)
+  return savedPath
+}
+
+// 保存文本文件
+export async function saveText(
+  content: string,
+  filename: string = 'file.txt',
+  title: string = '保存文件',
+  customFilters: any[] = [FILE_FILTERS.TEXT, FILE_FILTERS.ALL]
+): Promise<string> {
+  const filters = customFilters.map(filter => new main.FileFilter(filter))
+  
+  const options = new main.SaveFileOptions({
+    title,
+    defaultFilename: filename,
+    filters
+  })
+
+  const savedPath = await SaveFile(content, options, false)
+  return savedPath
+}
+
+// 保存JSON文件
+export async function saveJSON(data: any, filename: string = 'data.json'): Promise<string> {
+  const content = JSON.stringify(data, null, 2)
+  return saveText(content, filename, '保存JSON文件', [FILE_FILTERS.JSON, FILE_FILTERS.ALL])
+}
+```
+
+### 使用方法
+
+在任何 Vue 组件中：
+
+```typescript
+import { saveImage, saveText, saveJSON } from '../utils/fileUtils'
+import { ElMessage } from 'element-plus'
+
+// 保存图片
+try {
+  const savedPath = await saveImage(base64Data, 'qrcode.png', '保存二维码图片')
+  ElMessage.success(`图片已保存到: ${savedPath}`)
+} catch (error) {
+  if (!error?.toString().includes('用户取消保存')) {
+    ElMessage.error(`保存失败: ${error}`)
+  }
+}
+
+// 保存文本
+try {
+  const savedPath = await saveText(textContent, 'output.txt', '保存处理结果')
+  ElMessage.success(`文件已保存到: ${savedPath}`)
+} catch (error) {
+  ElMessage.error(`保存失败: ${error}`)
+}
+```
+
+### 注意事项
+
+1. **类型安全**：必须使用 Wails 生成的类型 `main.FileFilter` 和 `main.SaveFileOptions`
+2. **重新生成绑定**：修改后端方法后需要运行 `wails generate module` 重新生成前端绑定
+3. **UI 提示分离**：工具函数不包含 UI 提示，由调用方决定如何处理成功和错误
+4. **用户取消处理**：用户取消保存时不显示错误提示，这是正常操作
+5. **原生对话框**：使用系统原生的保存对话框，用户体验更好

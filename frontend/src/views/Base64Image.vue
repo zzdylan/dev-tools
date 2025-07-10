@@ -27,6 +27,7 @@
           </button>
         </div>
         <div class="tab-actions">
+          <button v-if="imageUrl" class="download-btn" @click="saveImage" title="保存图片">保存图片</button>
           <button class="clear-btn" @click="clearBase64" title="清空">
             × 清空
           </button>
@@ -57,7 +58,7 @@
 
         <!-- 右侧：图片区域 -->
         <div class="image-panel">
-          <div class="upload-area" @drop.prevent="handleDrop" @dragover.prevent>
+          <div class="upload-area" :class="{ 'has-image': !!imageUrl }" @drop.prevent="handleDrop" @dragover.prevent>
             <input
               type="file"
               ref="fileInput"
@@ -95,6 +96,7 @@ import { ElMessage } from "element-plus";
 import { useClipboard } from "@vueuse/core";
 import { useToolsStore } from "../stores/tools";
 import { storeToRefs } from "pinia";
+import { saveImage as saveImageFile } from "../utils/fileUtils";
 
 const { copy } = useClipboard();
 const store = useToolsStore();
@@ -320,6 +322,34 @@ const getByteInfo = () => {
   const bytes = new TextEncoder().encode(content).length;
   return `${bytes} bytes`;
 };
+
+// 保存图片
+const saveImage = async () => {
+  if (!imageUrl.value) {
+    ElMessage.error('没有图片可保存');
+    return;
+  }
+
+  try {
+    // 从 data URL 中提取 base64 数据
+    const base64Data = imageUrl.value.split(',')[1];
+    if (!base64Data) {
+      ElMessage.error('图片数据格式错误');
+      return;
+    }
+
+    // 调用保存函数
+    const savedPath = await saveImageFile(base64Data, 'image.png', '保存图片');
+    ElMessage.success(`图片已保存到: ${savedPath}`);
+  } catch (error) {
+    const errorMsg = error?.toString() || '';
+    if (errorMsg.includes('用户取消保存')) {
+      // 用户取消，不显示错误提示
+    } else {
+      ElMessage.error(`保存失败: ${error}`);
+    }
+  }
+};
 </script>
 
 <style scoped>
@@ -421,10 +451,12 @@ const getByteInfo = () => {
   background: #ffffff;
 }
 
-.clear-btn {
+.clear-btn,
+.download-btn {
   padding: 0 10px;
   background: #f8f9fa;
   border: 1px solid #d1d5db;
+  border-left: none;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -436,8 +468,13 @@ const getByteInfo = () => {
   height: 100%;
 }
 
-.clear-btn:hover {
+.clear-btn:hover,
+.download-btn:hover {
   background: #e9ecef;
+}
+
+.tab-actions .download-btn {
+  border-left: 1px solid #d1d5db;
 }
 
 .text-panel {
@@ -499,6 +536,15 @@ const getByteInfo = () => {
 .upload-area:hover {
   border-color: #60a5fa;
   background: #f8fafc;
+}
+
+.upload-area.has-image {
+  border: none;
+  margin: 0;
+}
+
+.upload-area.has-image:hover {
+  background: transparent;
 }
 
 .preview-image {
