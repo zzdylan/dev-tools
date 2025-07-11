@@ -428,7 +428,7 @@ const toggleFullscreen = () => {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  padding: 24px;
+  padding: 0;
   background: #ffffff;
   overflow: auto;
 }
