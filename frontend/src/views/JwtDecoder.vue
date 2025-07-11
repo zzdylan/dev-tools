@@ -157,7 +157,7 @@ onMounted(() => {
   align-items: stretch;
   padding: 0;
   margin: 0;
-  background: #ffffff;
+  background: #f8f9fa;
   height: 28px;
   flex-shrink: 0;
 }
@@ -170,10 +170,8 @@ onMounted(() => {
 
 .tab-actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  background: #ffffff;
+  align-items: stretch;
+  background: #f8f9fa;
 }
 
 .action-btn {
@@ -181,6 +179,8 @@ onMounted(() => {
   margin: 0;
   background: #f8f9fa;
   border: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -201,7 +201,10 @@ onMounted(() => {
   padding: 0 10px;
   margin: 0;
   background: #f8f9fa;
-  border: none;
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;

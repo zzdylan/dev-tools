@@ -162,35 +162,45 @@ const relativeTime = computed(() => {
 
 <style scoped>
 .time-converter {
+  height: 100%;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background: #f8fafc;
 }
 
 .top-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  height: 35px;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  background: #f8f9fa;
+  height: 28px;
   flex-shrink: 0;
 }
 
 .tab-nav {
   display: flex;
-  height: 100%;
+  align-items: stretch;
+  background: #f8f9fa;
 }
 
 .tab-actions {
   display: flex;
-  height: 100%;
+  align-items: stretch;
+  background: #f8f9fa;
 }
 
 .current-time-btn {
   padding: 0 10px;
+  margin: 0;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
+  border: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -200,6 +210,7 @@ const relativeTime = computed(() => {
   justify-content: center;
   min-width: 60px;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .current-time-btn:hover {

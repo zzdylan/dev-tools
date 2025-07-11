@@ -186,7 +186,7 @@ watch(urlText, () => {
   align-items: stretch;
   padding: 0;
   margin: 0;
-  background: #ffffff;
+  background: #f8f9fa;
   height: 28px;
   flex-shrink: 0;
 }
@@ -199,11 +199,8 @@ watch(urlText, () => {
 
 .tab-actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  background: #ffffff;
-  height: 100%;
+  align-items: stretch;
+  background: #f8f9fa;
 }
 
 .tab-btn {
@@ -223,8 +220,16 @@ watch(urlText, () => {
   box-sizing: border-box;
 }
 
+.tab-btn:first-child {
+  border-left: 1px solid #d1d5db;
+}
+
 .tab-btn + .tab-btn {
   border-left: 1px solid #d1d5db;
+}
+
+.tab-btn:last-child {
+  border-right: 1px solid #d1d5db;
 }
 
 .tab-btn:hover {
@@ -245,7 +250,10 @@ watch(urlText, () => {
   padding: 0 10px;
   margin: 0;
   background: #f8f9fa;
-  border: none;
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;

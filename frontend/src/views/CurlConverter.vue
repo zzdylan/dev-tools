@@ -535,7 +535,7 @@ watch(targetLang, () => {
   align-items: stretch;
   padding: 0;
   margin: 0;
-  background: #ffffff;
+  background: #f8f9fa;
   height: 28px;
   flex-shrink: 0;
 }
@@ -543,21 +543,21 @@ watch(targetLang, () => {
 .tab-nav {
   display: flex;
   align-items: stretch;
-  border: 1px solid #d1d5db;
+  background: #f8f9fa;
 }
 
 .tab-actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  background: #ffffff;
+  align-items: stretch;
+  background: #f8f9fa;
 }
 
 .action-btn {
   padding: 0 10px;
+  margin: 0;
   background: #f8f9fa;
   border: none;
+  border-left: 1px solid #d1d5db;
   border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
@@ -568,6 +568,7 @@ watch(targetLang, () => {
   justify-content: center;
   min-width: 45px;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .action-btn:hover {
@@ -583,8 +584,11 @@ watch(targetLang, () => {
   height: 100%;
   padding: 0 10px;
   padding-right: 24px;
+  margin: 0;
   border: none;
   border-radius: 0;
+  border-left: none;
+  border-right: 1px solid #d1d5db;
   background: #f8f9fa;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   background-position: right 6px center;
@@ -599,6 +603,7 @@ watch(targetLang, () => {
   -webkit-appearance: none;
   -moz-appearance: none;
   min-width: 80px;
+  box-sizing: border-box;
 }
 
 .lang-select:hover {
@@ -611,8 +616,12 @@ watch(targetLang, () => {
 
 .clear-btn {
   padding: 0 10px;
+  margin: 0;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -622,6 +631,7 @@ watch(targetLang, () => {
   justify-content: center;
   min-width: 45px;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .clear-btn:hover {
@@ -683,7 +693,7 @@ watch(targetLang, () => {
 
 @media (max-width: 1024px) {
   .content-layout {
-    grid-template-rows: 1fr 1.5fr;
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 }

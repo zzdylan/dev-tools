@@ -556,29 +556,33 @@ const closeTab = (targetName: string | number) => {
 
 .tabs-header {
   flex-shrink: 0;
-  background: #f5f5f5;
+  background: #f8f9fa;
   border-bottom: 1px solid #dcdcdc;
   overflow-x: auto;
   overflow-y: hidden;
+  height: 30px;
+  display: flex;
+  align-items: stretch;
 }
 
 .tabs-nav {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   min-width: max-content;
+  background: #f8f9fa;
 }
 
 .tab-item {
-  border: 1px solid #dcdcdc;
-  border-bottom: none;
-  padding: 6px 10px;
-  background: #f5f5f5;
-  color: #333333;
-  font-size: 11px;
+  padding: 0 10px;
+  margin: 0;
+  background: #f8f9fa;
+  border: none;
+  color: #6c757d;
+  font-size: 10px;
   cursor: pointer;
   min-width: 70px;
   max-width: 110px;
-  height: 30px;
+  height: 100%;
   text-align: center;
   display: flex;
   align-items: center;
@@ -587,31 +591,32 @@ const closeTab = (targetName: string | number) => {
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
+  transition: all 0.2s;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
 }
 
-.tab-item:not(:first-child) {
+.tab-item + .tab-item {
   border-left: none;
 }
 
 .tab-item:hover:not(.active) {
-  background: #eeeeee;
-  color: #000000;
+  background: #e9ecef;
 }
 
 .tab-item.active {
   background: #ffffff;
-  color: #1976d2;
+  color: #212529;
   font-weight: 500;
-  border-bottom: 1px solid #ffffff;
   z-index: 1;
   position: relative;
 }
 
 .close-btn {
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: 2px;
-  font-size: 12px;
-  margin-left: 8px;
+  font-size: 10px;
+  margin-left: 4px;
 }
 
 .close-btn:hover {
@@ -620,26 +625,26 @@ const closeTab = (targetName: string | number) => {
 }
 
 .add-tab {
-  border: 1px solid #dcdcdc;
-  border-left: none;
-  border-bottom: none;
-  padding: 6px 10px;
-  background: #f5f5f5;
-  color: #666666;
-  font-size: 12px;
+  padding: 0 10px;
+  margin: 0;
+  background: #f8f9fa;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  color: #6c757d;
+  font-size: 10px;
   cursor: pointer;
   width: 28px;
   min-width: 28px;
-  height: 30px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   box-sizing: border-box;
+  transition: all 0.2s;
 }
 
 .add-tab:hover {
-  background: #eeeeee;
-  color: #333333;
+  background: #e9ecef;
 }
 </style>
