@@ -148,17 +148,75 @@ make clean
 
 ### 样式规范
 
-**按钮样式：**
-- 统一高度：`height: 28px`
+**顶部导航栏样式（重要）：**
+```css
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  background: #f8f9fa;  /* 统一背景色 */
+  height: 28px;         /* 统一高度 */
+  flex-shrink: 0;
+}
+
+.tab-nav {
+  display: flex;
+  align-items: stretch;
+  background: #f8f9fa;   /* 统一背景色 */
+}
+
+.tab-actions {
+  display: flex;
+  align-items: stretch;  /* 改为 stretch，不是 center */
+  background: #f8f9fa;   /* 统一背景色，不是白色 */
+}
+```
+
+**按钮样式（必须严格遵循）：**
+- 统一高度：`height: 100%` （继承父容器28px）
 - 字体大小：`font-size: 10px`
 - 颜色：`color: #6c757d`
 - 背景：`background: #f8f9fa`
-- 边框：`border: 1px solid #d1d5db`
 - 圆角：`border-radius: 0` （无圆角）
 - 内边距：`padding: 0 10px`
 - 最小宽度：`min-width: 45px`
 - hover 状态：`background: #e9ecef`
 - active 状态：`background: #ffffff; color: #212529`
+- **边框规则**：
+  - 第一个按钮：`border-left: 1px solid #d1d5db`
+  - 相邻按钮：`border-left: 1px solid #d1d5db`（避免重复）
+  - 最后一个按钮：`border-right: 1px solid #d1d5db`
+  - 清空按钮：`border-left: 1px solid #d1d5db; border-right: 1px solid #d1d5db; border-top: none; border-bottom: none`
+
+**按钮边框完整示例：**
+```css
+/* 标签页按钮组 */
+.tab-btn:first-child {
+  border-left: 1px solid #d1d5db;
+}
+.tab-btn + .tab-btn {
+  border-left: 1px solid #d1d5db;
+}
+.tab-btn:last-child {
+  border-right: 1px solid #d1d5db;
+}
+
+/* 示例按钮 */
+.action-btn {
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+}
+
+/* 清空按钮 */
+.clear-btn {
+  border-top: none;
+  border-bottom: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+}
+```
 
 **文本区域样式：**
 - 字体：`font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace`
@@ -203,10 +261,25 @@ const editorOptions = {
 
 ### 重要提醒
 
-- 新增工具模块时必须遵循以上设计规范
-- 所有按钮、文本框、布局都要与现有模块保持一致
-- 避免添加不必要的 UI 元素，保持界面简洁
-- 优先考虑自动化处理，减少用户手动操作
+- **新增工具模块时必须遵循以上设计规范**
+- **所有按钮、文本框、布局都要与现有模块保持一致**
+- **特别注意按钮边框规则，确保按钮之间有正确的分隔线**
+- **顶部导航栏背景必须统一为 `#f8f9fa`**
+- **避免添加不必要的 UI 元素，保持界面简洁**
+- **优先考虑自动化处理，减少用户手动操作**
+
+### 开发新模块时的检查清单
+
+创建新工具模块时，请确保：
+
+1. ✅ 顶部导航栏背景色为 `#f8f9fa`
+2. ✅ 所有按钮高度为 `100%`，字体大小为 `10px`
+3. ✅ 按钮边框按规则设置，确保有正确的分隔线
+4. ✅ 清空按钮样式正确（左右边框，上下无边框）
+5. ✅ hover效果统一为 `#e9ecef`
+6. ✅ 容器使用 `margin: 0 !important; padding: 0 !important`
+7. ✅ 文本区域使用等宽字体和统一的字体大小
+8. ✅ 支持自动处理和示例数据加载
 
 ## 文件保存功能
 
