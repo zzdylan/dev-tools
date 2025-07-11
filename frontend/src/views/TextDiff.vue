@@ -198,7 +198,7 @@ const loadSample = () => {
 .tab-nav {
   display: flex;
   align-items: stretch;
-  border: 1px solid #d1d5db;
+  background: #f8f9fa;
 }
 
 .tab-actions {
@@ -241,8 +241,9 @@ const loadSample = () => {
 
 .action-btn {
   padding: 0 10px;
+  margin: 0;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
+  border: none;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -252,6 +253,7 @@ const loadSample = () => {
   justify-content: center;
   min-width: 45px;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .action-btn:hover {
@@ -260,8 +262,9 @@ const loadSample = () => {
 
 .clear-btn {
   padding: 0 10px;
+  margin: 0;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
+  border: none;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -271,6 +274,7 @@ const loadSample = () => {
   justify-content: center;
   min-width: 45px;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .clear-btn:hover {

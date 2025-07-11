@@ -171,8 +171,16 @@ watch(activeTab, switchMode)
   box-sizing: border-box;
 }
 
+.tab-btn:first-child {
+  border-left: 1px solid #d1d5db;
+}
+
 .tab-btn + .tab-btn {
   border-left: 1px solid #d1d5db;
+}
+
+.tab-btn:last-child {
+  border-right: 1px solid #d1d5db;
 }
 
 .tab-btn:hover {
@@ -188,16 +196,14 @@ watch(activeTab, switchMode)
 .tab-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  background: #ffffff;
+  background: #f8f9fa;
 }
 
 .clear-btn {
   padding: 0 10px;
   margin: 0;
   background: #f8f9fa;
-  border: none;
+  border: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
