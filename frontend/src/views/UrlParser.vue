@@ -54,12 +54,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useClipboard } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
-
-const { copy: copyToClipboard } = useClipboard()
 const store = useToolsStore()
 const { urlParser } = storeToRefs(store)
 const urlText = computed({
@@ -175,8 +171,12 @@ watch(urlText, () => {
 <style scoped>
 .url-parser {
   height: 100%;
-  background: #ffffff;
-  padding: 16px;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -185,9 +185,10 @@ watch(urlText, () => {
   justify-content: space-between;
   align-items: stretch;
   padding: 0;
+  margin: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .tab-nav {
@@ -272,6 +273,7 @@ watch(urlText, () => {
   transition: all 0.2s;
   background: white;
   outline: none;
+  flex-shrink: 0;
 }
 
 .url-input:focus {
@@ -290,6 +292,8 @@ watch(urlText, () => {
   background: white;
   border: 1px solid #d1d5db;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .empty-row .empty-cell {

@@ -44,13 +44,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useClipboard } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
-
-const { copy: copyToClipboard } = useClipboard()
 const store = useToolsStore()
 const { urlConverter } = storeToRefs(store)
 const rawText = computed({
@@ -120,15 +117,18 @@ const autoConvert = () => {
 }
 
 // 监听输入文本变化
-import { watch } from 'vue'
 watch(rawText, autoConvert)
 </script>
 
 <style scoped>
 .url-converter {
   height: 100%;
-  background: #ffffff;
-  padding: 16px;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-header {
@@ -136,9 +136,10 @@ watch(rawText, autoConvert)
   justify-content: space-between;
   align-items: stretch;
   padding: 0;
+  margin: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .tab-nav {
@@ -209,7 +210,7 @@ watch(rawText, autoConvert)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  height: calc(100% - 44px);
+  flex: 1;
   align-items: stretch;
 }
 
@@ -222,9 +223,6 @@ watch(rawText, autoConvert)
   overflow: hidden;
 }
 
-.output-section {
-  border-left: none;
-}
 
 
 .input-wrapper,
@@ -271,11 +269,6 @@ watch(rawText, autoConvert)
   .content-container {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-  
-  .input-section,
-  .output-section {
-    border: 1px solid #d1d5db;
   }
 }
 </style>

@@ -1,58 +1,49 @@
 <template>
   <div class="text-diff">
-    <!-- 输入区域 -->
-    <div class="input-section">
-      <div class="input-panels">
-        <!-- 左侧文本 -->
-        <div class="input-panel">
-          <div class="panel-header">
-            <h3>原始文本</h3>
-            <button v-if="oldText" class="btn-clear" @click="clearOldText">清空</button>
-          </div>
-          <div ref="oldEditor" class="editor-container"></div>
-        </div>
-
-        <!-- 右侧文本 -->
-        <div class="input-panel">
-          <div class="panel-header">
-            <h3>新文本</h3>
-            <button v-if="newText" class="btn-clear" @click="clearNewText">清空</button>
-          </div>
-          <div ref="newEditor" class="editor-container"></div>
-        </div>
+    <!-- 顶部：工具栏 -->
+    <div class="top-header">
+      <div class="tab-nav">
+        <button class="action-btn" @click="loadSample" title="示例">示例</button>
+      </div>
+      <div class="tab-actions">
+        <label class="option-item">
+          <input type="checkbox" v-model="ignoreWhitespace" class="checkbox" />
+          <span class="option-text">忽略空白</span>
+        </label>
+        <button class="clear-btn" @click="clearAll" title="清空">× 清空</button>
       </div>
     </div>
 
-    <!-- 对比结果 -->
-    <div class="diff-result" v-if="(oldText || newText) && diffResult !== '无差异'">
-      <div class="result-header">
-        <h3>差异对比结果</h3>
-        <div class="diff-options">
-          <label class="option-item">
-            <input
-              type="checkbox"
-              v-model="ignoreWhitespace"
-              class="checkbox"
-            />
-            <span class="option-text">忽略空白字符</span>
-          </label>
+    <!-- 底部：内容区域 -->
+    <div class="content-layout">
+      <!-- 左侧：原始文本 -->
+      <div class="input-panel">
+        <div class="panel-label">原始文本</div>
+        <div ref="oldEditor" class="editor-container"></div>
+      </div>
+
+      <!-- 右侧：新文本和对比结果 -->
+      <div class="output-panel">
+        <div class="panel-label">新文本</div>
+        <div ref="newEditor" class="editor-container"></div>
+        
+        <!-- 对比结果 -->
+        <div class="diff-result" v-if="(oldText || newText) && diffResult !== '无差异'">
+          <div class="result-content" v-html="diffResult"></div>
+        </div>
+        
+        <!-- 无差异提示 -->
+        <div class="no-diff" v-if="(oldText || newText) && diffResult === '无差异'">
+          <div class="no-diff-icon">✓</div>
+          <div class="no-diff-text">文本内容相同</div>
         </div>
       </div>
-      <div class="result-content" v-html="diffResult"></div>
-    </div>
-
-    <!-- 无差异提示 -->
-    <div class="no-diff" v-if="(oldText || newText) && diffResult === '无差异'">
-      <div class="no-diff-icon">✓</div>
-      <div class="no-diff-text">文本内容相同，没有差异</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useClipboard } from '@vueuse/core'
 import { diffLines } from 'diff'
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
@@ -60,7 +51,6 @@ import { lineNumbers } from '@codemirror/view'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
 
-const { copy: copyToClipboard } = useClipboard()
 const store = useToolsStore()
 const { textDiff } = storeToRefs(store)
 const oldText = computed({
@@ -148,20 +138,36 @@ const generateDiff = () => {
 
 watch([oldText, newText, ignoreWhitespace], generateDiff, { immediate: true })
 
-const clearOldText = () => {
+const clearAll = () => {
   oldText.value = ''
+  newText.value = ''
   if (oldEditorView) {
     oldEditorView.dispatch({
       changes: { from: 0, to: oldEditorView.state.doc.length, insert: '' }
     })
   }
-}
-
-const clearNewText = () => {
-  newText.value = ''
   if (newEditorView) {
     newEditorView.dispatch({
       changes: { from: 0, to: newEditorView.state.doc.length, insert: '' }
+    })
+  }
+}
+
+const loadSample = () => {
+  const sampleOld = 'Hello World\nThis is line 2\nThis is line 3'
+  const sampleNew = 'Hello World\nThis is modified line 2\nThis is line 3\nThis is new line 4'
+  
+  oldText.value = sampleOld
+  newText.value = sampleNew
+  
+  if (oldEditorView) {
+    oldEditorView.dispatch({
+      changes: { from: 0, to: oldEditorView.state.doc.length, insert: sampleOld }
+    })
+  }
+  if (newEditorView) {
+    newEditorView.dispatch({
+      changes: { from: 0, to: newEditorView.state.doc.length, insert: sampleNew }
     })
   }
 }
@@ -169,69 +175,164 @@ const clearNewText = () => {
 
 <style scoped>
 .text-diff {
-  padding: 16px;
-  max-width: 1400px;
-  margin: 0 auto;
-  background: #f8fafc;
-  min-height: 100vh;
+  height: 100%;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
 
-.input-section {
-  margin-bottom: 16px;
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  background: #ffffff;
+  height: 28px;
+  flex-shrink: 0;
 }
 
-.input-panels {
+.tab-nav {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #d1d5db;
+}
+
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: #ffffff;
+}
+
+.tab-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #212529;
+  font-weight: 500;
+}
+
+.action-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.action-btn:hover {
+  background: #e9ecef;
+}
+
+.clear-btn {
+  padding: 0 10px;
+  background: #f8f9fa;
+  border: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+}
+
+.clear-btn:hover {
+  background: #e9ecef;
+}
+
+.content-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  flex: 1;
+  align-items: stretch;
 }
 
-.input-panel {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
+.input-panel,
+.output-panel {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.panel-header,
-.result-header {
+.panel-label {
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #d1d5db;
+  font-size: 10px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.option-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-}
-
-.panel-header h3,
-.result-header h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.btn-clear {
-  padding: 4px 8px;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  border-radius: 4px;
-  font-size: 12px;
+  gap: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  padding: 2px 4px;
+  transition: background-color 0.2s;
 }
 
-.btn-clear:hover {
-  background: #fee2e2;
+.option-item:hover {
+  background-color: #f1f5f9;
+}
+
+.checkbox {
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.option-text {
+  font-size: 10px;
+  color: #6c757d;
+  user-select: none;
+  font-weight: 500;
 }
 
 .editor-container {
   flex: 1;
-  min-height: 200px;
+  min-height: 150px;
 }
 
 :deep(.cm-editor) {
@@ -249,49 +350,52 @@ const clearNewText = () => {
 }
 
 .diff-result {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
+  border-top: 1px solid #d1d5db;
+  background: #ffffff;
+  flex: 1;
   overflow: hidden;
 }
 
 .result-content {
   padding: 0;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.4;
   background: white;
-  max-height: 300px;
+  height: 100%;
   overflow-y: auto;
 }
 
 .no-diff {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
-  padding: 30px;
+  border-top: 1px solid #d1d5db;
+  background: #f8f9fa;
+  padding: 20px;
   text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .no-diff-icon {
-  font-size: 36px;
+  font-size: 24px;
   color: #10b981;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .no-diff-text {
-  font-size: 14px;
-  color: #64748b;
+  font-size: 11px;
+  color: #6c757d;
   font-weight: 500;
 }
 
 :deep(.diff-line) {
   display: flex;
-  padding: 6px 12px;
+  padding: 4px 8px;
   border-bottom: 1px solid #f1f5f9;
   transition: background-color 0.2s;
+  font-size: 11px;
 }
 
 :deep(.diff-line:hover) {
@@ -319,13 +423,13 @@ const clearNewText = () => {
 }
 
 :deep(.line-number) {
-  width: 36px;
-  margin-right: 12px;
+  width: 32px;
+  margin-right: 8px;
   color: #94a3b8;
   user-select: none;
   text-align: right;
-  padding-right: 8px;
-  font-size: 11px;
+  padding-right: 6px;
+  font-size: 10px;
   font-weight: 500;
 }
 
@@ -333,51 +437,15 @@ const clearNewText = () => {
   border-right: 1px solid #e2e8f0;
 }
 
-.diff-options {
-  display: flex;
-  gap: 12px;
-}
-
-.option-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 3px 6px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.option-item:hover {
-  background-color: #f1f5f9;
-}
-
-.checkbox {
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-  accent-color: #3b82f6;
-}
-
-.option-text {
-  font-size: 12px;
-  color: #475569;
-  user-select: none;
-  font-weight: 500;
-}
 
 @media (max-width: 1024px) {
-  .input-panels {
+  .content-layout {
     grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .text-diff {
-    padding: 16px;
+    gap: 12px;
   }
   
   .editor-container {
-    min-height: 150px;
+    min-height: 120px;
   }
 }
 </style>

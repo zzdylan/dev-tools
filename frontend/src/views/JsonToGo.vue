@@ -161,8 +161,12 @@ onMounted(() => {
 <style scoped>
 .json-to-go {
   height: 100%;
-  background: #ffffff;
-  padding: 16px;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-header {
@@ -170,14 +174,16 @@ onMounted(() => {
   justify-content: space-between;
   align-items: stretch;
   padding: 0;
+  margin: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .tab-nav {
   display: flex;
   align-items: stretch;
+  border: 1px solid #d1d5db;
 }
 
 .tab-actions {
@@ -191,7 +197,7 @@ onMounted(() => {
 .action-btn {
   padding: 0 10px;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
+  border: none;
   border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
@@ -232,7 +238,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  height: calc(100% - 44px);
+  flex: 1;
   align-items: stretch;
 }
 
@@ -252,8 +258,7 @@ onMounted(() => {
   gap: 8px;
   padding: 0 12px;
   height: 28px;
-  border: 1px solid #d1d5db;
-  border-left: none;
+  border: none;
   background: #f8f9fa;
   font-size: 11px;
   color: #6c757d;
@@ -278,10 +283,6 @@ onMounted(() => {
   .content-layout {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-  
-  .json-to-go {
-    padding: 12px;
   }
   
   .tab-actions {

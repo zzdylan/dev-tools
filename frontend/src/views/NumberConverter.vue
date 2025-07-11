@@ -157,8 +157,12 @@ const clear = () => {
 <style scoped>
 .number-converter {
   height: 100%;
-  background: #ffffff;
-  padding: 16px;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-header {
@@ -166,14 +170,16 @@ const clear = () => {
   justify-content: space-between;
   align-items: stretch;
   padding: 0;
+  margin: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .tab-nav {
   display: flex;
   align-items: stretch;
+  border: 1px solid #d1d5db;
 }
 
 .tab-actions {
@@ -187,7 +193,7 @@ const clear = () => {
 .tab-btn {
   padding: 0 10px;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
+  border: none;
   border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
@@ -200,8 +206,8 @@ const clear = () => {
   height: 100%;
 }
 
-.tab-btn:not(:first-child) {
-  border-left: none;
+.tab-btn:last-child {
+  border-right: none;
 }
 
 .tab-btn:hover {
@@ -221,8 +227,8 @@ const clear = () => {
 .action-btn {
   padding: 0 10px;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
-  border-left: none;
+  border: none;
+  border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -261,7 +267,7 @@ const clear = () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  height: calc(100% - 44px);
+  flex: 1;
   align-items: stretch;
 }
 

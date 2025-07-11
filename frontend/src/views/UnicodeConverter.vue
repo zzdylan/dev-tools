@@ -38,11 +38,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useClipboard } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
 
-const { copy: copyToClipboard } = useClipboard()
 const store = useToolsStore()
 const { unicodeConverter } = storeToRefs(store)
 
@@ -128,8 +126,12 @@ watch(rawText, autoConvert)
 <style scoped>
 .unicode-converter {
   height: 100%;
-  background: #ffffff;
-  padding: 16px;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-header {
@@ -137,9 +139,10 @@ watch(rawText, autoConvert)
   justify-content: space-between;
   align-items: stretch;
   padding: 0;
+  margin: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .tab-nav {
@@ -213,7 +216,7 @@ watch(rawText, autoConvert)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  height: calc(100% - 44px);
+  flex: 1;
   align-items: stretch;
 }
 
@@ -254,10 +257,6 @@ watch(rawText, autoConvert)
   .content-layout {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-  
-  .unicode-converter {
-    padding: 12px;
   }
 }
 </style>

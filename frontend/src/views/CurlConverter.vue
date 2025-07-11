@@ -3,7 +3,9 @@
     <!-- 顶部：标签导航 -->
     <div class="top-header">
       <div class="tab-nav">
-        <button class="action-btn" @click="loadSample" title="示例">示例</button>
+        <button class="action-btn" @click="loadSample" title="示例">
+          示例
+        </button>
         <div class="lang-selector">
           <select v-model="targetLang" class="lang-select">
             <option value="javascript">JavaScript</option>
@@ -50,33 +52,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useClipboard } from '@vueuse/core'
-import { useToolsStore } from '../stores/tools'
-import { storeToRefs } from 'pinia'
-import MonacoEditor from 'monaco-editor-vue3'
+import { computed, ref, watch } from "vue";
+import { ElMessage } from "element-plus";
+import { useToolsStore } from "../stores/tools";
+import { storeToRefs } from "pinia";
+import MonacoEditor from "monaco-editor-vue3";
 
-const { copy: copyToClipboard } = useClipboard()
-const store = useToolsStore()
-const { curlConverter } = storeToRefs(store)
+const store = useToolsStore();
+const { curlConverter } = storeToRefs(store);
 
 const curlCommand = computed({
   get: () => curlConverter.value.curlCommand,
   set: (val) => (curlConverter.value.curlCommand = val),
-})
+});
 
 const targetLang = computed({
   get: () => curlConverter.value.targetLang,
   set: (val) => (curlConverter.value.targetLang = val),
-})
+});
 
 const convertedCode = computed({
   get: () => curlConverter.value.convertedCode,
   set: (val) => (curlConverter.value.convertedCode = val),
-})
+});
 
-const monacoEditor = ref()
+const monacoEditor = ref();
 
 const editorOptions = {
   fontSize: 11,
@@ -86,32 +86,32 @@ const editorOptions = {
   },
   scrollBeyondLastLine: true,
   automaticLayout: true,
-  wordWrap: 'on',
-  lineNumbers: 'on',
+  wordWrap: "on",
+  lineNumbers: "on",
   roundedSelection: false,
   renderIndentGuides: true,
   formatOnPaste: false,
   formatOnType: false,
   readOnly: true,
-}
+};
 
 const getEditorLanguage = computed(() => {
   switch (targetLang.value) {
-    case 'javascript':
-    case 'nodejs':
-      return 'javascript'
-    case 'python':
-      return 'python'
-    case 'go':
-      return 'go'
-    case 'java':
-      return 'java'
-    case 'php':
-      return 'php'
+    case "javascript":
+    case "nodejs":
+      return "javascript";
+    case "python":
+      return "python";
+    case "go":
+      return "go";
+    case "java":
+      return "java";
+    case "php":
+      return "php";
     default:
-      return 'plaintext'
+      return "plaintext";
   }
-})
+});
 
 const loadSample = () => {
   curlCommand.value = `curl -X POST https://api.example.com/users \\
@@ -121,72 +121,73 @@ const loadSample = () => {
     "name": "张三",
     "email": "zhangsan@example.com",
     "age": 28
-  }'`
-  autoConvert()
-}
+  }'`;
+  autoConvert();
+};
 
 const autoConvert = () => {
   if (!curlCommand.value.trim()) {
-    convertedCode.value = ''
-    return
+    convertedCode.value = "";
+    return;
   }
-  convert()
-}
+  convert();
+};
 
 const convert = () => {
   try {
     if (!curlCommand.value.trim()) {
-      return
+      return;
     }
 
     // 解析 curl 命令
-    const cmd = curlCommand.value.trim()
+    const cmd = curlCommand.value.trim();
     // 修复URL匹配正则，排除选项参数
-    const url = cmd.match(/curl\s+(?:-\w+\s+\w+\s+)*['"]?([^'"]\S+)['"]?/)?.[1] || 
-                cmd.match(/curl\s+.*?['"]?(https?:\/\/[^'"\s]+)['"]?/)?.[1]
+    const url =
+      cmd.match(/curl\s+(?:-\w+\s+\w+\s+)*['"]?([^'"]\S+)['"]?/)?.[1] ||
+      cmd.match(/curl\s+.*?['"]?(https?:\/\/[^'"\s]+)['"]?/)?.[1];
     const headers = Array.from(cmd.matchAll(/-H\s+['"]([^'"]+)['"]/g)).map(
       (m) => m[1]
-    )
-    const method = cmd.match(/-X\s+(\w+)/)?.[1] || 'GET'
-    const data = cmd.match(/-d\s+['"]([^'"]+)['"]/)?.[1]
+    );
+    const method = cmd.match(/-X\s+(\w+)/)?.[1] || "GET";
+    const data = cmd.match(/-d\s+['"]([^'"]+)['"]/)?.[1];
 
     if (!url) {
-      throw new Error('无效的 cURL 命令')
+      throw new Error("无效的 cURL 命令");
     }
 
     // 根据目标语言生成代码
-    let code = ''
+    let code = "";
     switch (targetLang.value) {
-      case 'javascript':
-        code = generateJavaScriptCode(url, headers, method, data)
-        break
-      case 'python':
-        code = generatePythonCode(url, headers, method, data)
-        break
-      case 'go':
-        code = generateGoCode(url, headers, method, data)
-        break
-      case 'go-resty':
-        code = generateGoRestyCode(url, headers, method, data)
-        break
-      case 'java':
-        code = generateJavaCode(url, headers, method, data)
-        break
-      case 'php':
-        code = generatePHPCode(url, headers, method, data)
-        break
-      case 'nodejs':
-        code = generateNodejsCode(url, headers, method, data)
-        break
+      case "javascript":
+        code = generateJavaScriptCode(url, headers, method, data);
+        break;
+      case "python":
+        code = generatePythonCode(url, headers, method, data);
+        break;
+      case "go":
+        code = generateGoCode(url, headers, method, data);
+        break;
+      case "go-resty":
+        code = generateGoRestyCode(url, headers, method, data);
+        break;
+      case "java":
+        code = generateJavaCode(url, headers, method, data);
+        break;
+      case "php":
+        code = generatePHPCode(url, headers, method, data);
+        break;
+      case "nodejs":
+        code = generateNodejsCode(url, headers, method, data);
+        break;
     }
 
-    convertedCode.value = code
+    convertedCode.value = code;
   } catch (error) {
     ElMessage.error(
-      '转换失败：' + (error instanceof Error ? error.message : '未知错误')
-    )
+      "转换失败：" + (error instanceof Error ? error.message : "未知错误")
+    );
   }
-}
+};
 
 const generateJavaScriptCode = (
   url: string,
@@ -195,22 +196,22 @@ const generateJavaScriptCode = (
   data?: string
 ) => {
   const headerObj = headers.reduce((acc, h) => {
-    const [key, value] = h.split(': ')
-    acc[key] = value
-    return acc
-  }, {} as Record<string, string>)
+    const [key, value] = h.split(": ");
+    acc[key] = value;
+    return acc;
+  }, {} as Record<string, string>);
 
   const config = {
     method: method,
     headers: headerObj,
-    ...(data && { body: data })
-  }
+    ...(data && { body: data }),
+  };
 
   return `fetch("${url}", ${JSON.stringify(config, null, 2)})
   .then(response => response.json())
   .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));`
-}
+  .catch(error => console.error('Error:', error));`;
+};
 
 const generatePythonCode = (
   url: string,
@@ -219,12 +220,16 @@ const generatePythonCode = (
   data?: string
 ) => {
   const headerStr = headers
-    .map((h) => `    "${h.split(': ')[0]}": "${h.split(': ')[1]}"`)
-    .join(',\n')
+    .map((h) => `    "${h.split(": ")[0]}": "${h.split(": ")[1]}"`)
+    .join(",\n");
 
   // 检查是否是JSON数据
-  const isJson = headers.some(h => h.toLowerCase().includes('content-type') && h.toLowerCase().includes('json'))
-  const dataParam = data ? (isJson ? `json=${data}` : `data='${data}'`) : ''
+  const isJson = headers.some(
+    (h) =>
+      h.toLowerCase().includes("content-type") &&
+      h.toLowerCase().includes("json")
+  );
+  const dataParam = data ? (isJson ? `json=${data}` : `data='${data}'`) : "";
 
   return `import requests
 
@@ -232,12 +237,12 @@ response = requests.${method.toLowerCase()}(
     "${url}",
     headers={
 ${headerStr}
-    }${dataParam ? `,\n    ${dataParam}` : ''}
+    }${dataParam ? `,\n    ${dataParam}` : ""}
 )
 
 response.raise_for_status()  # 检查响应状态码
-print(response.json())`
-}
+print(response.json())`;
+};
 
 const generateGoCode = (
   url: string,
@@ -246,8 +251,8 @@ const generateGoCode = (
   data?: string
 ) => {
   const headerStr = headers
-    .map((h) => `\t"${h.split(': ')[0]}": "${h.split(': ')[1]}"`)
-    .join(',\n')
+    .map((h) => `\t"${h.split(": ")[0]}": "${h.split(": ")[1]}"`)
+    .join(",\n");
 
   return `package main
 
@@ -261,9 +266,9 @@ import (
 func main() {
 \t// 创建请求
 \tclient := &http.Client{}
-${data ? `\tpayload := strings.NewReader(\`${data}\`)` : ''}
+${data ? `\tpayload := strings.NewReader(\`${data}\`)` : ""}
 \treq, err := http.NewRequest("${method}", "${url}", ${
-    data ? 'payload' : 'nil'
+    data ? "payload" : "nil"
   })
 \tif err != nil {
 \t\tfmt.Printf("创建请求失败: %s\\n", err)
@@ -299,8 +304,8 @@ ${headerStr}
 \t}
 
 \tfmt.Println(string(body))
-}`
-}
+}`;
+};
 
 const generateGoRestyCode = (
   url: string,
@@ -309,8 +314,8 @@ const generateGoRestyCode = (
   data?: string
 ) => {
   const headerStr = headers
-    .map((h) => `\t"${h.split(': ')[0]}": "${h.split(': ')[1]}"`)
-    .join(',\n')
+    .map((h) => `\t"${h.split(": ")[0]}": "${h.split(": ")[1]}"`)
+    .join(",\n");
 
   return `package main
 
@@ -330,8 +335,10 @@ ${headerStr}
 
 \t// 发送请求
 \treq := client.R().SetHeaders(headers)
-${data ? `\treq.SetBody(\`${data}\`)` : ''}
-\tresp, err := req.${method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()}("${url}")
+${data ? `\treq.SetBody(\`${data}\`)` : ""}
+\tresp, err := req.${
+    method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()
+  }("${url}")
 
 \tif err != nil {
 \t\tfmt.Printf("请求失败: %s\\n", err)
@@ -344,8 +351,8 @@ ${data ? `\treq.SetBody(\`${data}\`)` : ''}
 \t}
 
 \tfmt.Println(string(resp.Body()))
-}`
-}
+}`;
+};
 
 const generateJavaCode = (
   url: string,
@@ -354,11 +361,17 @@ const generateJavaCode = (
   data?: string
 ) => {
   const headerStr = headers
-    .map((h) => `            .addHeader("${h.split(': ')[0]}", "${h.split(': ')[1]}")`)
-    .join('\n')
+    .map(
+      (h) =>
+        `            .addHeader("${h.split(": ")[0]}", "${h.split(": ")[1]}")`
+    )
+    .join("\n");
 
   // 检查Content-Type来确定MediaType
-  const contentType = headers.find(h => h.toLowerCase().startsWith('content-type'))?.split(': ')[1] || 'application/json'
+  const contentType =
+    headers
+      .find((h) => h.toLowerCase().startsWith("content-type"))
+      ?.split(": ")[1] || "application/json";
 
   return `import okhttp3.*;
 import java.io.IOException;
@@ -372,7 +385,7 @@ public class HttpClient {
             .method("${method}", ${
     data
       ? `RequestBody.create(MediaType.parse("${contentType}"), "${data}")`
-      : 'null'
+      : "null"
   })
 ${headerStr}
             .build();
@@ -386,8 +399,8 @@ ${headerStr}
             e.printStackTrace();
         }
     }
-}`
-}
+}`;
+};
 
 const generatePHPCode = (
   url: string,
@@ -396,8 +409,8 @@ const generatePHPCode = (
   data?: string
 ) => {
   const headerStr = headers
-    .map((h) => `        "${h.split(': ')[0]}: ${h.split(': ')[1]}"`)
-    .join(',\n')
+    .map((h) => `        "${h.split(": ")[0]}: ${h.split(": ")[1]}"`)
+    .join(",\n");
 
   return `<?php
 $curl = curl_init();
@@ -412,7 +425,7 @@ curl_setopt_array($curl, array(
     CURLOPT_CUSTOMREQUEST => "${method}",
     CURLOPT_HTTPHEADER => array(
 ${headerStr}
-    )${data ? `,\n    CURLOPT_POSTFIELDS => '${data}'` : ''}
+    )${data ? `,\n    CURLOPT_POSTFIELDS => '${data}'` : ""}
 ));
 
 $response = curl_exec($curl);
@@ -429,8 +442,8 @@ if ($err) {
     }
     echo $response;
 }
-?>`
-}
+?>`;
+};
 
 const generateNodejsCode = (
   url: string,
@@ -439,23 +452,27 @@ const generateNodejsCode = (
   data?: string
 ) => {
   const headerObj = headers.reduce((acc, h) => {
-    const [key, value] = h.split(': ')
-    acc[key] = value
-    return acc
-  }, {} as Record<string, string>)
+    const [key, value] = h.split(": ");
+    acc[key] = value;
+    return acc;
+  }, {} as Record<string, string>);
 
   // 检查是否是JSON数据
-  const isJson = headers.some(h => h.toLowerCase().includes('content-type') && h.toLowerCase().includes('json'))
-  let dataValue = ''
+  const isJson = headers.some(
+    (h) =>
+      h.toLowerCase().includes("content-type") &&
+      h.toLowerCase().includes("json")
+  );
+  let dataValue = "";
   if (data) {
     if (isJson) {
       try {
-        dataValue = JSON.stringify(JSON.parse(data), null, 2)
+        dataValue = JSON.stringify(JSON.parse(data), null, 2);
       } catch {
-        dataValue = `'${data}'`
+        dataValue = `'${data}'`;
       }
     } else {
-      dataValue = `'${data}'`
+      dataValue = `'${data}'`;
     }
   }
 
@@ -465,7 +482,7 @@ const config = {
   method: '${method.toLowerCase()}',
   url: '${url}',
   headers: ${JSON.stringify(headerObj, null, 2)}${
-    data ? `,\n  data: ${dataValue}` : ''
+    data ? `,\n  data: ${dataValue}` : ""
   }
 };
 
@@ -481,31 +498,35 @@ axios(config)
     } else {
       console.log('请求错误:', error.message);
     }
-  });`
-}
+  });`;
+};
 
 const clear = () => {
-  curlCommand.value = ''
-  convertedCode.value = ''
-  const editor = monacoEditor.value?.editor
+  curlCommand.value = "";
+  convertedCode.value = "";
+  const editor = monacoEditor.value?.editor;
   if (editor) {
-    editor.setValue('')
+    editor.setValue("");
   }
-}
+};
 
 // 监听语言变化，自动重新转换
 watch(targetLang, () => {
   if (curlCommand.value.trim()) {
-    autoConvert()
+    autoConvert();
   }
-})
+});
 </script>
 
 <style scoped>
 .curl-converter {
   height: 100%;
-  background: #ffffff;
-  padding: 16px;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-header {
@@ -513,15 +534,16 @@ watch(targetLang, () => {
   justify-content: space-between;
   align-items: stretch;
   padding: 0;
+  margin: 0;
   background: #ffffff;
   height: 28px;
-  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .tab-nav {
   display: flex;
   align-items: stretch;
-  gap: 0;
+  border: 1px solid #d1d5db;
 }
 
 .tab-actions {
@@ -535,7 +557,7 @@ watch(targetLang, () => {
 .action-btn {
   padding: 0 10px;
   background: #f8f9fa;
-  border: 1px solid #d1d5db;
+  border: none;
   border-right: 1px solid #d1d5db;
   font-size: 10px;
   color: #6c757d;
@@ -561,8 +583,7 @@ watch(targetLang, () => {
   height: 100%;
   padding: 0 10px;
   padding-right: 24px;
-  border: 1px solid #d1d5db;
-  border-left: none;
+  border: none;
   border-radius: 0;
   background: #f8f9fa;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
@@ -609,9 +630,9 @@ watch(targetLang, () => {
 
 .content-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  height: calc(100% - 40px);
+  grid-template-rows: 1fr 2fr;
+  gap: 16px;
+  flex: 1;
   align-items: stretch;
 }
 
@@ -630,7 +651,8 @@ watch(targetLang, () => {
   padding: 12px;
   border: none;
   outline: none;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
+    "Courier New", monospace;
   font-size: 11px;
   line-height: 1.4;
   resize: none;
@@ -659,14 +681,10 @@ watch(targetLang, () => {
   flex: 1;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .content-layout {
-    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1.5fr;
     gap: 12px;
-  }
-  
-  .curl-converter {
-    padding: 12px;
   }
 }
 </style>
