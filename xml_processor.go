@@ -62,7 +62,9 @@ func (x *XMLProcessor) FormatXML(input string) (string, error) {
 		}
 	}
 
-	return strings.Join(result, "\n"), nil
+	// 去掉编码器自动添加的换行符
+	finalResult := strings.Join(result, "\n")
+	return strings.TrimSuffix(finalResult, "\n"), nil
 }
 
 func (x *XMLProcessor) CompressXML(input string) (string, error) {
@@ -100,5 +102,6 @@ func (x *XMLProcessor) CompressXML(input string) (string, error) {
 	// 移除多余的空白字符
 	result := strings.ReplaceAll(buf.String(), ">  <", "><")
 	result = strings.ReplaceAll(result, "> <", "><")
-	return result, nil
+	// 去掉编码器自动添加的换行符
+	return strings.TrimSuffix(result, "\n"), nil
 }
