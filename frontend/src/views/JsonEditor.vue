@@ -31,10 +31,6 @@
 
       <!-- 功能按钮放右边 -->
       <div class="tools-group">
-        <button class="tool-btn" @click="loadSample">
-          <span class="tool-icon">📝</span>
-          示例
-        </button>
         <button class="tool-btn" @click="formatJson">
           <span class="tool-icon">✏️</span>
           格式化
@@ -51,9 +47,13 @@
           <span class="tool-icon">🔓</span>
           去转义
         </button>
-        <button class="tool-btn" @click="copyToClipboard">
-          <span class="tool-icon">📋</span>
-          复制
+        <button class="tool-btn" @click="loadSample">
+          <span class="tool-icon">📝</span>
+          示例
+        </button>
+        <button class="tool-btn" @click="removeAllTabs">
+          <span class="tool-icon">🗂️</span>
+          删标签页
         </button>
         <button class="tool-btn" @click="clearContent">
           <span class="tool-icon">🗑️</span>
@@ -74,15 +74,12 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, reactive, watch } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
-import { useClipboard } from '@vueuse/core'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { FormatJson, CompressJson } from '../../wailsjs/go/main/JsonProcessor'
 import { onClickOutside } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-
-const { copy } = useClipboard()
 const store = useToolsStore()
 const { jsonEditorTabs } = storeToRefs(store)
 const route = useRoute()
@@ -419,31 +416,59 @@ const validateJson = (content: string = '') => {
   }
 }
 
-const copyToClipboard = async () => {
+
+const removeAllTabs = async () => {
   try {
-    const currentEditor = getCurrentEditor()
-    if (!currentEditor?.editor) {
-      ElMessage.error('编辑器未准备好')
+    // 获取所有标签页ID
+    const allTabIds = Object.keys(store.jsonEditorTabs)
+    const nonDefaultTabs = allTabIds.filter(id => id !== 'default')
+    
+    // 构建确认消息
+    let message = '确定要删除所有标签页并清空内容吗？'
+    if (nonDefaultTabs.length > 0) {
+      message += `\n\n将删除 ${nonDefaultTabs.length} 个标签页，并清空默认标签页的内容。`
+    } else {
+      message += '\n\n将清空默认标签页的内容。'
+    }
+    
+    // 显示确认对话框
+    await ElMessageBox.confirm(
+      message,
+      '删除确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        dangerouslyUseHTMLString: false
+      }
+    )
+    
+    // 删除所有非默认标签页
+    allTabIds.forEach(id => {
+      if (id !== 'default') {
+        delete store.jsonEditorTabs[id]
+        delete editorRefs[id]
+      }
+    })
+    
+    // 清空默认标签页内容
+    if (store.jsonEditorTabs.default) {
+      store.jsonEditorTabs.default.code = ''
+    }
+    
+    // 清空历史记录
+    tabHistory.value = ['default']
+    
+    // 跳转到默认标签页
+    router.push({ name: 'JsonEditorTab', params: { id: 'default' } })
+    
+    ElMessage.success('已删除所有标签页并清空内容')
+  } catch (err: any) {
+    // 用户取消操作时不显示错误
+    if (err === 'cancel') {
       return
     }
-
-    const model = currentEditor.editor.getModel()
-    if (!model) {
-      ElMessage.error('获取内容失败')
-      return
-    }
-
-    const content = model.getValue()
-    if (!content) {
-      ElMessage.error('内容为空')
-      return
-    }
-
-    await copy(content)
-    ElMessage.success('复制成功')
-  } catch (e) {
-    console.error('复制失败:', e)
-    ElMessage.error('复制失败')
+    ElMessage.error('删除标签页失败：' + (err.message || err))
   }
 }
 
