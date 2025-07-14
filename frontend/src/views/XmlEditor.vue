@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, reactive, watch } from 'vue'
+import { ref, computed, nextTick, reactive, watch } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
@@ -159,7 +159,7 @@ const closeSettings = () => {
 }
 
 const options = {
-  fontSize: 14,
+  fontSize: 12,
   tabSize: 2,
   minimap: {
     enabled: false,
@@ -483,45 +483,9 @@ const closeTab = (targetName: string | number) => {
   height: 100% !important;
 }
 
-/* 确保滚动条可见和可用 */
-:deep(.monaco-editor .scrollbar) {
-  width: 14px !important;
-  right: 0 !important;
-}
-
-:deep(.monaco-editor .overflow-guard) {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-:deep(.monaco-scrollable-element > .scrollbar > .slider) {
-  background: rgba(100, 100, 100, 0.4) !important;
-  width: 10px !important;
-  left: 2px !important;
-  border-radius: 5px !important;
-}
-
-:deep(.monaco-scrollable-element > .scrollbar.vertical) {
-  width: 14px !important;
-}
-
-:deep(.monaco-scrollable-element > .scrollbar.vertical > .slider) {
-  width: 10px !important;
-  left: 2px !important;
-}
-
-:deep(.monaco-scrollable-element > .scrollbar.horizontal) {
-  height: 14px !important;
-  bottom: 0 !important;
-}
-
-:deep(.monaco-scrollable-element > .scrollbar.horizontal > .slider) {
-  height: 10px !important;
-  top: 2px !important;
-}
-
-:deep(.monaco-scrollable-element > .scrollbar.visible) {
-  opacity: 1 !important;
+/* 隐藏滚动条上的光标位置指示器 */
+:deep(.monaco-editor .decorationsOverviewRuler) {
+  display: none !important;
 }
 
 .settings-panel {
