@@ -176,8 +176,8 @@ const options = {
   scrollbar: {
     vertical: 'visible',
     horizontal: 'visible',
-    verticalScrollbarSize: 14,
-    horizontalScrollbarSize: 14,
+    verticalScrollbarSize: 8,
+    horizontalScrollbarSize: 8,
     alwaysConsumeMouseWheel: true,
   },
   lineDecorationsWidth: 0,
