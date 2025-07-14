@@ -163,7 +163,9 @@ func (j *JsonProcessor) FormatJson(jsonStr string, autoDecodeUnicode bool) (stri
 		return "", err
 	}
 
-	return out.String(), nil
+	// 去掉编码器自动添加的换行符
+	result := out.String()
+	return strings.TrimSuffix(result, "\n"), nil
 }
 
 // CompressJson 压缩 JSON 字符串
@@ -190,5 +192,7 @@ func (j *JsonProcessor) CompressJson(jsonStr string, autoDecodeUnicode bool) (st
 		return "", err
 	}
 
-	return out.String(), nil
+	// 去掉编码器自动添加的换行符
+	result := out.String()
+	return strings.TrimSuffix(result, "\n"), nil
 }
