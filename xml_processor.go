@@ -55,7 +55,7 @@ func (x *XMLProcessor) FormatXML(input string) (string, error) {
 	// 移除多余的空行
 	lines := strings.Split(buf.String(), "\n")
 	var result []string
-	for i := 0; i < len(lines); i++ {
+	for i := range len(lines) {
 		line := strings.TrimSpace(lines[i])
 		if line != "" || (i > 0 && i < len(lines)-1) {
 			result = append(result, lines[i])

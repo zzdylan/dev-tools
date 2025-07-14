@@ -1,6 +1,6 @@
 <template>
   <div class="xml-editor">
-    <div class="tabs-header">
+    <div class="tabs-header" ref="tabsHeader" @wheel="handleTabsWheel">
       <div class="tabs-nav">
         <div v-for="id in Object.keys(xmlEditorTabs)" :key="id" class="tab-item" :class="{ active: id === tabId }"
           @click="handleTabChange(id)">
@@ -143,6 +143,7 @@ const settings = computed({
 const showSettings = ref(false)
 const settingsPanel = ref<HTMLElement | null>(null)
 const configBtn = ref<HTMLElement | null>(null)
+const tabsHeader = ref<HTMLElement | null>(null)
 
 // 点击外部关闭配置面板
 onClickOutside(settingsPanel, () => {
@@ -156,6 +157,15 @@ const toggleSettings = () => {
 
 const closeSettings = () => {
   showSettings.value = false
+}
+
+// 处理标签页区域的滚轮事件
+const handleTabsWheel = (event: WheelEvent) => {
+  if (tabsHeader.value) {
+    event.preventDefault()
+    // 水平滚动，deltaY是垂直滚动量，我们将其转换为水平滚动
+    tabsHeader.value.scrollLeft += event.deltaY
+  }
 }
 
 const options = {
@@ -527,6 +537,8 @@ const closeTab = (targetName: string | number) => {
   height: 30px;
   display: flex;
   align-items: stretch;
+  /* 启用滚轮滚动 */
+  scroll-behavior: smooth;
 }
 
 .tabs-nav {
@@ -534,24 +546,26 @@ const closeTab = (targetName: string | number) => {
   align-items: stretch;
   min-width: max-content;
   background: #f8f9fa;
+  flex-shrink: 0;
 }
 
 .tab-item {
-  padding: 0 10px;
+  padding: 0 8px;
   margin: 0;
   background: #f8f9fa;
   border: none;
   color: #6c757d;
   font-size: 10px;
   cursor: pointer;
-  min-width: 70px;
-  max-width: 110px;
+  width: 60px;
+  min-width: 60px;
+  max-width: none;
   height: 100%;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   white-space: nowrap;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -577,10 +591,10 @@ const closeTab = (targetName: string | number) => {
 }
 
 .close-btn {
-  padding: 1px 4px;
+  padding: 1px 3px;
   border-radius: 2px;
-  font-size: 10px;
-  margin-left: 4px;
+  font-size: 9px;
+  margin-left: 2px;
 }
 
 .close-btn:hover {
@@ -610,5 +624,23 @@ const closeTab = (targetName: string | number) => {
 
 .add-tab:hover {
   background: #e9ecef;
+}
+
+/* 自定义滚动条样式 */
+.tabs-header::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs-header::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+.tabs-header::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.tabs-header::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 </style>
