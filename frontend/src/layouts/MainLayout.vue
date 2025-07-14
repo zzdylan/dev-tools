@@ -105,9 +105,7 @@
     <div class="settings-modal" @click.stop>
       <div class="settings-header">
         <div class="settings-controls">
-          <button class="settings-control close" @click="closeSettings"></button>
-          <button class="settings-control minimize"></button>
-          <button class="settings-control maximize"></button>
+          <button class="settings-control close" @click="closeSettings">×</button>
         </div>
         <h2 class="settings-title">设置</h2>
       </div>
@@ -702,6 +700,12 @@ const toggleFullscreen = () => {
   border: none;
   cursor: pointer;
   transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  position: relative;
 }
 
 .settings-control:hover {
@@ -710,14 +714,11 @@ const toggleFullscreen = () => {
 
 .settings-control.close {
   background: #ff5f57;
+  color: transparent;
 }
 
-.settings-control.minimize {
-  background: #ffbd2e;
-}
-
-.settings-control.maximize {
-  background: #28ca42;
+.settings-control.close:hover {
+  color: #4a0e0e;
 }
 
 .settings-title {
