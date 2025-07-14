@@ -38,6 +38,17 @@
         <h1 class="title">{{ currentMenuTitle }}</h1>
       </div>
 
+      <!-- 设置按钮 -->
+      <div class="header-actions">
+        <button
+          class="icon-btn settings-btn"
+          @click="toggleSettings"
+          title="设置"
+        >
+          <SettingsOutline class="settings-icon" />
+        </button>
+      </div>
+
       <!-- Windows风格的窗口控制按钮 - 右边 -->
       <div v-if="!isMac" class="header-right">
         <button
@@ -88,6 +99,35 @@
       </main>
     </div>
   </div>
+
+  <!-- 设置对话框 -->
+  <div v-if="showSettings" class="settings-overlay" @click="closeSettings">
+    <div class="settings-modal" @click.stop>
+      <div class="settings-header">
+        <div class="settings-controls">
+          <button class="settings-control close" @click="closeSettings"></button>
+          <button class="settings-control minimize"></button>
+          <button class="settings-control maximize"></button>
+        </div>
+        <h2 class="settings-title">设置</h2>
+      </div>
+      
+      <div class="settings-content">
+        <div class="settings-panel single-panel">
+          <div class="settings-section">
+            <h3 class="section-title">数据管理</h3>
+            <div class="setting-item">
+              <div class="setting-description">
+                <label class="setting-label">清空缓存</label>
+                <p class="setting-hint">清空所有本地存储的数据，包括工具配置、历史记录等</p>
+              </div>
+              <button class="clear-cache-btn" @click="clearCache">清空缓存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -96,6 +136,7 @@ import { useRoute } from "vue-router";
 import { MenuOutline, SettingsOutline } from "@vicons/ionicons5";
 import { useToolsStore } from "../stores/tools";
 import { storeToRefs } from "pinia";
+import { ElMessage, ElMessageBox } from 'element-plus';
 import {
   MinimizeWindow,
   CloseWindow,
@@ -144,6 +185,54 @@ watch(
 
 const toggleSidebar = () => {
   showSidebar.value = !showSidebar.value;
+};
+
+// 设置相关
+const showSettings = ref(false);
+
+const toggleSettings = () => {
+  showSettings.value = !showSettings.value;
+};
+
+const closeSettings = () => {
+  showSettings.value = false;
+};
+
+// 清空缓存功能
+const clearCache = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要清空所有缓存数据吗？\n\n这将清空所有工具的配置、历史记录等数据，操作不可撤销。',
+      '清空缓存确认',
+      {
+        confirmButtonText: '确定清空',
+        cancelButtonText: '取消',
+        type: 'warning',
+        dangerouslyUseHTMLString: false
+      }
+    );
+    
+    // 清空所有localStorage数据
+    localStorage.clear();
+    
+    // 清空所有sessionStorage数据
+    sessionStorage.clear();
+    
+    // 重置store状态
+    store.$reset();
+    
+    ElMessage.success('缓存已清空，建议重启应用以确保完全生效');
+    
+    // 关闭设置对话框
+    closeSettings();
+    
+  } catch (err) {
+    // 用户取消操作时不显示错误
+    if (err === 'cancel') {
+      return;
+    }
+    ElMessage.error('清空缓存失败');
+  }
 };
 
 const store = useToolsStore();
@@ -541,5 +630,174 @@ const toggleFullscreen = () => {
 /* Windows/Linux环境下的collapse按钮位置 */
 .layout:not(.mac-layout) .collapse-btn {
   margin-left: 210px;
+}
+
+/* 头部操作按钮 */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+}
+
+.settings-btn {
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+}
+
+.settings-btn:hover {
+  background: #f3f4f6;
+}
+
+.settings-icon {
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+/* 设置对话框样式 */
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.settings-modal {
+  background: white;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.settings-header {
+  position: relative;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8f9fa;
+}
+
+.settings-controls {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+.settings-control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.settings-control:hover {
+  opacity: 0.8;
+}
+
+.settings-control.close {
+  background: #ff5f57;
+}
+
+.settings-control.minimize {
+  background: #ffbd2e;
+}
+
+.settings-control.maximize {
+  background: #28ca42;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #24292f;
+  text-align: center;
+}
+
+.settings-content {
+  display: flex;
+  min-height: 200px;
+}
+
+.settings-panel {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.settings-panel.single-panel {
+  width: 100%;
+}
+
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 12px 0;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.setting-description {
+  flex: 1;
+}
+
+.setting-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.setting-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.clear-cache-btn {
+  padding: 8px 16px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 16px;
+}
+
+.clear-cache-btn:hover {
+  background: #b91c1c;
 }
 </style>

@@ -152,8 +152,7 @@ const clearContent = () => {
 }
 
 onMounted(() => {
-  // 组件加载时自动加载示例
-  loadSample()
+  // 组件加载时不自动加载示例，保持空白状态
 })
 
 </script>
