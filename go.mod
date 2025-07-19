@@ -6,7 +6,7 @@ toolchain go1.24.3
 
 require (
 	github.com/gopherjs/gopherjs v1.17.2
-	github.com/wailsapp/wails/v2 v2.10.1
+	github.com/wailsapp/wails/v2 v2.9.3
 )
 
 require (
