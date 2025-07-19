@@ -1,15 +1,16 @@
 <template>
   <div class="time-converter">
-    <!-- 顶部：操作按钮 -->
+    <!-- 顶部导航栏 -->
     <div class="top-header">
-      <div class="tab-actions">
-        <button class="current-time-btn" @click="getCurrentTime" title="当前时间">当前时间</button>
-      </div>
       <div class="tab-nav">
+        <button class="action-btn" @click="getCurrentTime" title="当前时间">当前时间</button>
+      </div>
+      <div class="tab-actions">
+        <button class="clear-btn" @click="clearAll" title="清空">× 清空</button>
       </div>
     </div>
 
-    <!-- 底部：内容区域 -->
+    <!-- 内容区域 -->
     <div class="converter-container">
       <!-- 时间戳输入 -->
       <div class="input-row">
@@ -27,13 +28,14 @@
       <div class="input-row">
         <label class="input-label">日期时间</label>
         <input
-          type="datetime-local"
+          type="text"
           v-model="datetime"
-          step="1"
+          placeholder="2025-01-15 14:30:00"
           class="time-input"
           @input="convertToTimestamp"
         />
       </div>
+
       <!-- UTC 时间 -->
       <div class="input-row">
         <label class="input-label">UTC 时间</label>
@@ -98,7 +100,7 @@ const getCurrentTime = () => {
   const ts = Math.floor(Date.now() / 1000)
   timestamp.value = ts.toString()
   const milliseconds = ts * 1000
-  datetime.value = dayjs(milliseconds).format('YYYY-MM-DDTHH:mm:ss')
+  datetime.value = dayjs(milliseconds).format('YYYY-MM-DD HH:mm:ss')
 }
 
 const convertToDateTime = () => {
@@ -111,27 +113,34 @@ const convertToDateTime = () => {
   if (isNaN(ts)) return
 
   const milliseconds = ts.toString().length === 10 ? ts * 1000 : ts
-  datetime.value = dayjs(milliseconds).format('YYYY-MM-DDTHH:mm:ss')
+  datetime.value = dayjs(milliseconds).format('YYYY-MM-DD HH:mm:ss')
 }
 
 const convertToTimestamp = () => {
-  if (!datetime.value) {
+  if (!datetime.value.trim()) {
     timestamp.value = ''
     return
   }
 
-  const ts = Math.floor(new Date(datetime.value).getTime() / 1000)
+  // 尝试解析各种日期格式
+  let date = dayjs(datetime.value)
+  
+  // 如果 dayjs 无法解析，尝试使用 Date 构造函数
+  if (!date.isValid()) {
+    date = dayjs(new Date(datetime.value))
+  }
+  
+  if (!date.isValid()) {
+    return
+  }
+
+  const ts = Math.floor(date.valueOf() / 1000)
   timestamp.value = ts.toString()
 }
 
-const clearTimestamp = () => {
+const clearAll = () => {
   timestamp.value = ''
   datetime.value = ''
-}
-
-const clearDateTime = () => {
-  datetime.value = ''
-  timestamp.value = ''
 }
 
 
@@ -194,13 +203,15 @@ const relativeTime = computed(() => {
   background: #f8f9fa;
 }
 
-.current-time-btn {
+.action-btn {
   padding: 0 10px;
   margin: 0;
   background: #f8f9fa;
   border: none;
   border-left: 1px solid #d1d5db;
   border-right: 1px solid #d1d5db;
+  border-top: none;
+  border-bottom: none;
   font-size: 10px;
   color: #6c757d;
   cursor: pointer;
@@ -213,7 +224,32 @@ const relativeTime = computed(() => {
   box-sizing: border-box;
 }
 
-.current-time-btn:hover {
+.action-btn:hover {
+  background: #e9ecef;
+}
+
+.clear-btn {
+  padding: 0 10px;
+  margin: 0;
+  background: #f8f9fa;
+  border: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+  border-top: none;
+  border-bottom: none;
+  font-size: 10px;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 45px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.clear-btn:hover {
   background: #e9ecef;
 }
 
