@@ -26,11 +26,13 @@
 ## 功能特性
 
 - **功能管理**
+
   - 支持拖拽排序功能卡片
   - 可以显示/隐藏指定功能
   - 排序和显示状态自动保存
 
 - **JSON 编辑器**
+
   - 格式化、压缩 JSON 数据
   - Unicode 自动解码
   - 语法高亮和错误提示
@@ -40,6 +42,7 @@
   - 支持多标签页编辑
 
 - **XML 编辑器**
+
   - 格式化、压缩 XML 数据
   - 语法高亮
   - 实时编辑预览
@@ -47,32 +50,38 @@
   - 支持多标签页编辑
 
 - **时间戳转换**
+
   - 时间戳与日期时间互转
   - 支持毫秒/秒级时间戳
   - 自动识别时间格式
   - 多种时间格式输出
 
 - **URL 工具**
+
   - URL 编解码转换
   - URL 参数解析与提取
   - 支持批量处理
   - 实时编码结果预览
 
 - **进制转换**
+
   - 支持二进制、八进制、十进制、十六进制互转
   - 实时转换结果
   - 支持大数值处理
   - 自动进制识别
 
 - **Base64 工具**
+
   - 文本 Base64 编解码
   - 图片 Base64 转换
   - 支持拖拽上传图片
 
 - **Unicode 工具**
+
   - Unicode 编码/解码转换
 
 - **cURL 转换**
+
   - 将 cURL 命令转换为多种编程语言代码
   - 支持 JavaScript (Fetch)
   - 支持 Python (requests)
@@ -84,6 +93,7 @@
   - 代码高亮显示
 
 - **二维码工具**
+
   - 二维码生成
   - 支持自定义内容
   - 实时预览
@@ -98,6 +108,7 @@
 ## 技术栈
 
 - 前端
+
   - Vue 3
   - TypeScript
   - Element Plus
@@ -117,12 +128,14 @@
 ## 快速开始
 
 1. 克隆项目
+
 ```bash
 git clone https://github.com/zzdylan/dev-tools.git
 cd dev-tools
 ```
 
 2. 安装依赖
+
 ```bash
 # 前端依赖
 cd frontend
@@ -134,13 +147,25 @@ go mod tidy
 ```
 
 3. 开发模式
+
 ```bash
 # 启动开发服务器
 wails dev
 ```
 
 4. 构建
+
 ```bash
 # 构建可执行文件
 wails build
 ```
+
+## 安装
+
+提供 Mac、Windows 和 Linux 安装包，可[免费下载](https://github.com/zzdylan/dev-tools/releases)。
+
+> 如果在 macOS 上安装后无法打开，报错**不受信任**或者**移到垃圾箱**，执行下面命令后再启动即可：
+>
+> ```shell
+>  sudo xattr -d com.apple.quarantine /Applications/dev-tools.app
+> ```
