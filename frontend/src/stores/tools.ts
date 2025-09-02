@@ -104,6 +104,10 @@ export const useToolsStore = defineStore('tools', {
     jwtDecoder: {
       token: ''
     },
+    charlesGenerator: {
+      userName: '',
+      licenseKey: ''
+    },
     menuConfig: {
       items: <MenuItem[]>[
         { id: 'json', path: '/json-editor', icon: '{ }', title: 'JSON 编辑器', visible: true, order: 0, description: 'JSON 格式化、验证、转换工具' },
@@ -119,7 +123,8 @@ export const useToolsStore = defineStore('tools', {
         { id: 'curl', path: '/curl-converter', icon: '🔄', title: 'cURL 转换', visible: true, order: 10, description: '将cURL命令转换为其他语言' },
         { id: 'unicode', path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换', visible: true, order: 11, description: 'Unicode编码和解码' },
         { id: 'json-to-go', path: '/json-to-go', icon: '🔄', title: 'JSON转Go', visible: true, order: 12, description: '将JSON转换为Go结构体' },
-        { id: 'jwt', path: '/jwt-decoder', icon: '🔐', title: 'JWT 解析', visible: true, order: 13, description: '解析和验证JWT Token' }
+        { id: 'jwt', path: '/jwt-decoder', icon: '🔐', title: 'JWT 解析', visible: true, order: 13, description: '解析和验证JWT Token' },
+        { id: 'charles', path: '/charles-generator', icon: '🔑', title: 'Charles 激活码', visible: true, order: 14, description: '生成Charles代理工具的激活码' }
       ]
     }
   }),
@@ -140,7 +145,8 @@ export const useToolsStore = defineStore('tools', {
         { id: 'curl', path: '/curl-converter', icon: '🔄', title: 'cURL 转换', visible: true, order: 10, description: '将cURL命令转换为其他语言' },
         { id: 'unicode', path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换', visible: true, order: 11, description: 'Unicode编码和解码' },
         { id: 'json-to-go', path: '/json-to-go', icon: '🔄', title: 'JSON转Go', visible: true, order: 12, description: '将JSON转换为Go结构体' },
-        { id: 'jwt', path: '/jwt-decoder', icon: '🔐', title: 'JWT 解析', visible: true, order: 13, description: '解析和验证JWT Token' }
+        { id: 'jwt', path: '/jwt-decoder', icon: '🔐', title: 'JWT 解析', visible: true, order: 13, description: '解析和验证JWT Token' },
+        { id: 'charles', path: '/charles-generator', icon: '🔑', title: 'Charles 激活码', visible: true, order: 14, description: '生成Charles代理工具的激活码' }
       ]
 
       // 合并新的菜单项

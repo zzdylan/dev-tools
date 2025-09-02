@@ -6,6 +6,10 @@ export function CloseWindow() {
   return window['go']['main']['App']['CloseWindow']();
 }
 
+export function GenerateCharlesKey(arg1) {
+  return window['go']['main']['App']['GenerateCharlesKey'](arg1);
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }

@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function CloseWindow():Promise<void>;
 
+export function GenerateCharlesKey(arg1:string):Promise<string>;
+
 export function Greet(arg1:string):Promise<string>;
 
 export function IsFullscreen():Promise<boolean>;

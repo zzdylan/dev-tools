@@ -13,6 +13,7 @@ import CurlConverter from '../views/CurlConverter.vue'
 import UnicodeConverter from '../views/UnicodeConverter.vue'
 import JsonToGo from '../views/JsonToGo.vue'
 import JwtDecoder from '../views/JwtDecoder.vue'
+import CharlesKeyGenerator from '../views/CharlesKeyGenerator.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -119,6 +120,11 @@ const routes: RouteRecordRaw[] = [
         path: '/jwt-decoder',
         name: 'JwtDecoder',
         component: JwtDecoder
+      },
+      {
+        path: '/charles-generator',
+        name: 'CharlesKeyGenerator',
+        component: CharlesKeyGenerator
       }
     ]
   }
