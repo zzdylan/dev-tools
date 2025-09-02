@@ -84,14 +84,14 @@ func (a *App) SaveFile(content string, options SaveFileOptions, isBase64 bool) (
 	// 弹出保存对话框
 	fileName, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
 		DefaultFilename: options.DefaultFilename,
-		Title:          options.Title,
-		Filters:        filters,
+		Title:           options.Title,
+		Filters:         filters,
 	})
-	
+
 	if err != nil {
 		return "", fmt.Errorf("用户取消保存")
 	}
-	
+
 	if fileName == "" {
 		return "", fmt.Errorf("用户取消保存")
 	}
