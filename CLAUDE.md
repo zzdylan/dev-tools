@@ -479,3 +479,37 @@ colorConverter: {
 - 顶部导航栏高度28px，按钮边框规则一致
 - 移动端布局：输入区域200px高度，颜色预览150px高度
 - 颜色预览区域设置合理的padding确保边框完整显示
+
+## 菜单管理规则
+
+### 工具排序规范
+
+工具在左侧导航菜单中的显示顺序应遵循以下原则：
+
+1. **核心工具优先**：JSON/XML编辑器等核心功能排在前面
+2. **通用工具居中**：时间转换、URL工具、编码工具等常用功能
+3. **特殊工具靠后**：特定用途或敏感工具排在后面
+
+### 默认显示规则
+
+- **常规工具**：默认 `visible: true`，用户可以直接使用
+- **敏感工具**：默认 `visible: false`，需要用户在设置中手动启用
+  - 示例：Charles激活码生成器等破解/激活相关工具
+
+### 配置位置
+
+菜单配置位于 `frontend/src/stores/tools.ts` 中的两个位置：
+1. `menuConfig.items` - 主要配置
+2. `initializeMenu()` 方法中的 `defaultItems` - 默认项配置
+
+**重要**：两个位置的配置必须保持同步！
+
+### 配置示例
+
+```typescript
+// 常规工具
+{ id: 'color', path: '/color-converter', icon: '🎨', title: '颜色转换器', visible: true, order: 14, description: '十六进制、RGB颜色格式转换' }
+
+// 敏感工具
+{ id: 'charles', path: '/charles-generator', icon: '🔑', title: 'Charles 激活码', visible: false, order: 15, description: '生成Charles代理工具的激活码' }
+```
