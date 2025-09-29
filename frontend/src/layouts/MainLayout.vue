@@ -170,6 +170,7 @@ const menuTitles: Record<string, string> = {
   "/unicode-converter": "Unicode 转换",
   "/json-to-go": "JSON转Go",
   "/jwt-decoder": "JWT 解析",
+  "/color-converter": "颜色转换器",
 };
 
 // 监听路由变化更新标题
@@ -423,6 +424,9 @@ const toggleFullscreen = () => {
   background: #f9fafb;
   padding: 16px 0;
   border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .sidebar-hidden {
@@ -438,6 +442,7 @@ const toggleFullscreen = () => {
   padding: 0 16px;
   margin-bottom: 16px;
   position: relative;
+  flex-shrink: 0;
 }
 
 .search-icon {
@@ -481,6 +486,9 @@ const toggleFullscreen = () => {
 .side-nav {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .nav-item {

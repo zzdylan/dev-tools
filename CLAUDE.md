@@ -4,7 +4,7 @@
 
 ## 项目概述
 
-这是一个基于 Wails v2 + Vue 3 + TypeScript 构建的桌面开发者工具应用。它提供了一系列常用的开发者实用工具，如 JSON/XML 编辑器、时间转换器、URL 工具、Base64 转换、二维码生成等。
+这是一个基于 Wails v2 + Vue 3 + TypeScript 构建的桌面开发者工具应用。它提供了一系列常用的开发者实用工具，如 JSON/XML 编辑器、时间转换器、URL 工具、Base64 转换、二维码生成、颜色转换等。
 
 ## 架构
 
@@ -17,7 +17,7 @@
 
 **前端 (Vue 3):**
 - `frontend/src/App.vue` - 主 Vue 应用组件
-- `frontend/src/views/` - 各个工具视图 (JsonEditor, TimeConverter 等)
+- `frontend/src/views/` - 各个工具视图 (JsonEditor, TimeConverter, ColorConverter 等)
 - `frontend/src/components/` - 可复用的 Vue 组件
 - `frontend/src/stores/` - Pinia 状态管理
 - `frontend/src/router/` - Vue Router 配置
@@ -446,3 +446,36 @@ try {
 3. **UI 提示分离**：工具函数不包含 UI 提示，由调用方决定如何处理成功和错误
 4. **用户取消处理**：用户取消保存时不显示错误提示，这是正常操作
 5. **原生对话框**：使用系统原生的保存对话框，用户体验更好
+
+## 工具模块
+
+### 颜色转换器 (ColorConverter.vue)
+
+颜色转换器提供十六进制(HEX)和RGB颜色格式之间的相互转换功能。
+
+**主要功能：**
+- 十六进制 ↔ RGB 颜色格式互转
+- 实时颜色预览，支持自动对比色文字显示
+- 示例按钮加载预设颜色
+- 清空按钮重置所有输入
+
+**技术实现：**
+- 使用 Pinia 状态管理保存颜色数据
+- 自动转换：输入任一格式时自动计算其他格式
+- 响应式布局：桌面端左右布局，移动端上下布局
+- 完整的颜色转换算法实现
+
+**状态管理：**
+```typescript
+// stores/tools.ts
+colorConverter: {
+  hexColor: '#FF5733',
+  rgbColor: { r: 255, g: 87, b: 51 }
+}
+```
+
+**布局规范：**
+- 严格遵循项目统一UI设计规范
+- 顶部导航栏高度28px，按钮边框规则一致
+- 移动端布局：输入区域200px高度，颜色预览150px高度
+- 颜色预览区域设置合理的padding确保边框完整显示

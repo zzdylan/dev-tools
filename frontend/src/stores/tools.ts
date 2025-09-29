@@ -108,6 +108,10 @@ export const useToolsStore = defineStore('tools', {
       userName: '',
       licenseKey: ''
     },
+    colorConverter: {
+      hexColor: '#FF5733',
+      rgbColor: { r: 255, g: 87, b: 51 }
+    },
     menuConfig: {
       items: <MenuItem[]>[
         { id: 'json', path: '/json-editor', icon: '{ }', title: 'JSON 编辑器', visible: true, order: 0, description: 'JSON 格式化、验证、转换工具' },
@@ -124,7 +128,8 @@ export const useToolsStore = defineStore('tools', {
         { id: 'unicode', path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换', visible: true, order: 11, description: 'Unicode编码和解码' },
         { id: 'json-to-go', path: '/json-to-go', icon: '🔄', title: 'JSON转Go', visible: true, order: 12, description: '将JSON转换为Go结构体' },
         { id: 'jwt', path: '/jwt-decoder', icon: '🔐', title: 'JWT 解析', visible: true, order: 13, description: '解析和验证JWT Token' },
-        { id: 'charles', path: '/charles-generator', icon: '🔑', title: 'Charles 激活码', visible: true, order: 14, description: '生成Charles代理工具的激活码' }
+        { id: 'charles', path: '/charles-generator', icon: '🔑', title: 'Charles 激活码', visible: true, order: 14, description: '生成Charles代理工具的激活码' },
+        { id: 'color', path: '/color-converter', icon: '🎨', title: '颜色转换器', visible: true, order: 15, description: '十六进制、RGB、HSL颜色格式转换' }
       ]
     }
   }),
@@ -146,7 +151,8 @@ export const useToolsStore = defineStore('tools', {
         { id: 'unicode', path: '/unicode-converter', icon: '🔤', title: 'Unicode 转换', visible: true, order: 11, description: 'Unicode编码和解码' },
         { id: 'json-to-go', path: '/json-to-go', icon: '🔄', title: 'JSON转Go', visible: true, order: 12, description: '将JSON转换为Go结构体' },
         { id: 'jwt', path: '/jwt-decoder', icon: '🔐', title: 'JWT 解析', visible: true, order: 13, description: '解析和验证JWT Token' },
-        { id: 'charles', path: '/charles-generator', icon: '🔑', title: 'Charles 激活码', visible: true, order: 14, description: '生成Charles代理工具的激活码' }
+        { id: 'charles', path: '/charles-generator', icon: '🔑', title: 'Charles 激活码', visible: true, order: 14, description: '生成Charles代理工具的激活码' },
+        { id: 'color', path: '/color-converter', icon: '🎨', title: '颜色转换器', visible: true, order: 15, description: '十六进制、RGB、HSL颜色格式转换' }
       ]
 
       // 合并新的菜单项

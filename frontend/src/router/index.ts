@@ -14,6 +14,7 @@ import UnicodeConverter from '../views/UnicodeConverter.vue'
 import JsonToGo from '../views/JsonToGo.vue'
 import JwtDecoder from '../views/JwtDecoder.vue'
 import CharlesKeyGenerator from '../views/CharlesKeyGenerator.vue'
+import ColorConverter from '../views/ColorConverter.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -125,6 +126,11 @@ const routes: RouteRecordRaw[] = [
         path: '/charles-generator',
         name: 'CharlesKeyGenerator',
         component: CharlesKeyGenerator
+      },
+      {
+        path: '/color-converter',
+        name: 'ColorConverter',
+        component: ColorConverter
       }
     ]
   }
