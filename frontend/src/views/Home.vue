@@ -1,22 +1,27 @@
 <template>
   <div class="home">
     <div ref="menuListRef" class="tools-grid">
-      <router-link
+      <div
         v-for="item in menuItems"
         :key="item.id"
-        :to="item.path"
-        class="tool-card"
+        class="tool-card-wrapper"
+        :data-id="item.id"
       >
-        <div class="drag-handle">⋮⋮</div>
-        <div class="tool-icon">{{ item.icon }}</div>
-        <h3>{{ item.title }}</h3>
-        <p>{{ item.description }}</p>
+        <router-link
+          :to="item.path"
+          class="tool-card"
+        >
+          <div class="tool-icon">{{ item.icon }}</div>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </router-link>
         <el-switch
           class="visibility-switch"
           v-model="item.visible"
           @change="(val: boolean) => handleVisibilityChange(item.id, val)"
+          @click.stop
         />
-      </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -51,10 +56,12 @@ const handleDragEnd = (evt: Sortable.SortableEvent) => {
 onMounted(() => {
   if (menuListRef.value) {
     new Sortable(menuListRef.value, {
-      handle: '.drag-handle',
-      onEnd: handleDragEnd,
       animation: 150,
       ghostClass: 'sortable-ghost',
+      draggable: '.tool-card-wrapper',
+      filter: '.visibility-switch',
+      preventOnFilter: false,
+      onEnd: handleDragEnd,
     })
   }
 })
@@ -72,18 +79,26 @@ onMounted(() => {
   padding: 16px;
 }
 
-.tool-card {
+.tool-card-wrapper {
   position: relative;
+  cursor: move;
+  user-select: none;
+}
+
+.tool-card {
+  display: block;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 16px;
+  padding-top: 12px;
   text-decoration: none;
   color: inherit;
   transition: all 0.2s;
+  height: 100%;
 }
 
-.tool-card:hover {
+.tool-card-wrapper:hover .tool-card {
   transform: translateY(-2px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -109,19 +124,15 @@ onMounted(() => {
   position: absolute;
   top: 10px;
   right: 10px;
-}
-
-.drag-handle {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  cursor: move;
-  color: #9ca3af;
-  font-size: 16px;
+  cursor: pointer;
+  z-index: 10;
 }
 
 .sortable-ghost {
   opacity: 0.5;
+}
+
+.sortable-ghost .tool-card {
   background: #e5e7eb;
 }
 </style>

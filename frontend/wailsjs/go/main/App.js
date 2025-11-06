@@ -18,12 +18,24 @@ export function IsFullscreen() {
   return window['go']['main']['App']['IsFullscreen']();
 }
 
+export function LoadWindowSettings() {
+  return window['go']['main']['App']['LoadWindowSettings']();
+}
+
 export function MinimizeWindow() {
   return window['go']['main']['App']['MinimizeWindow']();
 }
 
+export function ResetWindowSize() {
+  return window['go']['main']['App']['ResetWindowSize']();
+}
+
 export function SaveFile(arg1, arg2, arg3) {
   return window['go']['main']['App']['SaveFile'](arg1, arg2, arg3);
+}
+
+export function SaveWindowSettings() {
+  return window['go']['main']['App']['SaveWindowSettings']();
 }
 
 export function ToggleFullscreen() {

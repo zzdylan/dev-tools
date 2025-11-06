@@ -10,8 +10,14 @@ export function Greet(arg1:string):Promise<string>;
 
 export function IsFullscreen():Promise<boolean>;
 
+export function LoadWindowSettings():Promise<main.WindowSettings>;
+
 export function MinimizeWindow():Promise<void>;
 
+export function ResetWindowSize():Promise<void>;
+
 export function SaveFile(arg1:string,arg2:main.SaveFileOptions,arg3:boolean):Promise<string>;
+
+export function SaveWindowSettings():Promise<void>;
 
 export function ToggleFullscreen():Promise<void>;

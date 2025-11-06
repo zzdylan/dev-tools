@@ -48,6 +48,26 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class WindowSettings {
+	    width: number;
+	    height: number;
+	    x: number;
+	    y: number;
+	    maximised: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new WindowSettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.x = source["x"];
+	        this.y = source["y"];
+	        this.maximised = source["maximised"];
+	    }
+	}
 
 }
 

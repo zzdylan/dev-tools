@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -14,9 +16,105 @@ type App struct {
 	ctx context.Context
 }
 
+// WindowSettings 窗口设置
+type WindowSettings struct {
+	Width      int  `json:"width"`
+	Height     int  `json:"height"`
+	X          int  `json:"x"`
+	Y          int  `json:"y"`
+	Maximised  bool `json:"maximised"`
+}
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
+}
+
+// getConfigPath 获取配置文件路径
+func (a *App) getConfigPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	configDir := filepath.Join(homeDir, ".dev-tools")
+	// 确保配置目录存在
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return "", err
+	}
+	return filepath.Join(configDir, "window.json"), nil
+}
+
+// LoadWindowSettings 加载窗口设置
+func (a *App) LoadWindowSettings() (*WindowSettings, error) {
+	configPath, err := a.getConfigPath()
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		// 文件不存在时返回默认值
+		if os.IsNotExist(err) {
+			return &WindowSettings{
+				Width:  1000,
+				Height: 700,
+				X:      -1,
+				Y:      -1,
+				Maximised: false,
+			}, nil
+		}
+		return nil, err
+	}
+
+	var settings WindowSettings
+	if err := json.Unmarshal(data, &settings); err != nil {
+		return nil, err
+	}
+
+	return &settings, nil
+}
+
+// SaveWindowSettings 保存窗口设置
+func (a *App) SaveWindowSettings() error {
+	configPath, err := a.getConfigPath()
+	if err != nil {
+		return err
+	}
+
+	width, height := runtime.WindowGetSize(a.ctx)
+	x, y := runtime.WindowGetPosition(a.ctx)
+	maximised := runtime.WindowIsMaximised(a.ctx)
+
+	settings := WindowSettings{
+		Width:     width,
+		Height:    height,
+		X:         x,
+		Y:         y,
+		Maximised: maximised,
+	}
+
+	data, err := json.MarshalIndent(settings, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(configPath, data, 0644)
+}
+
+// ResetWindowSize 重置窗口大小到默认值
+func (a *App) ResetWindowSize() error {
+	// 设置窗口大小为默认值
+	runtime.WindowSetSize(a.ctx, 1000, 700)
+
+	// 居中窗口
+	runtime.WindowCenter(a.ctx)
+
+	// 如果窗口是最大化的，先取消最大化
+	if runtime.WindowIsMaximised(a.ctx) {
+		runtime.WindowUnmaximise(a.ctx)
+	}
+
+	return nil
 }
 
 // startup is called when the app starts. The context is saved

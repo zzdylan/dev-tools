@@ -5,25 +5,6 @@
   >
     <!-- 头部 -->
     <header class="top-header">
-      <!-- Mac风格的窗口控制按钮 - 左边 -->
-      <div v-if="isMac" class="mac-window-controls">
-        <button
-          class="mac-btn mac-close-btn"
-          @click="closeWindow"
-          title="关闭"
-        ></button>
-        <button
-          class="mac-btn mac-minimize-btn"
-          @click="minimizeWindow"
-          title="最小化"
-        ></button>
-        <button
-          class="mac-btn mac-fullscreen-btn"
-          @click="toggleFullscreen"
-          title="全屏"
-        ></button>
-      </div>
-
       <div class="logo-section">
         <!-- 移除DevTools文字 -->
       </div>
@@ -34,7 +15,7 @@
       >
         <MenuOutline class="collapse-icon" />
       </button>
-      <div class="header-title">
+      <div class="header-title" @dblclick="handleHeaderDoubleClick">
         <h1 class="title">{{ currentMenuTitle }}</h1>
       </div>
 
@@ -50,18 +31,13 @@
       </div>
 
       <!-- Windows风格的窗口控制按钮 - 右边 -->
-      <div v-if="!isMac" class="header-right">
-        <button
-          class="window-btn minimize-btn"
-          @click="minimizeWindow"
-          title="最小化"
-        >
-          <span class="window-icon">−</span>
-        </button>
-        <button class="window-btn close-btn" @click="closeWindow" title="关闭">
-          <span class="window-icon">×</span>
-        </button>
-      </div>
+      <toolbar-control-widget
+        v-if="!isMac"
+        :maximised="maximised"
+        :size="48"
+        style="align-self: stretch"
+        @update:maximised="(val) => (maximised = val)"
+      />
     </header>
 
     <div class="main-container">
@@ -139,7 +115,10 @@ import {
   MinimizeWindow,
   CloseWindow,
   ToggleFullscreen,
+  ResetWindowSize,
 } from "../../wailsjs/go/main/App";
+import ToolbarControlWidget from '../components/ToolbarControlWidget.vue';
+import { WindowIsMaximised, WindowToggleMaximise } from '../../wailsjs/runtime/runtime';
 
 const route = useRoute();
 const currentMenuTitle = ref("");
@@ -147,9 +126,13 @@ const showSidebar = ref(true);
 
 // 检测是否是Mac平台
 const isMac = ref(false);
-onMounted(() => {
+const maximised = ref(false);
+
+onMounted(async () => {
   // 检测用户代理或使用Wails API检测平台
-  isMac.value = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+  isMac.value = navigator.userAgent.toUpperCase().indexOf("MAC") >= 0;
+  // 检测窗口最大化状态
+  maximised.value = await WindowIsMaximised();
 });
 
 // 菜单标题映射
@@ -213,17 +196,25 @@ const clearCache = async () => {
     
     // 清空所有localStorage数据
     localStorage.clear();
-    
+
     // 清空所有sessionStorage数据
     sessionStorage.clear();
-    
+
     // 重置store状态
     store.$reset();
-    
-    ElMessage.success('缓存已清空，建议重启应用以确保完全生效');
-    
+
+    // 重置窗口大小到默认值
+    try {
+      await ResetWindowSize();
+    } catch (error) {
+      console.error('重置窗口大小失败:', error);
+    }
+
     // 关闭设置对话框
     closeSettings();
+
+    // 显示成功消息
+    ElMessage.success('缓存已清空');
     
   } catch (err) {
     // 用户取消操作时不显示错误
@@ -300,6 +291,11 @@ const toggleFullscreen = () => {
   // console.log("Toggle fullscreen");
   ToggleFullscreen();
 };
+
+// 双击标题栏最大化/还原
+const handleHeaderDoubleClick = () => {
+  WindowToggleMaximise();
+};
 </script>
 
 <style scoped>
@@ -317,6 +313,7 @@ const toggleFullscreen = () => {
   display: flex;
   align-items: center;
   padding: 0 16px;
+  padding-right: 0;
   --wails-draggable: drag;
 }
 
@@ -340,6 +337,10 @@ const toggleFullscreen = () => {
 .header-title {
   flex: 1;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .header-title .title {
@@ -347,12 +348,14 @@ const toggleFullscreen = () => {
   font-size: 16px;
   font-weight: 600;
   color: #24292f;
+  line-height: 1;
 }
 
 .header-right {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: 0;
+  --wails-draggable: none;
 }
 
 .icon-btn {
@@ -556,86 +559,14 @@ const toggleFullscreen = () => {
   transform: rotate(180deg);
 }
 
-/* Mac风格窗口控制按钮 */
-.mac-window-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-right: 16px;
-}
-
-.mac-btn {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.mac-btn:hover {
-  opacity: 0.8;
-}
-
-.mac-close-btn {
-  background: #ff5f57;
-  position: relative;
-}
-
-.mac-close-btn:hover::after {
-  content: "×";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #4a0e0e;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.mac-minimize-btn {
-  background: #ffbd2e;
-  position: relative;
-}
-
-.mac-minimize-btn:hover::after {
-  content: "−";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #7a5200;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.mac-fullscreen-btn {
-  background: #28ca42;
-  position: relative;
-}
-
-.mac-fullscreen-btn:hover::after {
-  content: "⤢";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #0f3e17;
-  font-size: 8px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-/* Mac环境下调整collapse按钮位置 */
+/* Mac环境下留出空间给系统原生按钮 */
 .layout.mac-layout .collapse-btn {
-  margin-left: 150px; /* Mac环境下减少margin，因为左边有窗口控制按钮 */
+  margin-left: 70px; /* Mac环境下留出空间给系统原生的红黄绿按钮 */
 }
 
 /* Windows/Linux环境下的collapse按钮位置 */
 .layout:not(.mac-layout) .collapse-btn {
-  margin-left: 210px;
+  margin-left: 0; /* Windows环境下不需要额外margin */
 }
 
 /* 头部操作按钮 */
@@ -643,7 +574,7 @@ const toggleFullscreen = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-right: 16px;
+  margin-right: 0;
 }
 
 .settings-btn {
