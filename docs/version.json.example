@@ -1,0 +1,8 @@
+{
+  "version": "v0.2.0",
+  "description": "更新内容：\n1、添加了颜色转换器\n2、添加了检查更新功能\n3、优化了窗口大小记忆功能",
+  "downloadUrls": {
+    "darwin": "http://gotool.51godream.com/downloads/dev-tools-v0.2.0-darwin.dmg",
+    "windows": "http://gotool.51godream.com/downloads/dev-tools-v0.2.0-windows.exe"
+  }
+}

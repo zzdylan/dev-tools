@@ -89,6 +89,17 @@
       <div class="settings-content">
         <div class="settings-panel single-panel">
           <div class="settings-section">
+            <h3 class="section-title">应用更新</h3>
+            <div class="setting-item">
+              <div class="setting-description">
+                <label class="setting-label">当前版本</label>
+                <p class="setting-hint">{{ appVersion }}</p>
+              </div>
+              <button class="check-update-btn" @click="checkForUpdate">检查更新</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
             <h3 class="section-title">数据管理</h3>
             <div class="setting-item">
               <div class="setting-description">
@@ -116,13 +127,17 @@ import {
   CloseWindow,
   ToggleFullscreen,
   ResetWindowSize,
+  CheckForUpdate,
+  GetVersion,
 } from "../../wailsjs/go/main/App";
+import { BrowserOpenURL } from '../../wailsjs/runtime/runtime';
 import ToolbarControlWidget from '../components/ToolbarControlWidget.vue';
 import { WindowIsMaximised, WindowToggleMaximise } from '../../wailsjs/runtime/runtime';
 
 const route = useRoute();
 const currentMenuTitle = ref("");
 const showSidebar = ref(true);
+const appVersion = ref("");
 
 // 检测是否是Mac平台
 const isMac = ref(false);
@@ -133,6 +148,13 @@ onMounted(async () => {
   isMac.value = navigator.userAgent.toUpperCase().indexOf("MAC") >= 0;
   // 检测窗口最大化状态
   maximised.value = await WindowIsMaximised();
+  // 获取应用版本
+  try {
+    appVersion.value = await GetVersion();
+  } catch (error) {
+    console.error('获取版本失败:', error);
+    appVersion.value = 'unknown';
+  }
 });
 
 // 菜单标题映射
@@ -295,6 +317,60 @@ const toggleFullscreen = () => {
 // 双击标题栏最大化/还原
 const handleHeaderDoubleClick = () => {
   WindowToggleMaximise();
+};
+
+// 检查更新
+const checkForUpdate = async () => {
+  const loading = ElMessage({
+    message: '正在检查更新...',
+    type: 'info',
+    duration: 0
+  });
+
+  try {
+    const owner = 'zzdylan';
+    const repo = 'dev-tools';
+
+    const updateInfo = await CheckForUpdate(owner, repo);
+    loading.close();
+
+    if (updateInfo.hasUpdate) {
+      // 有新版本
+      const description = updateInfo.description.substring(0, 300).replace(/\n/g, '<br>');
+
+      await ElMessageBox.confirm(
+        `最新版本: <strong>${updateInfo.latestVersion}</strong><br>当前版本: ${updateInfo.currentVersion}<br><br>${description}`,
+        '发现新版本',
+        {
+          confirmButtonText: '立即下载',
+          cancelButtonText: '稍后提醒',
+          dangerouslyUseHTMLString: true,
+        }
+      );
+
+      // 打开下载页面
+      const downloadUrl = updateInfo.downloadUrl && updateInfo.downloadUrl.trim() !== ''
+        ? updateInfo.downloadUrl
+        : 'https://github.com/zzdylan/dev-tools/releases/latest';
+
+      console.log('打开下载地址:', downloadUrl);
+      BrowserOpenURL(downloadUrl);
+    } else {
+      // 已是最新版本
+      ElMessage.success(`当前已是最新版本: ${updateInfo.currentVersion}`);
+    }
+  } catch (error: any) {
+    loading.close();
+
+    // 用户取消下载
+    if (error === 'cancel') {
+      return;
+    }
+
+    // 其他错误
+    console.error('检查更新失败:', error);
+    ElMessage.error('检查更新失败，请稍后重试');
+  }
 };
 </script>
 
@@ -722,6 +798,23 @@ const handleHeaderDoubleClick = () => {
   color: #6b7280;
   margin: 0;
   line-height: 1.4;
+}
+
+.check-update-btn {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 16px;
+}
+
+.check-update-btn:hover {
+  background: #2563eb;
 }
 
 .clear-cache-btn {

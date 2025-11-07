@@ -17,9 +17,13 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// 应用版本号
+var version = "1.0.1"
+
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
+	app.SetVersion(version)
 
 	// Create JsonProcessor instance
 	jsonProcessor := NewJsonProcessor()

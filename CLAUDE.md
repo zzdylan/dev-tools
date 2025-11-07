@@ -447,6 +447,110 @@ try {
 4. **用户取消处理**：用户取消保存时不显示错误提示，这是正常操作
 5. **原生对话框**：使用系统原生的保存对话框，用户体验更好
 
+## 应用更新检查功能
+
+应用支持自动检查更新，采用双重降级策略：优先使用自定义服务器，失败时自动降级到 GitHub API。
+
+### 后端实现 (app.go)
+
+**主要方法：**
+
+```go
+// CheckForUpdate 检查更新（优先使用自定义服务器，失败时降级到 GitHub API）
+func (a *App) CheckForUpdate(owner, repo string) (*UpdateInfo, error) {
+	// 优先尝试从自定义服务器获取
+	customURL := "http://gotool.51godream.com/version.json"
+	updateInfo, err := a.checkCustomServer(customURL)
+	if err == nil {
+		return updateInfo, nil
+	}
+
+	// 自定义服务器失败，降级到 GitHub API
+	return a.checkGitHubAPI(owner, repo)
+}
+```
+
+**工作流程：**
+1. 首先尝试从 `http://gotool.51godream.com/version.json` 获取版本信息（5秒超时）
+2. 如果自定义服务器失败（超时、404、JSON解析错误等），自动降级到 GitHub API
+3. GitHub API 作为备用方案（10秒超时）
+
+### 自定义服务器 version.json 格式
+
+在服务器上部署 `version.json` 文件，格式如下：
+
+```json
+{
+  "version": "v0.2.0",
+  "description": "## 更新内容\n\n### 新功能\n- 添加了颜色转换器\n- 添加了检查更新功能\n\n### 改进\n- 优化了窗口大小记忆功能\n- 改进了UI样式\n\n### 修复\n- 修复了拖拽卡片的问题\n- 修复了窗口控制按钮的问题",
+  "downloadUrls": {
+    "darwin": "http://gotool.51godream.com/downloads/dev-tools-v0.2.0-darwin.dmg",
+    "windows": "http://gotool.51godream.com/downloads/dev-tools-v0.2.0-windows.exe"
+  }
+}
+```
+
+**字段说明：**
+- `version`: 版本号（建议带 v 前缀，如 v0.2.0）
+- `description`: 更新说明（支持 Markdown 格式）
+- `downloadUrls`: 多平台下载地址对象
+  - `darwin`: macOS 平台的下载地址（自动检测）
+  - `windows`: Windows 平台的下载地址（自动检测）
+  - 应用会根据当前运行平台（通过 `runtime.GOOS`）自动选择对应的下载地址
+  - 如果没有配置对应平台的地址，前端会自动降级到 GitHub releases 页面
+
+### 前端使用 (MainLayout.vue)
+
+```typescript
+const checkForUpdate = async () => {
+  const loading = ElMessage({
+    message: '正在检查更新...',
+    type: 'info',
+    duration: 0
+  });
+
+  try {
+    const owner = 'zzdylan';
+    const repo = 'dev-tools';
+
+    const updateInfo = await CheckForUpdate(owner, repo);
+    loading.close();
+
+    if (updateInfo.hasUpdate) {
+      // 显示更新对话框
+      await ElMessageBox.confirm(
+        `发现新版本: ${updateInfo.latestVersion}...`,
+        '发现新版本',
+        { type: 'info' }
+      );
+      // 打开下载页面
+      window.open(updateInfo.downloadUrl, '_blank');
+    } else {
+      ElMessage.success('当前已是最新版本');
+    }
+  } catch (error) {
+    loading.close();
+    ElMessage.error(`检查更新失败: ${error}`);
+  }
+};
+```
+
+### 版本比较规则
+
+使用语义化版本比较：
+- 支持 `v1.2.3` 和 `1.2.3` 格式
+- 逐段比较主版本号、次版本号、修订号
+- 缺失的版本段视为 0
+
+### 注意事项
+
+1. **自定义服务器优先**：确保自定义服务器响应速度快（5秒超时）
+2. **降级策略**：服务器失败时自动使用 GitHub API，无需人工干预
+3. **协议支持**：自定义服务器使用 HTTP，GitHub API 使用 HTTPS
+4. **跨域配置**：自定义服务器需要正确配置 CORS 头
+5. **版本格式**：建议统一使用 `v` 前缀的版本号
+6. **日志输出**：降级时会在控制台输出日志，便于调试
+
 ## 工具模块
 
 ### 颜色转换器 (ColorConverter.vue)
