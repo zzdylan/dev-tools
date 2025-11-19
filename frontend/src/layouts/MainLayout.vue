@@ -19,8 +19,15 @@
         <h1 class="title">{{ currentMenuTitle }}</h1>
       </div>
 
-      <!-- 设置按钮 -->
+      <!-- GitHub 和设置按钮 -->
       <div class="header-actions">
+        <button
+          class="icon-btn github-btn"
+          @click="openGithub"
+          title="GitHub"
+        >
+          <Github class="github-icon" />
+        </button>
         <button
           class="icon-btn settings-btn"
           @click="toggleSettings"
@@ -133,6 +140,7 @@ import {
 import { BrowserOpenURL } from '../../wailsjs/runtime/runtime';
 import ToolbarControlWidget from '../components/ToolbarControlWidget.vue';
 import { WindowIsMaximised, WindowToggleMaximise } from '../../wailsjs/runtime/runtime';
+import Github from '../components/icons/Github.vue';
 
 const route = useRoute();
 const currentMenuTitle = ref("");
@@ -317,6 +325,11 @@ const toggleFullscreen = () => {
 // 双击标题栏最大化/还原
 const handleHeaderDoubleClick = () => {
   WindowToggleMaximise();
+};
+
+// 打开 GitHub
+const openGithub = () => {
+  BrowserOpenURL('https://github.com/zzdylan/dev-tools');
 };
 
 // 检查更新
@@ -651,6 +664,22 @@ const checkForUpdate = async () => {
   align-items: center;
   gap: 8px;
   margin-right: 0;
+}
+
+.github-btn {
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+}
+
+.github-btn:hover {
+  background: #f3f4f6;
+}
+
+.github-icon {
+  width: 18px;
+  height: 18px;
+  color: #666;
 }
 
 .settings-btn {
