@@ -261,7 +261,7 @@ type UpdateInfo struct {
 // CheckForUpdate 检查更新（优先使用自定义服务器，失败时降级到 GitHub API）
 func (a *App) CheckForUpdate(owner, repo string) (*UpdateInfo, error) {
 	// 优先尝试从自定义服务器获取
-	customURL := "http://gotool.51godream.com/version.json"
+	customURL := "https://devtools.51godream.com/version.json"
 	updateInfo, err := a.checkCustomServer(customURL)
 	if err == nil {
 		return updateInfo, nil
