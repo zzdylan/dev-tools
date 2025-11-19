@@ -210,8 +210,8 @@ wails build
 
 提供 Windows 和 macOS 安装包：
 
-- [Windows 版本下载](http://devtools.51godream.com/dev-tools.exe)
-- [macOS 版本下载](http://devtools.51godream.com/dev-tools.dmg)
+- [Windows 版本下载](https://devtools.51godream.com/dev-tools.exe)
+- [macOS 版本下载](https://devtools.51godream.com/dev-tools.dmg)
 
 > 如果在 macOS 上安装后无法打开，报错**不受信任**或者**移到垃圾箱**，执行下面命令后再启动即可：
 >
