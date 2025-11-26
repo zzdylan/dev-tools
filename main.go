@@ -18,7 +18,7 @@ import (
 var assets embed.FS
 
 // 应用版本号
-var version = "1.0.2"
+var version = "1.0.3"
 
 func main() {
 	// Create an instance of the app structure
