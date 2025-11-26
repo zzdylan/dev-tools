@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, reactive, watch, onMounted } from 'vue'
+import { ref, computed, nextTick, reactive, watch, onMounted, toRaw } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { FormatJson, CompressJson } from '../../wailsjs/go/main/JsonProcessor'
@@ -162,7 +162,7 @@ const currentTab = computed(() => store.jsonEditorTabs[tabId.value])
 const getCurrentEditor = () => {
   // 如果是对比模式，返回 Diff Editor 的修改编辑器
   if (currentTab.value?.compareMode) {
-    const diffEditor = diffEditorInstances[tabId.value]
+    const diffEditor = toRaw(diffEditorInstances[tabId.value])
     if (diffEditor) {
       return {
         editor: diffEditor.getModifiedEditor()
@@ -244,7 +244,7 @@ const formatJson = async () => {
   try {
     // 对比模式：格式化两个编辑器
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -257,17 +257,17 @@ const formatJson = async () => {
       }
 
       // 格式化原始编辑器
-      const originalValue = model.original.getValue()
+      const originalValue = toRaw(model.original).getValue()
       if (originalValue.trim()) {
         const formattedOriginal = await FormatJson(originalValue, settings.value.autoDecodeUnicode)
-        model.original.setValue(formattedOriginal)
+        toRaw(model.original).setValue(formattedOriginal)
       }
 
       // 格式化修改编辑器
-      const modifiedValue = model.modified.getValue()
+      const modifiedValue = toRaw(model.modified).getValue()
       if (modifiedValue.trim()) {
         const formattedModified = await FormatJson(modifiedValue, settings.value.autoDecodeUnicode)
-        model.modified.setValue(formattedModified)
+        toRaw(model.modified).setValue(formattedModified)
       }
 
       ElMessage.success('格式化完成')
@@ -314,7 +314,7 @@ const compressJson = async () => {
   try {
     // 对比模式：压缩两个编辑器
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -327,17 +327,17 @@ const compressJson = async () => {
       }
 
       // 压缩原始编辑器
-      const originalValue = model.original.getValue()
+      const originalValue = toRaw(model.original).getValue()
       if (originalValue.trim()) {
         const compressedOriginal = await CompressJson(originalValue, settings.value.autoDecodeUnicode)
-        model.original.setValue(compressedOriginal)
+        toRaw(model.original).setValue(compressedOriginal)
       }
 
       // 压缩修改编辑器
-      const modifiedValue = model.modified.getValue()
+      const modifiedValue = toRaw(model.modified).getValue()
       if (modifiedValue.trim()) {
         const compressedModified = await CompressJson(modifiedValue, settings.value.autoDecodeUnicode)
-        model.modified.setValue(compressedModified)
+        toRaw(model.modified).setValue(compressedModified)
       }
 
       ElMessage.success('压缩完成')
@@ -582,7 +582,7 @@ const clearContent = () => {
   try {
     // 对比模式：清空两个编辑器
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -594,8 +594,8 @@ const clearContent = () => {
         return
       }
 
-      model.original.setValue('')
-      model.modified.setValue('')
+      toRaw(model.original).setValue('')
+      toRaw(model.modified).setValue('')
       error.value = ''
       ElMessage.success('已清空')
       return
@@ -710,7 +710,7 @@ const loadSample = () => {
 
     // 对比模式：加载两个不同的示例
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -722,8 +722,8 @@ const loadSample = () => {
         return
       }
 
-      model.original.setValue(sampleStr)
-      model.modified.setValue(sampleStr2)
+      toRaw(model.original).setValue(sampleStr)
+      toRaw(model.modified).setValue(sampleStr2)
       ElMessage.success('已加载示例数据')
       return
     }
