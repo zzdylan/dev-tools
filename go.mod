@@ -1,8 +1,6 @@
 module dev-tools
 
-go 1.22.0
-
-toolchain go1.24.3
+go 1.24
 
 require (
 	github.com/gopherjs/gopherjs v1.17.2

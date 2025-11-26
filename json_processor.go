@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"container/list"
-	"context"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -11,7 +10,7 @@ import (
 
 // JsonProcessor 处理 JSON 相关的功能
 type JsonProcessor struct {
-	ctx context.Context
+	// ctx context.Context
 }
 
 func NewJsonProcessor() *JsonProcessor {
