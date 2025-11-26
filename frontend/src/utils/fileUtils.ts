@@ -1,9 +1,9 @@
-import { SaveFile } from '../../wailsjs/go/main/App'
-import { main } from '../../wailsjs/go/models'
+import { SaveFile } from '../../wailsjs/go/app/App'
+import { file } from '../../wailsjs/go/models'
 
 // 使用 Wails 生成的类型
-export type FileFilter = main.FileFilter
-export type SaveOptions = main.SaveFileOptions
+export type FileFilter = file.Filter
+export type SaveOptions = file.SaveOptions
 
 // 常用文件过滤器
 export const FILE_FILTERS = {
@@ -48,13 +48,13 @@ export async function saveImage(
   title: string = '保存图片'
 ): Promise<string> {
   const filters = [
-    new main.FileFilter(FILE_FILTERS.IMAGE_PNG),
-    new main.FileFilter(FILE_FILTERS.IMAGE_JPG),
-    new main.FileFilter(FILE_FILTERS.IMAGE_ALL),
-    new main.FileFilter(FILE_FILTERS.ALL)
+    new file.Filter(FILE_FILTERS.IMAGE_PNG),
+    new file.Filter(FILE_FILTERS.IMAGE_JPG),
+    new file.Filter(FILE_FILTERS.IMAGE_ALL),
+    new file.Filter(FILE_FILTERS.ALL)
   ]
-  
-  const options = new main.SaveFileOptions({
+
+  const options = new file.SaveOptions({
     title,
     defaultFilename: filename,
     filters
@@ -76,9 +76,9 @@ export async function saveText(
   title: string = '保存文件',
   customFilters: any[] = [FILE_FILTERS.TEXT, FILE_FILTERS.ALL]
 ): Promise<string> {
-  const filters = customFilters.map(filter => new main.FileFilter(filter))
-  
-  const options = new main.SaveFileOptions({
+  const filters = customFilters.map(filter => new file.Filter(filter))
+
+  const options = new file.SaveOptions({
     title,
     defaultFilename: filename,
     filters

@@ -12,6 +12,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	runtime2 "github.com/wailsapp/wails/v2/pkg/runtime"
+
+	"go-tools/backend/app"
+	"go-tools/backend/processor"
 )
 
 //go:embed all:frontend/dist
@@ -22,27 +25,21 @@ var version = "1.0.4"
 
 func main() {
 	// Create an instance of the app structure
-	app := NewApp()
-	app.SetVersion(version)
+	application := app.NewApp()
+	application.SetVersion(version)
 
-	// Create JsonProcessor instance
-	jsonProcessor := NewJsonProcessor()
-	xmlProcessor := NewXMLProcessor()
+	// Create processor instances
+	jsonProcessor := processor.NewJsonProcessor()
+	xmlProcessor := processor.NewXMLProcessor()
+	charlesGenerator := processor.NewCharlesGenerator()
 
 	// 检测操作系统
 	isMacOS := runtime.GOOS == "darwin"
 
 	// 加载窗口设置
-	windowSettings, err := app.LoadWindowSettings()
+	windowSettings, err := application.LoadWindowSettings()
 	if err != nil {
 		println("Error loading window settings:", err.Error())
-		windowSettings = &WindowSettings{
-			Width:     1000,
-			Height:    700,
-			X:         -1,
-			Y:         -1,
-			Maximised: false,
-		}
 	}
 
 	// 确定窗口启动状态
@@ -62,14 +59,14 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 1},
 		OnStartup: func(ctx context.Context) {
-			app.startup(ctx)
+			application.Startup(ctx)
 
 			// 启动定时器，每2秒检查并保存窗口设置
 			go func() {
 				ticker := time.NewTicker(2 * time.Second)
 				defer ticker.Stop()
 				for range ticker.C {
-					if err := app.SaveWindowSettings(); err != nil {
+					if err := application.SaveWindowSettings(); err != nil {
 						println("Error saving window settings:", err.Error())
 					}
 				}
@@ -89,15 +86,16 @@ func main() {
 		},
 		OnBeforeClose: func(ctx context.Context) bool {
 			// 保存窗口设置
-			if err := app.SaveWindowSettings(); err != nil {
+			if err := application.SaveWindowSettings(); err != nil {
 				println("Error saving window settings:", err.Error())
 			}
 			return false
 		},
 		Bind: []interface{}{
-			app,
+			application,
 			jsonProcessor,
 			xmlProcessor,
+			charlesGenerator,
 		},
 		Frameless: !isMacOS, // macOS使用有边框窗口，其他平台无边框
 		Mac: &mac.Options{

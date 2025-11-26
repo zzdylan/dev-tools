@@ -1,4 +1,4 @@
-module dev-tools
+module go-tools
 
 go 1.24
 

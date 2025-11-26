@@ -1,11 +1,36 @@
-export namespace main {
+export namespace config {
 	
-	export class FileFilter {
+	export class WindowSettings {
+	    width: number;
+	    height: number;
+	    x: number;
+	    y: number;
+	    maximised: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new WindowSettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.x = source["x"];
+	        this.y = source["y"];
+	        this.maximised = source["maximised"];
+	    }
+	}
+
+}
+
+export namespace file {
+	
+	export class Filter {
 	    displayName: string;
 	    pattern: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new FileFilter(source);
+	        return new Filter(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -14,20 +39,20 @@ export namespace main {
 	        this.pattern = source["pattern"];
 	    }
 	}
-	export class SaveFileOptions {
+	export class SaveOptions {
 	    title: string;
 	    defaultFilename: string;
-	    filters: FileFilter[];
+	    filters: Filter[];
 	
 	    static createFrom(source: any = {}) {
-	        return new SaveFileOptions(source);
+	        return new SaveOptions(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.title = source["title"];
 	        this.defaultFilename = source["defaultFilename"];
-	        this.filters = this.convertValues(source["filters"], FileFilter);
+	        this.filters = this.convertValues(source["filters"], Filter);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -48,6 +73,11 @@ export namespace main {
 		    return a;
 		}
 	}
+
+}
+
+export namespace updater {
+	
 	export class UpdateInfo {
 	    currentVersion: string;
 	    latestVersion: string;
@@ -66,26 +96,6 @@ export namespace main {
 	        this.hasUpdate = source["hasUpdate"];
 	        this.description = source["description"];
 	        this.downloadUrl = source["downloadUrl"];
-	    }
-	}
-	export class WindowSettings {
-	    width: number;
-	    height: number;
-	    x: number;
-	    y: number;
-	    maximised: boolean;
-	
-	    static createFrom(source: any = {}) {
-	        return new WindowSettings(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.width = source["width"];
-	        this.height = source["height"];
-	        this.x = source["x"];
-	        this.y = source["y"];
-	        this.maximised = source["maximised"];
 	    }
 	}
 

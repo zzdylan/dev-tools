@@ -80,7 +80,7 @@
 import { ref, computed, nextTick, reactive, watch, onMounted, toRaw } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { FormatXML, CompressXML } from '../../wailsjs/go/main/XmlProcessor'
+import { FormatXML, CompressXML } from '../../wailsjs/go/processor/XMLProcessor'
 import { onClickOutside } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'

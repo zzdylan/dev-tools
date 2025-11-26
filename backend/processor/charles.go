@@ -1,4 +1,4 @@
-package main
+package processor
 
 import (
 	"bytes"
@@ -17,8 +17,16 @@ type ckCipher struct {
 	rk [roundKeys]int32
 }
 
-// GenerateCharlesKey 生成Charles激活码
-func (a *App) GenerateCharlesKey(name string) string {
+// CharlesGenerator Charles 激活码生成器
+type CharlesGenerator struct{}
+
+// NewCharlesGenerator 创建 Charles 生成器
+func NewCharlesGenerator() *CharlesGenerator {
+	return &CharlesGenerator{}
+}
+
+// GenerateKey 生成Charles激活码
+func (g *CharlesGenerator) GenerateKey(name string) string {
 	rand.Seed(time.Now().UnixNano())
 	return crack(name)
 }

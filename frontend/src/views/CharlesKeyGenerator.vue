@@ -46,7 +46,7 @@ import { computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
-import { GenerateCharlesKey } from '../../wailsjs/go/main/App'
+import { GenerateKey } from '../../wailsjs/go/processor/CharlesGenerator'
 
 const store = useToolsStore()
 const { charlesGenerator } = storeToRefs(store)
@@ -69,7 +69,7 @@ const generateKey = async () => {
   }
   
   try {
-    const key = await GenerateCharlesKey(userName.value.trim())
+    const key = await GenerateKey(userName.value.trim())
     licenseKey.value = key
   } catch (error) {
     licenseKey.value = '生成失败'

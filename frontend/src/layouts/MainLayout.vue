@@ -136,7 +136,7 @@ import {
   ResetWindowSize,
   CheckForUpdate,
   GetVersion,
-} from "../../wailsjs/go/main/App";
+} from "../../wailsjs/go/app/App";
 import { BrowserOpenURL } from '../../wailsjs/runtime/runtime';
 import ToolbarControlWidget from '../components/ToolbarControlWidget.vue';
 import { WindowIsMaximised, WindowToggleMaximise } from '../../wailsjs/runtime/runtime';

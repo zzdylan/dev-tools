@@ -89,7 +89,7 @@
 import { ref, computed, nextTick, reactive, watch, onMounted, toRaw } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { FormatJson, CompressJson } from '../../wailsjs/go/main/JsonProcessor'
+import { FormatJson, CompressJson } from '../../wailsjs/go/processor/JsonProcessor'
 import { onClickOutside } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
