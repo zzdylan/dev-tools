@@ -14,42 +14,18 @@
       </div>
     </div>
 
-    <!-- 底部：内容区域 -->
-    <div class="content-layout">
-      <!-- 左侧：原始文本 -->
-      <div class="input-panel">
-        <div class="panel-label">原始文本</div>
-        <div ref="oldEditor" class="editor-container"></div>
-      </div>
-
-      <!-- 右侧：新文本和对比结果 -->
-      <div class="output-panel">
-        <div class="panel-label">新文本</div>
-        <div ref="newEditor" class="editor-container"></div>
-        
-        <!-- 对比结果 -->
-        <div class="diff-result" v-if="(oldText || newText) && diffResult !== '无差异'">
-          <div class="result-content" v-html="diffResult"></div>
-        </div>
-        
-        <!-- 无差异提示 -->
-        <div class="no-diff" v-if="(oldText || newText) && diffResult === '无差异'">
-          <div class="no-diff-icon">✓</div>
-          <div class="no-diff-text">文本内容相同</div>
-        </div>
-      </div>
+    <!-- 底部：Diff Editor -->
+    <div class="editor-wrapper">
+      <div ref="diffEditorContainer" class="diff-editor-container"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue'
-import { diffLines } from 'diff'
-import { EditorView, basicSetup } from 'codemirror'
-import { EditorState } from '@codemirror/state'
-import { lineNumbers } from '@codemirror/view'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
+import * as monaco from 'monaco-editor'
 
 const store = useToolsStore()
 const { textDiff } = storeToRefs(store)
@@ -65,110 +41,99 @@ const ignoreWhitespace = computed({
   get: () => textDiff.value.ignoreWhitespace,
   set: (val) => (textDiff.value.ignoreWhitespace = val),
 })
-const diffResult = ref('')
-const oldEditor = ref<HTMLDivElement>()
-const newEditor = ref<HTMLDivElement>()
-let oldEditorView: EditorView
-let newEditorView: EditorView
+
+const diffEditorContainer = ref<HTMLElement>()
+let diffEditor: monaco.editor.IStandaloneDiffEditor | null = null
+let originalModel: monaco.editor.ITextModel | null = null
+let modifiedModel: monaco.editor.ITextModel | null = null
 
 onMounted(() => {
-  // 创建左侧编辑器
-  oldEditorView = new EditorView({
-    state: EditorState.create({
-      doc: oldText.value,
-      extensions: [
-        basicSetup,
-        lineNumbers(),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            oldText.value = update.state.doc.toString()
-          }
-        }),
-      ],
-    }),
-    parent: oldEditor.value!,
+  if (!diffEditorContainer.value) return
+
+  // 创建 Diff Editor
+  diffEditor = monaco.editor.createDiffEditor(diffEditorContainer.value, {
+    fontSize: 12,
+    automaticLayout: true,
+    renderSideBySide: true,
+    enableSplitViewResizing: true,
+    readOnly: false,
+    minimap: { enabled: false },
+    scrollBeyondLastLine: false,
+    wordWrap: 'on',
+    lineNumbers: 'on',
+    renderIndicators: true,
+    ignoreTrimWhitespace: ignoreWhitespace.value,
+    renderOverviewRuler: false,
+    scrollbar: {
+      vertical: 'visible',
+      horizontal: 'visible',
+      verticalScrollbarSize: 8,
+      horizontalScrollbarSize: 8,
+      alwaysConsumeMouseWheel: true,
+    },
+    originalEditable: true,
   })
 
-  // 创建右侧编辑器
-  newEditorView = new EditorView({
-    state: EditorState.create({
-      doc: newText.value,
-      extensions: [
-        basicSetup,
-        lineNumbers(),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            newText.value = update.state.doc.toString()
-          }
-        }),
-      ],
-    }),
-    parent: newEditor.value!,
+  // 创建 model
+  originalModel = monaco.editor.createModel(oldText.value || '', 'plaintext')
+  modifiedModel = monaco.editor.createModel(newText.value || '', 'plaintext')
+
+  // 设置 model
+  diffEditor.setModel({
+    original: originalModel,
+    modified: modifiedModel
+  })
+
+  // 监听修改编辑器的内容变化
+  modifiedModel.onDidChangeContent(() => {
+    if (modifiedModel) {
+      newText.value = modifiedModel.getValue()
+    }
+  })
+
+  // 监听原始编辑器的内容变化
+  originalModel.onDidChangeContent(() => {
+    if (originalModel) {
+      oldText.value = originalModel.getValue()
+    }
   })
 })
 
-const generateDiff = () => {
-  const diff = diffLines(oldText.value, newText.value, {
-    ignoreWhitespace: ignoreWhitespace.value,
-    newlineIsToken: true,
-  })
-  let html = ''
-  let oldLineNumber = 1
-  let newLineNumber = 1
-
-  diff.forEach((part) => {
-    const lines = part.value.split('\n').filter((line) => line !== '')
-    lines.forEach((line) => {
-      if (part.added) {
-        html += `<div class="diff-line added"><span class="line-number old">  </span><span class="line-number new">+${newLineNumber}</span>${line}</div>`
-        newLineNumber++
-      } else if (part.removed) {
-        html += `<div class="diff-line removed"><span class="line-number old">-${oldLineNumber}</span><span class="line-number new">  </span>${line}</div>`
-        oldLineNumber++
-      } else {
-        html += `<div class="diff-line"><span class="line-number old">${oldLineNumber}</span><span class="line-number new">${newLineNumber}</span>${line}</div>`
-        oldLineNumber++
-        newLineNumber++
-      }
-    })
-  })
-
-  diffResult.value = html || '无差异'
-}
-
-watch([oldText, newText, ignoreWhitespace], generateDiff, { immediate: true })
-
-const clearAll = () => {
-  oldText.value = ''
-  newText.value = ''
-  if (oldEditorView) {
-    oldEditorView.dispatch({
-      changes: { from: 0, to: oldEditorView.state.doc.length, insert: '' }
+// 监听 ignoreWhitespace 变化，更新编辑器选项
+watch(ignoreWhitespace, (newValue) => {
+  if (diffEditor) {
+    diffEditor.updateOptions({
+      ignoreTrimWhitespace: newValue
     })
   }
-  if (newEditorView) {
-    newEditorView.dispatch({
-      changes: { from: 0, to: newEditorView.state.doc.length, insert: '' }
-    })
+})
+
+const clearAll = () => {
+  if (originalModel && modifiedModel) {
+    originalModel.setValue('')
+    modifiedModel.setValue('')
   }
 }
 
 const loadSample = () => {
-  const sampleOld = 'Hello World\nThis is line 2\nThis is line 3'
-  const sampleNew = 'Hello World\nThis is modified line 2\nThis is line 3\nThis is new line 4'
-  
-  oldText.value = sampleOld
-  newText.value = sampleNew
-  
-  if (oldEditorView) {
-    oldEditorView.dispatch({
-      changes: { from: 0, to: oldEditorView.state.doc.length, insert: sampleOld }
-    })
-  }
-  if (newEditorView) {
-    newEditorView.dispatch({
-      changes: { from: 0, to: newEditorView.state.doc.length, insert: sampleNew }
-    })
+  const sampleOld = `Hello World
+This is line 2
+This is line 3
+Some content here
+More content
+Final line`
+
+  const sampleNew = `Hello World
+This is modified line 2
+This is line 3
+Some different content here
+More content
+New additional line
+Final line`
+
+  if (originalModel && modifiedModel) {
+    originalModel.setValue(sampleOld)
+    modifiedModel.setValue(sampleNew)
   }
 }
 </script>
@@ -182,6 +147,7 @@ const loadSample = () => {
   background: white;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .top-header {
@@ -204,38 +170,7 @@ const loadSample = () => {
 .tab-actions {
   display: flex;
   align-items: stretch;
-  gap: 8px;
   background: #f8f9fa;
-}
-
-.tab-btn {
-  padding: 0 10px;
-  background: #f8f9fa;
-  border: none;
-  border-right: 1px solid #d1d5db;
-  font-size: 10px;
-  color: #6c757d;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 45px;
-  height: 100%;
-}
-
-.tab-btn:last-child {
-  border-right: none;
-}
-
-.tab-btn:hover {
-  background: #e9ecef;
-}
-
-.tab-btn.active {
-  background: #ffffff;
-  color: #212529;
-  font-weight: 500;
 }
 
 .action-btn {
@@ -285,43 +220,18 @@ const loadSample = () => {
   background: #e9ecef;
 }
 
-.content-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  flex: 1;
-  align-items: stretch;
-}
-
-.input-panel,
-.output-panel {
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.panel-label {
-  padding: 8px 12px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #d1d5db;
-  font-size: 10px;
-  color: #6c757d;
-  font-weight: 500;
-}
-
 .option-item {
   display: flex;
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 0 8px;
   transition: background-color 0.2s;
+  height: 100%;
 }
 
 .option-item:hover {
-  background-color: #f1f5f9;
+  background-color: #e9ecef;
 }
 
 .checkbox {
@@ -338,122 +248,46 @@ const loadSample = () => {
   font-weight: 500;
 }
 
-.editor-container {
+.editor-wrapper {
   flex: 1;
-  min-height: 150px;
-}
-
-:deep(.cm-editor) {
-  height: 100%;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-}
-
-:deep(.cm-editor.cm-focused) {
-  outline: none;
-}
-
-:deep(.cm-content) {
-  padding: 14px;
-}
-
-.diff-result {
-  border-top: 1px solid #d1d5db;
-  background: #ffffff;
-  flex: 1;
+  position: relative;
   overflow: hidden;
 }
 
-.result-content {
-  padding: 0;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 11px;
-  line-height: 1.4;
-  background: white;
+.diff-editor-container {
+  width: 100%;
   height: 100%;
-  overflow-y: auto;
+  position: relative;
+  overflow: hidden;
 }
 
-.no-diff {
-  border-top: 1px solid #d1d5db;
-  background: #f8f9fa;
-  padding: 20px;
-  text-align: center;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.diff-editor-container :deep(.monaco-diff-editor) {
+  height: 100% !important;
 }
 
-.no-diff-icon {
-  font-size: 24px;
-  color: #10b981;
-  margin-bottom: 8px;
+.diff-editor-container :deep(.monaco-editor) {
+  height: 100% !important;
 }
 
-.no-diff-text {
-  font-size: 11px;
-  color: #6c757d;
-  font-weight: 500;
+/* 隐藏 Diff Editor 的 overview ruler（右侧颜色条）*/
+.diff-editor-container :deep(.decorationsOverviewRuler) {
+  display: none !important;
 }
 
-:deep(.diff-line) {
-  display: flex;
-  padding: 4px 8px;
-  border-bottom: 1px solid #f1f5f9;
-  transition: background-color 0.2s;
-  font-size: 11px;
+/* 自定义 Diff Editor 滚动条样式 */
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar > .slider) {
+  background: rgba(100, 100, 100, 0.4) !important;
 }
 
-:deep(.diff-line:hover) {
-  background-color: #f8fafc;
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar.vertical) {
+  width: 8px !important;
 }
 
-:deep(.diff-line.added) {
-  background-color: #ecfdf5;
-  border-left: 3px solid #10b981;
-  color: #065f46;
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar.horizontal) {
+  height: 8px !important;
 }
 
-:deep(.diff-line.added:hover) {
-  background-color: #d1fae5;
-}
-
-:deep(.diff-line.removed) {
-  background-color: #fef2f2;
-  border-left: 3px solid #ef4444;
-  color: #991b1b;
-}
-
-:deep(.diff-line.removed:hover) {
-  background-color: #fee2e2;
-}
-
-:deep(.line-number) {
-  width: 32px;
-  margin-right: 8px;
-  color: #94a3b8;
-  user-select: none;
-  text-align: right;
-  padding-right: 6px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-:deep(.line-number.old) {
-  border-right: 1px solid #e2e8f0;
-}
-
-
-@media (max-width: 1024px) {
-  .content-layout {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .editor-container {
-    min-height: 120px;
-  }
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar > .slider:hover) {
+  background: rgba(100, 100, 100, 0.7) !important;
 }
 </style>

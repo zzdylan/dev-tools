@@ -15,6 +15,12 @@
 
     <div class="toolbar">
       <div class="config-wrapper">
+        <!-- 模式切换按钮 -->
+        <button class="tool-btn mode-btn" @click="toggleMode">
+          <span class="tool-icon">{{ currentTab?.compareMode ? '📝' : '🔀' }}</span>
+          {{ currentTab?.compareMode ? '普通模式' : '对比模式' }}
+        </button>
+
         <button class="tool-btn config-btn" ref="configBtn" @click="toggleSettings">
           <span class="tool-icon">⚙️</span>
           配置
@@ -55,15 +61,23 @@
 
     <div class="editor-wrapper">
       <div v-for="id in Object.keys(xmlEditorTabs)" :key="id" class="editor-container" v-show="id === tabId">
-        <MonacoEditor :ref="(el: any) => { if (el) editorRefs[id] = el }" :value="xmlEditorTabs[id].code"
-          @change="(val: string) => handleChange(val, id)" :options="options" language="xml" theme="vs" />
+        <!-- 编辑模式：单编辑器 -->
+        <template v-if="!xmlEditorTabs[id].compareMode">
+          <MonacoEditor :ref="(el: any) => { if (el) editorRefs[id] = el }" :value="xmlEditorTabs[id].code"
+            @change="(val: string) => handleChange(val, id)" :options="options" language="xml" theme="vs" />
+        </template>
+
+        <!-- 对比模式：Diff Editor -->
+        <template v-else>
+          <div :ref="(el: any) => { if (el) diffEditorRefs[id] = el }" class="diff-editor-container"></div>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, reactive, watch } from 'vue'
+import { ref, computed, nextTick, reactive, watch, onMounted } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { FormatXML, CompressXML } from '../../wailsjs/go/main/XmlProcessor'
@@ -71,6 +85,7 @@ import { onClickOutside } from '@vueuse/core'
 import { useToolsStore } from '../stores/tools'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
+import * as monaco from 'monaco-editor'
 const store = useToolsStore()
 const { xmlEditorTabs } = storeToRefs(store)
 const route = useRoute()
@@ -86,7 +101,7 @@ const tabHistory = ref<string[]>([tabId.value])
 // 监听路由变化，更新活动标签页和历史记录
 watch(tabId, (newTabId, oldTabId) => {
   activeTabName.value = newTabId
-  
+
   // 更新store中的当前标签页
   store.setCurrentXmlEditorTab(newTabId)
 
@@ -105,16 +120,46 @@ watch(tabId, (newTabId, oldTabId) => {
       tabHistory.value = tabHistory.value.slice(0, 10)
     }
   }
-}, { immediate: true })
+})
+
+// 组件挂载后初始化当前标签页的对比模式（如果需要）
+onMounted(() => {
+  // 初始化所有处于对比模式的标签页
+  Object.keys(store.xmlEditorTabs).forEach(id => {
+    const tab = store.xmlEditorTabs[id]
+    if (tab?.compareMode && !diffEditorInstances[id]) {
+      // 只有当前标签页才需要立即创建
+      if (id === tabId.value) {
+        nextTick(() => {
+          createDiffEditor(id)
+        })
+      }
+    }
+  })
+})
 
 // 为每个标签页保存编辑器引用
 const editorRefs = reactive<Record<string, any>>({})
+// Diff 编辑器容器引用
+const diffEditorRefs = reactive<Record<string, HTMLElement>>({})
+// Diff 编辑器实例引用
+const diffEditorInstances = reactive<Record<string, monaco.editor.IStandaloneDiffEditor>>({})
 
 // 使用当前标签页的数据
 const currentTab = computed(() => store.xmlEditorTabs[tabId.value])
 
 // 当前标签页的编辑器
 const getCurrentEditor = () => {
+  // 如果是对比模式，返回 Diff Editor 的修改编辑器
+  if (currentTab.value?.compareMode) {
+    const diffEditor = diffEditorInstances[tabId.value]
+    if (diffEditor) {
+      return {
+        editor: diffEditor.getModifiedEditor()
+      }
+    }
+    return null
+  }
   return editorRefs[tabId.value]
 }
 
@@ -201,21 +246,13 @@ const handleChange = (value: string, id: string) => {
 
 const loadSample = () => {
   try {
-    const currentEditor = getCurrentEditor()
-    if (!currentEditor?.editor) {
-      ElMessage.error('编辑器未准备好')
-      return
-    }
-
-    const model = currentEditor.editor.getModel()
-    if (model) {
-      const sampleXml = `<classroom>
+    const sampleXml1 = `<classroom>
   <course>Introduction to Computer Science</course>
   <instructor>Dr. Smith</instructor>
   <students>
     <student>
       <student_id>001</student_id>
-      <n>Emily Johnson</n>
+      <name>Emily Johnson</name>
       <age>19</age>
       <gender>Female</gender>
       <grades>
@@ -226,7 +263,7 @@ const loadSample = () => {
     </student>
     <student>
       <student_id>002</student_id>
-      <n>Michael Smith</n>
+      <name>Michael Smith</name>
       <age>20</age>
       <gender>Male</gender>
       <grades>
@@ -237,8 +274,67 @@ const loadSample = () => {
     </student>
   </students>
 </classroom>`
-      code.value = sampleXml // 直接更新 store
-      model.setValue(sampleXml)
+
+    const sampleXml2 = `<classroom>
+  <course>Advanced Computer Science</course>
+  <instructor>Dr. Johnson</instructor>
+  <students>
+    <student>
+      <student_id>001</student_id>
+      <name>Emily Johnson</name>
+      <age>20</age>
+      <gender>Female</gender>
+      <grades>
+        <grade subject="Math">A+</grade>
+        <grade subject="Programming">A</grade>
+        <grade subject="English">A</grade>
+      </grades>
+    </student>
+    <student>
+      <student_id>003</student_id>
+      <name>Sarah Williams</name>
+      <age>19</age>
+      <gender>Female</gender>
+      <grades>
+        <grade subject="Math">A</grade>
+        <grade subject="Programming">A-</grade>
+        <grade subject="English">B+</grade>
+      </grades>
+    </student>
+  </students>
+</classroom>`
+
+    // 对比模式：加载两个不同的示例
+    if (currentTab.value?.compareMode) {
+      const diffEditor = diffEditorInstances[tabId.value]
+      if (!diffEditor) {
+        ElMessage.error('编辑器未准备好')
+        return
+      }
+
+      const model = diffEditor.getModel()
+      if (!model) {
+        ElMessage.error('获取内容失败')
+        return
+      }
+
+      model.original.setValue(sampleXml1)
+      model.modified.setValue(sampleXml2)
+      ElMessage.success('已加载示例数据')
+      return
+    }
+
+    // 编辑模式：加载单个示例
+    const currentEditor = getCurrentEditor()
+    if (!currentEditor?.editor) {
+      ElMessage.error('编辑器未准备好')
+      return
+    }
+
+    const model = currentEditor.editor.getModel()
+    if (model) {
+      code.value = sampleXml1 // 直接更新 store
+      model.setValue(sampleXml1)
     }
   } catch (e) {
     console.error('加载示例失败:', e)
@@ -248,6 +344,39 @@ const loadSample = () => {
 
 const formatXml = async () => {
   try {
+    // 对比模式：格式化两个编辑器
+    if (currentTab.value?.compareMode) {
+      const diffEditor = diffEditorInstances[tabId.value]
+      if (!diffEditor) {
+        ElMessage.error('编辑器未准备好')
+        return
+      }
+
+      const model = diffEditor.getModel()
+      if (!model) {
+        ElMessage.error('获取内容失败')
+        return
+      }
+
+      // 格式化原始编辑器
+      const originalValue = model.original.getValue()
+      if (originalValue.trim()) {
+        const formattedOriginal = await FormatXML(originalValue)
+        model.original.setValue(formattedOriginal)
+      }
+
+      // 格式化修改编辑器
+      const modifiedValue = model.modified.getValue()
+      if (modifiedValue.trim()) {
+        const formattedModified = await FormatXML(modifiedValue)
+        model.modified.setValue(formattedModified)
+      }
+
+      ElMessage.success('格式化完成')
+      return
+    }
+
+    // 编辑模式：格式化单个编辑器
     const currentEditor = getCurrentEditor()
     if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
@@ -275,6 +404,39 @@ const formatXml = async () => {
 
 const compressXml = async () => {
   try {
+    // 对比模式：压缩两个编辑器
+    if (currentTab.value?.compareMode) {
+      const diffEditor = diffEditorInstances[tabId.value]
+      if (!diffEditor) {
+        ElMessage.error('编辑器未准备好')
+        return
+      }
+
+      const model = diffEditor.getModel()
+      if (!model) {
+        ElMessage.error('获取内容失败')
+        return
+      }
+
+      // 压缩原始编辑器
+      const originalValue = model.original.getValue()
+      if (originalValue.trim()) {
+        const compressedOriginal = await CompressXML(originalValue)
+        model.original.setValue(compressedOriginal)
+      }
+
+      // 压缩修改编辑器
+      const modifiedValue = model.modified.getValue()
+      if (modifiedValue.trim()) {
+        const compressedModified = await CompressXML(modifiedValue)
+        model.modified.setValue(compressedModified)
+      }
+
+      ElMessage.success('压缩完成')
+      return
+    }
+
+    // 编辑模式：压缩单个编辑器
     const currentEditor = getCurrentEditor()
     if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
@@ -357,6 +519,27 @@ const removeAllTabs = async () => {
 
 const clearContent = () => {
   try {
+    // 对比模式：清空两个编辑器
+    if (currentTab.value?.compareMode) {
+      const diffEditor = diffEditorInstances[tabId.value]
+      if (!diffEditor) {
+        ElMessage.error('编辑器未准备好')
+        return
+      }
+
+      const model = diffEditor.getModel()
+      if (!model) {
+        ElMessage.error('获取内容失败')
+        return
+      }
+
+      model.original.setValue('')
+      model.modified.setValue('')
+      ElMessage.success('已清空')
+      return
+    }
+
+    // 编辑模式：清空单个编辑器
     const currentEditor = getCurrentEditor()
     if (!currentEditor?.editor) {
       ElMessage.error('编辑器未准备好')
@@ -427,8 +610,13 @@ const closeTab = (targetName: string | number) => {
   }
 
   nextTick(() => {
-    // 释放编辑器实例
+    // 释放编辑器引用（不调用dispose，避免卡死）
     delete editorRefs[id]
+
+    // 删除 Diff Editor 引用（不调用dispose，避免卡死）
+    delete diffEditorInstances[id]
+    delete diffEditorRefs[id]
+
     // 从存储中删除标签页
     delete store.xmlEditorTabs[id]
 
@@ -436,7 +624,108 @@ const closeTab = (targetName: string | number) => {
     tabHistory.value = tabHistory.value.filter(tabId =>
       tabId !== id && store.xmlEditorTabs[tabId]
     )
+
+    console.log('Tab removed:', id)
   })
+}
+
+// 切换编辑/对比模式
+const toggleMode = () => {
+  if (currentTab.value) {
+    currentTab.value.compareMode = !currentTab.value.compareMode
+
+    // 切换到对比模式时，创建 Diff Editor
+    if (currentTab.value.compareMode) {
+      nextTick(() => {
+        createDiffEditor(tabId.value)
+      })
+    } else {
+      // 切换回编辑模式时，只删除引用，不调用 dispose()（避免卡死）
+      // DOM 会被 v-if 自动移除
+      delete diffEditorInstances[tabId.value]
+      delete diffEditorRefs[tabId.value]
+    }
+  }
+}
+
+// 创建 Diff Editor
+const createDiffEditor = (id: string) => {
+  console.log('createDiffEditor called for tab:', id)
+  const container = diffEditorRefs[id]
+  console.log('Container element:', container)
+
+  if (!container) {
+    console.error('Container not found for tab:', id)
+    return
+  }
+
+  // 如果已存在实例，直接返回
+  if (diffEditorInstances[id]) {
+    console.log('Diff editor already exists for tab:', id)
+    return
+  }
+
+  try {
+    console.log('Creating diff editor instance...')
+    // 创建 Diff Editor
+    const diffEditor = monaco.editor.createDiffEditor(container, {
+      fontSize: 12,
+      automaticLayout: true,
+      renderSideBySide: true, // 并排显示
+      enableSplitViewResizing: true, // 允许调整大小
+      readOnly: false,
+      minimap: { enabled: false },
+      scrollBeyondLastLine: false,
+      wordWrap: 'on',
+      lineNumbers: 'on',
+      renderIndicators: true, // 显示差异指示器
+      ignoreTrimWhitespace: false, // 不忽略空白差异
+      renderOverviewRuler: false, // 隐藏概览标尺（右侧的颜色条）
+      scrollbar: {
+        vertical: 'visible',
+        horizontal: 'visible',
+        verticalScrollbarSize: 8,
+        horizontalScrollbarSize: 8,
+        alwaysConsumeMouseWheel: true,
+      },
+      originalEditable: true, // 允许编辑原始编辑器
+    })
+
+    // 创建 model
+    const originalModel = monaco.editor.createModel(
+      store.xmlEditorTabs[id]?.code || '',
+      'xml'
+    )
+    const modifiedModel = monaco.editor.createModel(
+      store.xmlEditorTabs[id]?.compareCode || '',
+      'xml'
+    )
+
+    // 设置 model
+    diffEditor.setModel({
+      original: originalModel,
+      modified: modifiedModel
+    })
+
+    // 监听修改编辑器的内容变化
+    modifiedModel.onDidChangeContent(() => {
+      if (store.xmlEditorTabs[id]) {
+        store.xmlEditorTabs[id].compareCode = modifiedModel.getValue()
+      }
+    })
+
+    // 监听原始编辑器的内容变化
+    originalModel.onDidChangeContent(() => {
+      if (store.xmlEditorTabs[id]) {
+        store.xmlEditorTabs[id].code = originalModel.getValue()
+      }
+    })
+
+    diffEditorInstances[id] = diffEditor
+    console.log('Diff editor created successfully for tab:', id)
+  } catch (e) {
+    console.error('Error creating diff editor:', e)
+  }
 }
 </script>
 
@@ -666,5 +955,43 @@ const closeTab = (targetName: string | number) => {
 
 .tabs-header::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+/* Diff Editor 容器样式 */
+.diff-editor-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.diff-editor-container :deep(.monaco-diff-editor) {
+  height: 100% !important;
+}
+
+.diff-editor-container :deep(.monaco-editor) {
+  height: 100% !important;
+}
+
+/* 隐藏 Diff Editor 的 overview ruler（右侧颜色条）*/
+.diff-editor-container :deep(.decorationsOverviewRuler) {
+  display: none !important;
+}
+
+/* 自定义 Diff Editor 滚动条样式 */
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar > .slider) {
+  background: rgba(100, 100, 100, 0.4) !important;
+}
+
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar.vertical) {
+  width: 8px !important;
+}
+
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar.horizontal) {
+  height: 8px !important;
+}
+
+.diff-editor-container :deep(.monaco-scrollable-element > .scrollbar > .slider:hover) {
+  background: rgba(100, 100, 100, 0.7) !important;
 }
 </style>

@@ -2,9 +2,9 @@ import { defineStore } from 'pinia'
 
 interface JsonEditorTab {
   code: string
-  settings: {
-    autoDecodeUnicode: boolean
-  }
+  compareMode: boolean // 是否处于对比模式
+  compareCode: string // 对比模式下的第二个编辑器内容
+  syncScroll: boolean // 是否同步滚动
 }
 
 interface JsonEditorTabs {
@@ -13,6 +13,8 @@ interface JsonEditorTabs {
 
 interface XmlEditorTab {
   code: string
+  compareMode: boolean // 是否处于对比模式
+  compareCode: string // 对比模式下的第二个编辑器内容
   settings: {
     autoFormat: boolean
   }
@@ -46,18 +48,24 @@ export const useToolsStore = defineStore('tools', {
     xmlEditorTabs: <XmlEditorTabs>{
       default: {
         code: '',
+        compareMode: false,
+        compareCode: '',
         settings: {
           autoFormat: false
         }
       }
     },
     currentXmlEditorTab: 'default',
+    // JSON 编辑器全局设置
+    jsonEditorSettings: {
+      autoDecodeUnicode: false
+    },
     jsonEditorTabs: <JsonEditorTabs>{
       default: {
         code: '',
-        settings: {
-          autoDecodeUnicode: false
-        }
+        compareMode: false,
+        compareCode: '',
+        syncScroll: true
       }
     },
     currentJsonEditorTab: 'default',
@@ -171,9 +179,9 @@ export const useToolsStore = defineStore('tools', {
       const id = Date.now().toString()
       this.jsonEditorTabs[id] = {
         code: '',
-        settings: {
-          autoDecodeUnicode: false
-        }
+        compareMode: false,
+        compareCode: '',
+        syncScroll: true
       }
       return id
     },
@@ -184,6 +192,8 @@ export const useToolsStore = defineStore('tools', {
       const id = Date.now().toString()
       this.xmlEditorTabs[id] = {
         code: '',
+        compareMode: false,
+        compareCode: '',
         settings: {
           autoFormat: false
         }
