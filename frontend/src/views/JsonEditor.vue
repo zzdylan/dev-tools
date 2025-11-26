@@ -270,7 +270,6 @@ const formatJson = async () => {
         toRaw(model.modified).setValue(formattedModified)
       }
 
-      ElMessage.success('格式化完成')
       return
     }
 
@@ -340,7 +339,6 @@ const compressJson = async () => {
         toRaw(model.modified).setValue(compressedModified)
       }
 
-      ElMessage.success('压缩完成')
       return
     }
 
@@ -724,7 +722,6 @@ const loadSample = () => {
 
       toRaw(model.original).setValue(sampleStr)
       toRaw(model.modified).setValue(sampleStr2)
-      ElMessage.success('已加载示例数据')
       return
     }
 

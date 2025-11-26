@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, reactive, watch, onMounted } from 'vue'
+import { ref, computed, nextTick, reactive, watch, onMounted, toRaw } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { FormatXML, CompressXML } from '../../wailsjs/go/main/XmlProcessor'
@@ -152,7 +152,7 @@ const currentTab = computed(() => store.xmlEditorTabs[tabId.value])
 const getCurrentEditor = () => {
   // 如果是对比模式，返回 Diff Editor 的修改编辑器
   if (currentTab.value?.compareMode) {
-    const diffEditor = diffEditorInstances[tabId.value]
+    const diffEditor = toRaw(diffEditorInstances[tabId.value])
     if (diffEditor) {
       return {
         editor: diffEditor.getModifiedEditor()
@@ -306,7 +306,7 @@ const loadSample = () => {
 
     // 对比模式：加载两个不同的示例
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -318,9 +318,8 @@ const loadSample = () => {
         return
       }
 
-      model.original.setValue(sampleXml1)
-      model.modified.setValue(sampleXml2)
-      ElMessage.success('已加载示例数据')
+      toRaw(model.original).setValue(sampleXml1)
+      toRaw(model.modified).setValue(sampleXml2)
       return
     }
 
@@ -346,7 +345,7 @@ const formatXml = async () => {
   try {
     // 对比模式：格式化两个编辑器
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -359,20 +358,19 @@ const formatXml = async () => {
       }
 
       // 格式化原始编辑器
-      const originalValue = model.original.getValue()
+      const originalValue = toRaw(model.original).getValue()
       if (originalValue.trim()) {
         const formattedOriginal = await FormatXML(originalValue)
-        model.original.setValue(formattedOriginal)
+        toRaw(model.original).setValue(formattedOriginal)
       }
 
       // 格式化修改编辑器
-      const modifiedValue = model.modified.getValue()
+      const modifiedValue = toRaw(model.modified).getValue()
       if (modifiedValue.trim()) {
         const formattedModified = await FormatXML(modifiedValue)
-        model.modified.setValue(formattedModified)
+        toRaw(model.modified).setValue(formattedModified)
       }
 
-      ElMessage.success('格式化完成')
       return
     }
 
@@ -406,7 +404,7 @@ const compressXml = async () => {
   try {
     // 对比模式：压缩两个编辑器
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -419,20 +417,19 @@ const compressXml = async () => {
       }
 
       // 压缩原始编辑器
-      const originalValue = model.original.getValue()
+      const originalValue = toRaw(model.original).getValue()
       if (originalValue.trim()) {
         const compressedOriginal = await CompressXML(originalValue)
-        model.original.setValue(compressedOriginal)
+        toRaw(model.original).setValue(compressedOriginal)
       }
 
       // 压缩修改编辑器
-      const modifiedValue = model.modified.getValue()
+      const modifiedValue = toRaw(model.modified).getValue()
       if (modifiedValue.trim()) {
         const compressedModified = await CompressXML(modifiedValue)
-        model.modified.setValue(compressedModified)
+        toRaw(model.modified).setValue(compressedModified)
       }
 
-      ElMessage.success('压缩完成')
       return
     }
 
@@ -521,7 +518,7 @@ const clearContent = () => {
   try {
     // 对比模式：清空两个编辑器
     if (currentTab.value?.compareMode) {
-      const diffEditor = diffEditorInstances[tabId.value]
+      const diffEditor = toRaw(diffEditorInstances[tabId.value])
       if (!diffEditor) {
         ElMessage.error('编辑器未准备好')
         return
@@ -533,8 +530,8 @@ const clearContent = () => {
         return
       }
 
-      model.original.setValue('')
-      model.modified.setValue('')
+      toRaw(model.original).setValue('')
+      toRaw(model.modified).setValue('')
       ElMessage.success('已清空')
       return
     }
