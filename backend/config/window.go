@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 // WindowSettings 窗口设置
@@ -15,17 +16,34 @@ type WindowSettings struct {
 	Maximised bool `json:"maximised"`
 }
 
+// GetUserDataDir 获取应用数据目录
+func GetUserDataDir(appName string) string {
+	// 获取用户主目录
+	homeDir, _ := os.UserHomeDir()
+
+	// 定义应用的数据目录（根据平台调整路径）
+	var appDataDir string
+	switch runtime.GOOS {
+	case "windows":
+		appDataDir = filepath.Join(homeDir, "AppData", "Roaming", appName)
+	case "darwin":
+		appDataDir = filepath.Join(homeDir, "Library", "Application Support", appName)
+	default:
+		// Linux 使用 XDG 标准
+		appDataDir = filepath.Join(homeDir, ".config", appName)
+	}
+
+	// 如果目录不存在，则创建
+	if _, err := os.Stat(appDataDir); os.IsNotExist(err) {
+		os.MkdirAll(appDataDir, 0755)
+	}
+
+	return appDataDir
+}
+
 // GetConfigPath 获取配置文件路径
 func GetConfigPath() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	configDir := filepath.Join(homeDir, ".dev-tools")
-	// 确保配置目录存在
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return "", err
-	}
+	configDir := GetUserDataDir("dev-tools")
 	return filepath.Join(configDir, "window.json"), nil
 }
 

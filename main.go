@@ -14,6 +14,7 @@ import (
 	runtime2 "github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"go-tools/backend/app"
+	"go-tools/backend/config"
 	"go-tools/backend/processor"
 )
 
@@ -21,7 +22,7 @@ import (
 var assets embed.FS
 
 // 应用版本号
-var version = "1.0.4"
+var version = "1.0.5"
 
 func main() {
 	// Create an instance of the app structure
@@ -40,6 +41,22 @@ func main() {
 	windowSettings, err := application.LoadWindowSettings()
 	if err != nil {
 		println("Error loading window settings:", err.Error())
+		// 使用默认窗口设置
+		windowSettings = &config.WindowSettings{
+			Width:     1000,
+			Height:    700,
+			X:         -1,
+			Y:         -1,
+			Maximised: false,
+		}
+	}
+
+	// 确保窗口大小有效（防止零值）
+	if windowSettings.Width <= 0 {
+		windowSettings.Width = 1000
+	}
+	if windowSettings.Height <= 0 {
+		windowSettings.Height = 700
 	}
 
 	// 确定窗口启动状态
