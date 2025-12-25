@@ -49,29 +49,36 @@ func GetConfigPath() (string, error) {
 
 // LoadWindowSettings 加载窗口设置
 func LoadWindowSettings() (*WindowSettings, error) {
+	// 默认窗口设置
+	defaultSettings := &WindowSettings{
+		Width:     1000,
+		Height:    700,
+		X:         -1,
+		Y:         -1,
+		Maximised: false,
+	}
+
 	configPath, err := GetConfigPath()
 	if err != nil {
-		return nil, err
+		return defaultSettings, nil
 	}
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		// 文件不存在时返回默认值
-		if os.IsNotExist(err) {
-			return &WindowSettings{
-				Width:     1000,
-				Height:    700,
-				X:         -1,
-				Y:         -1,
-				Maximised: false,
-			}, nil
-		}
-		return nil, err
+		// 任何读取错误都返回默认值
+		return defaultSettings, nil
 	}
 
 	var settings WindowSettings
 	if err := json.Unmarshal(data, &settings); err != nil {
-		return nil, err
+		// JSON 解析失败也返回默认值
+		return defaultSettings, nil
+	}
+
+	// 验证加载的设置是否有效
+	if settings.Width <= 0 || settings.Height <= 0 {
+		settings.Width = defaultSettings.Width
+		settings.Height = defaultSettings.Height
 	}
 
 	return &settings, nil
