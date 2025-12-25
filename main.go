@@ -4,17 +4,14 @@ import (
 	"context"
 	"embed"
 	"runtime"
-	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	runtime2 "github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"go-tools/backend/app"
-	"go-tools/backend/config"
 	"go-tools/backend/processor"
 )
 
@@ -37,76 +34,17 @@ func main() {
 	// 检测操作系统
 	isMacOS := runtime.GOOS == "darwin"
 
-	// 加载窗口设置
-	windowSettings, err := application.LoadWindowSettings()
-	if err != nil {
-		println("Error loading window settings:", err.Error())
-		// 使用默认窗口设置
-		windowSettings = &config.WindowSettings{
-			Width:     1000,
-			Height:    700,
-			X:         -1,
-			Y:         -1,
-			Maximised: false,
-		}
-	}
-
-	// 确保窗口大小有效（防止零值）
-	if windowSettings.Width <= 0 {
-		windowSettings.Width = 1000
-	}
-	if windowSettings.Height <= 0 {
-		windowSettings.Height = 700
-	}
-
-	// 确定窗口启动状态
-	windowStartState := options.Normal
-	if windowSettings.Maximised {
-		windowStartState = options.Maximised
-	}
-
 	// Create application with options
-	err = wails.Run(&options.App{
-		Title:            "dev tools",
-		Width:            windowSettings.Width,
-		Height:           windowSettings.Height,
-		WindowStartState: windowStartState,
+	err := wails.Run(&options.App{
+		Title:  "dev tools",
+		Width:  1000,
+		Height: 700,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 1},
 		OnStartup: func(ctx context.Context) {
 			application.Startup(ctx)
-
-			// 启动定时器，每2秒检查并保存窗口设置
-			go func() {
-				ticker := time.NewTicker(2 * time.Second)
-				defer ticker.Stop()
-				for range ticker.C {
-					if err := application.SaveWindowSettings(); err != nil {
-						println("Error saving window settings:", err.Error())
-					}
-				}
-			}()
-		},
-		OnDomReady: func(ctx context.Context) {
-			// 恢复窗口位置（只在保存了有效位置时）
-			if windowSettings.X >= 0 && windowSettings.Y >= 0 {
-				runtime2.WindowSetPosition(ctx, windowSettings.X, windowSettings.Y)
-			}
-
-			// 发送初始窗口状态
-			runtime2.EventsEmit(ctx, "window_changed", map[string]interface{}{
-				"fullscreen": runtime2.WindowIsFullscreen(ctx),
-				"maximised":  runtime2.WindowIsMaximised(ctx),
-			})
-		},
-		OnBeforeClose: func(ctx context.Context) bool {
-			// 保存窗口设置
-			if err := application.SaveWindowSettings(); err != nil {
-				println("Error saving window settings:", err.Error())
-			}
-			return false
 		},
 		Bind: []interface{}{
 			application,
