@@ -523,6 +523,7 @@ interface ArrayInfo {
   line: number
   index: number
   total: number
+  isArrayLine?: boolean  // 标记是否是数组本身的行（显示总数）
 }
 
 const findArrayElements = (text: string): ArrayInfo[] => {
@@ -536,7 +537,7 @@ const findArrayElements = (text: string): ArrayInfo[] => {
     let braceDepth = 0    // {} 深度
 
     // 使用栈来跟踪每个数组的状态
-    const arrayStack: Array<{ total: number; index: number; startBraceDepth: number }> = []
+    const arrayStack: Array<{ total: number; index: number; startBraceDepth: number; arrayLine: number }> = []
     let elementFoundOnLine = false
 
     for (let i = 0; i < lines.length; i++) {
@@ -568,10 +569,21 @@ const findArrayElements = (text: string): ArrayInfo[] => {
             bracketDepth++
             // 进入新数组
             const total = countArrayElements(lines, i)
+            // 只有对象数组才显示索引
+            if (total > 0) {
+              // 在数组本身的行显示总数
+              results.push({
+                line: i + 1,  // Monaco使用1-based行号
+                index: 0,
+                total: total,
+                isArrayLine: true
+              })
+            }
             arrayStack.push({
               total: total,
               index: 0,
-              startBraceDepth: braceDepth
+              startBraceDepth: braceDepth,
+              arrayLine: i + 1
             })
           } else if (char === ']') {
             bracketDepth--
@@ -588,7 +600,8 @@ const findArrayElements = (text: string): ArrayInfo[] => {
                 results.push({
                   line: i + 1,  // Monaco使用1-based行号
                   index: currentArray.index,
-                  total: currentArray.total
+                  total: currentArray.total,
+                  isArrayLine: false
                 })
                 currentArray.index++
                 elementFoundOnLine = true
@@ -666,6 +679,11 @@ const countArrayElements = (lines: string[], startLine: number): number => {
 
 // 更新数组装饰器（带去抖）
 const updateArrayDecorations = (id: string) => {
+  // 如果功能未开启，直接返回，不做任何处理
+  if (!settings.value.showArrayIndex) {
+    return
+  }
+
   // 清除之前的定时器
   if (decorationTimers[id]) {
     clearTimeout(decorationTimers[id])
@@ -694,19 +712,38 @@ const injectArrayIndexStyles = (arrayInfos: ArrayInfo[]) => {
   let css = ''
   arrayInfos.forEach(info => {
     const className = `array-index-marker-${info.line}`
-    css += `
-      .monaco-editor .${className}::after {
-        content: ' [${info.index + 1}/${info.total}]';
-        color: #9ca3af;
-        font-size: 10px;
-        font-weight: 600;
-        opacity: 0.75;
-        margin-left: 2px;
-        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-        user-select: none;
-        pointer-events: none;
-      }
-    `
+
+    if (info.isArrayLine) {
+      // 数组本身的行，显示总数
+      css += `
+        .monaco-editor .${className}::after {
+          content: ' [共${info.total}个]';
+          color: #9ca3af;
+          font-size: 10px;
+          font-weight: 600;
+          opacity: 0.75;
+          margin-left: 2px;
+          font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+          user-select: none;
+          pointer-events: none;
+        }
+      `
+    } else {
+      // 数组元素的行，显示索引
+      css += `
+        .monaco-editor .${className}::after {
+          content: ' [${info.index + 1}/${info.total}]';
+          color: #9ca3af;
+          font-size: 10px;
+          font-weight: 600;
+          opacity: 0.75;
+          margin-left: 2px;
+          font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+          user-select: none;
+          pointer-events: none;
+        }
+      `
+    }
   })
 
   style.textContent = css
@@ -741,12 +778,28 @@ const applyArrayDecorations = (id: string) => {
   // 注入动态样式
   injectArrayIndexStyles(arrayInfos)
 
-  // 创建装饰器配置 - 给 { 字符添加class
+  // 创建装饰器配置
   const decorations = arrayInfos.map(info => {
     const lineContent = model.getLineContent(info.line)
-    const braceIndex = lineContent.indexOf('{')
-    const startCol = braceIndex >= 0 ? braceIndex + 1 : 1
-    const endCol = startCol + 1
+
+    let startCol = 1
+    let endCol = 2
+
+    if (info.isArrayLine) {
+      // 数组行，找 [ 字符
+      const bracketIndex = lineContent.indexOf('[')
+      if (bracketIndex >= 0) {
+        startCol = bracketIndex + 1
+        endCol = startCol + 1
+      }
+    } else {
+      // 元素行，找 { 字符
+      const braceIndex = lineContent.indexOf('{')
+      if (braceIndex >= 0) {
+        startCol = braceIndex + 1
+        endCol = startCol + 1
+      }
+    }
 
     return {
       range: new monaco.Range(info.line, startCol, info.line, endCol),
