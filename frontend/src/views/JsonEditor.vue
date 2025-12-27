@@ -32,6 +32,10 @@
             <input type="checkbox" v-model="settings.autoDecodeUnicode" />
             自动解码 Unicode
           </label>
+          <label class="setting-item">
+            <input type="checkbox" v-model="settings.showArrayIndex" @change="handleArrayIndexSettingChange" />
+            显示数组索引
+          </label>
         </div>
       </div>
 
@@ -72,7 +76,7 @@
       <div v-for="id in Object.keys(jsonEditorTabs)" :key="id" class="editor-container" v-show="id === tabId">
         <!-- 编辑模式：单编辑器 -->
         <template v-if="!jsonEditorTabs[id].compareMode">
-          <MonacoEditor :ref="(el: any) => { if (el) editorRefs[id] = el }" :value="jsonEditorTabs[id].code"
+          <MonacoEditor :ref="(el: any) => { if (el) handleEditorMount(el, id) }" :value="jsonEditorTabs[id].code"
             @change="(val: string) => handleChange(val, id)" :options="options" language="json" theme="vs" />
         </template>
 
@@ -86,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, reactive, watch, onMounted, toRaw } from 'vue'
+import { ref, computed, nextTick, reactive, watch, onMounted, toRaw, onBeforeUnmount } from 'vue'
 import MonacoEditor from 'monaco-editor-vue3'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { FormatJson, CompressJson } from '../../wailsjs/go/processor/JsonProcessor'
@@ -148,12 +152,21 @@ onMounted(() => {
   })
 })
 
+// 组件卸载时清理定时器
+onBeforeUnmount(() => {
+  Object.values(decorationTimers).forEach(timer => clearTimeout(timer))
+})
+
 // 为每个标签页保存编辑器引用
 const editorRefs = reactive<Record<string, any>>({})
 // Diff 编辑器容器引用
 const diffEditorRefs = reactive<Record<string, HTMLElement>>({})
 // Diff 编辑器实例引用
 const diffEditorInstances = reactive<Record<string, monaco.editor.IStandaloneDiffEditor>>({})
+// 存储装饰器集合
+const editorDecorations = reactive<Record<string, string[]>>({})
+// 存储去抖定时器
+const decorationTimers = reactive<Record<string, NodeJS.Timeout>>({})
 
 // 使用当前标签页的数据
 const currentTab = computed(() => store.jsonEditorTabs[tabId.value])
@@ -201,6 +214,7 @@ const options = {
   automaticLayout: true,
   wordWrap: 'on',
   lineNumbers: 'on',
+  glyphMargin: true,  // 启用左侧图标栏
   roundedSelection: false,
   renderIndentGuides: true,
   formatOnPaste: false,
@@ -220,7 +234,6 @@ const options = {
   },
   lineDecorationsWidth: 0,
   lineNumbersMinChars: 0,
-  glyphMargin: false,
   renderLineHighlight: 'none',
 }
 
@@ -499,6 +512,263 @@ const handleChange = (value: string, id: string) => {
         validateJson(value)
       })
     }
+
+    // 更新数组索引装饰器（去抖处理）
+    updateArrayDecorations(id)
+  }
+}
+
+// 解析JSON并找到所有数组元素的位置
+interface ArrayInfo {
+  line: number
+  index: number
+  total: number
+}
+
+const findArrayElements = (text: string): ArrayInfo[] => {
+  const results: ArrayInfo[] = []
+
+  try {
+    const lines = text.split('\n')
+    let inString = false
+    let escapeNext = false
+    let bracketDepth = 0  // [] 深度
+    let braceDepth = 0    // {} 深度
+    let currentArrayTotal = 0
+    let currentArrayIndex = 0
+    let elementFoundOnLine = false // 标记当前行是否已找到元素
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      elementFoundOnLine = false
+
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j]
+
+        // 处理转义字符
+        if (escapeNext) {
+          escapeNext = false
+          continue
+        }
+        if (char === '\\') {
+          escapeNext = true
+          continue
+        }
+
+        // 处理字符串状态
+        if (char === '"') {
+          inString = !inString
+          continue
+        }
+
+        // 只在非字符串内处理结构字符
+        if (!inString) {
+          if (char === '{') {
+            // 只在数组第一层且不在对象内部时，这才是数组元素的开始
+            if (bracketDepth >= 1 && braceDepth === 0 && !elementFoundOnLine) {
+              results.push({
+                line: i + 1,  // Monaco使用1-based行号
+                index: currentArrayIndex,
+                total: currentArrayTotal
+              })
+              currentArrayIndex++
+              elementFoundOnLine = true // 防止同一行多次添加
+            }
+            braceDepth++
+          } else if (char === '}') {
+            braceDepth--
+          } else if (char === '[') {
+            bracketDepth++
+            if (bracketDepth >= 1) {
+              // 进入新数组，计算元素个数并重置braceDepth
+              currentArrayTotal = countArrayElements(lines, i)
+              currentArrayIndex = 0
+              braceDepth = 0  // 重置braceDepth，因为我们只关心数组内部的对象
+            }
+          } else if (char === ']') {
+            bracketDepth--
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error finding array elements:', e)
+  }
+
+  return results
+}
+
+// 计算数组元素个数 - 只计算顶层元素,不包括嵌套对象的字段
+const countArrayElements = (lines: string[], startLine: number): number => {
+  let bracketDepth = 0
+  let braceDepth = 0
+  let count = 0
+  let inString = false
+  let escapeNext = false
+
+  for (let i = startLine; i < lines.length; i++) {
+    const line = lines[i]
+
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j]
+
+      // 处理转义
+      if (escapeNext) {
+        escapeNext = false
+        continue
+      }
+      if (char === '\\') {
+        escapeNext = true
+        continue
+      }
+
+      // 处理字符串
+      if (char === '"') {
+        inString = !inString
+        continue
+      }
+
+      if (!inString) {
+        if (char === '[') {
+          bracketDepth++
+        } else if (char === ']') {
+          bracketDepth--
+          if (bracketDepth === 0) {
+            return count
+          }
+        } else if (char === '{') {
+          // 只在数组第一层且不在对象内部时才是数组元素
+          if (bracketDepth === 1 && braceDepth === 0) {
+            count++
+          }
+          braceDepth++
+        } else if (char === '}') {
+          braceDepth--
+        }
+      }
+    }
+  }
+
+  return count
+}
+
+
+// 更新数组装饰器（带去抖）
+const updateArrayDecorations = (id: string) => {
+  // 清除之前的定时器
+  if (decorationTimers[id]) {
+    clearTimeout(decorationTimers[id])
+  }
+
+  // 设置新的定时器（300ms 去抖）
+  decorationTimers[id] = setTimeout(() => {
+    applyArrayDecorations(id)
+  }, 300)
+}
+
+// 动态注入CSS样式
+const injectArrayIndexStyles = (arrayInfos: ArrayInfo[]) => {
+  // 移除旧的样式
+  const oldStyle = document.getElementById('array-index-dynamic-styles')
+  if (oldStyle) {
+    oldStyle.remove()
+  }
+
+  if (arrayInfos.length === 0) return
+
+  // 创建新的样式
+  const style = document.createElement('style')
+  style.id = 'array-index-dynamic-styles'
+
+  let css = ''
+  arrayInfos.forEach(info => {
+    const className = `array-index-marker-${info.line}`
+    css += `
+      .monaco-editor .${className}::after {
+        content: ' [${info.index + 1}/${info.total}]';
+        color: #9ca3af;
+        font-size: 10px;
+        font-weight: 600;
+        opacity: 0.75;
+        margin-left: 2px;
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+        user-select: none;
+        pointer-events: none;
+      }
+    `
+  })
+
+  style.textContent = css
+  document.head.appendChild(style)
+}
+
+// 应用数组装饰器 - 使用 inlineClassName
+const applyArrayDecorations = (id: string) => {
+  const editor = editorRefs[id]?.editor
+  if (!editor) return
+
+  const model = editor.getModel()
+  if (!model) return
+
+  // 移除旧的装饰器
+  if (editorDecorations[id]) {
+    editorDecorations[id] = editor.deltaDecorations(editorDecorations[id], [])
+  }
+
+  // 如果配置为不显示数组索引，移除样式并返回
+  if (!settings.value.showArrayIndex) {
+    const oldStyle = document.getElementById('array-index-dynamic-styles')
+    if (oldStyle) {
+      oldStyle.remove()
+    }
+    return
+  }
+
+  const text = model.getValue()
+  const arrayInfos = findArrayElements(text)
+
+  // 注入动态样式
+  injectArrayIndexStyles(arrayInfos)
+
+  // 创建装饰器配置 - 给 { 字符添加class
+  const decorations = arrayInfos.map(info => {
+    const lineContent = model.getLineContent(info.line)
+    const braceIndex = lineContent.indexOf('{')
+    const startCol = braceIndex >= 0 ? braceIndex + 1 : 1
+    const endCol = startCol + 1
+
+    return {
+      range: new monaco.Range(info.line, startCol, info.line, endCol),
+      options: {
+        inlineClassName: `array-index-marker-${info.line}`
+      }
+    }
+  })
+
+  // 应用装饰器
+  editorDecorations[id] = editor.deltaDecorations([], decorations)
+}
+
+// 处理数组索引显示设置变化
+const handleArrayIndexSettingChange = () => {
+  // 为所有标签页重新应用装饰器（根据新的设置）
+  Object.keys(store.jsonEditorTabs).forEach(id => {
+    if (editorRefs[id]?.editor) {
+      applyArrayDecorations(id)
+    }
+  })
+}
+
+// 处理编辑器挂载
+const handleEditorMount = (el: any, id: string) => {
+  if (el) {
+    editorRefs[id] = el
+    // 编辑器挂载后，如果有内容则应用装饰器
+    nextTick(() => {
+      if (store.jsonEditorTabs[id]?.code) {
+        applyArrayDecorations(id)
+      }
+    })
   }
 }
 
@@ -1211,5 +1481,17 @@ const createDiffEditor = (id: string) => {
 .tool-btn.active:hover {
   background: #bae6fd;
   border-color: #0284c7;
+}
+
+/* 数组索引装饰器样式 - 在代码行内显示 */
+:deep(.array-index-inline) {
+  color: #9ca3af !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  opacity: 0.75 !important;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace !important;
+  font-style: normal !important;
+  user-select: none !important;
+  pointer-events: none !important;
 }
 </style>

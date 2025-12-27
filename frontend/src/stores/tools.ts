@@ -58,7 +58,8 @@ export const useToolsStore = defineStore('tools', {
     currentXmlEditorTab: 'default',
     // JSON 编辑器全局设置
     jsonEditorSettings: {
-      autoDecodeUnicode: false
+      autoDecodeUnicode: false,
+      showArrayIndex: false  // 默认不显示数组索引
     },
     jsonEditorTabs: <JsonEditorTabs>{
       default: {
