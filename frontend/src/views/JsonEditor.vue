@@ -534,9 +534,10 @@ const findArrayElements = (text: string): ArrayInfo[] => {
     let escapeNext = false
     let bracketDepth = 0  // [] 深度
     let braceDepth = 0    // {} 深度
-    let currentArrayTotal = 0
-    let currentArrayIndex = 0
-    let elementFoundOnLine = false // 标记当前行是否已找到元素
+
+    // 使用栈来跟踪每个数组的状态
+    const arrayStack: Array<{ total: number; index: number; startBraceDepth: number }> = []
+    let elementFoundOnLine = false
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
@@ -563,30 +564,39 @@ const findArrayElements = (text: string): ArrayInfo[] => {
 
         // 只在非字符串内处理结构字符
         if (!inString) {
-          if (char === '{') {
-            // 只在数组第一层且不在对象内部时，这才是数组元素的开始
-            if (bracketDepth >= 1 && braceDepth === 0 && !elementFoundOnLine) {
-              results.push({
-                line: i + 1,  // Monaco使用1-based行号
-                index: currentArrayIndex,
-                total: currentArrayTotal
-              })
-              currentArrayIndex++
-              elementFoundOnLine = true // 防止同一行多次添加
+          if (char === '[') {
+            bracketDepth++
+            // 进入新数组
+            const total = countArrayElements(lines, i)
+            arrayStack.push({
+              total: total,
+              index: 0,
+              startBraceDepth: braceDepth
+            })
+          } else if (char === ']') {
+            bracketDepth--
+            // 离开数组
+            if (arrayStack.length > 0) {
+              arrayStack.pop()
+            }
+          } else if (char === '{') {
+            // 检查是否是当前数组的元素
+            if (arrayStack.length > 0 && !elementFoundOnLine) {
+              const currentArray = arrayStack[arrayStack.length - 1]
+              // 只有当 braceDepth 等于数组开始时的深度，才是数组的直接元素
+              if (braceDepth === currentArray.startBraceDepth) {
+                results.push({
+                  line: i + 1,  // Monaco使用1-based行号
+                  index: currentArray.index,
+                  total: currentArray.total
+                })
+                currentArray.index++
+                elementFoundOnLine = true
+              }
             }
             braceDepth++
           } else if (char === '}') {
             braceDepth--
-          } else if (char === '[') {
-            bracketDepth++
-            if (bracketDepth >= 1) {
-              // 进入新数组，计算元素个数并重置braceDepth
-              currentArrayTotal = countArrayElements(lines, i)
-              currentArrayIndex = 0
-              braceDepth = 0  // 重置braceDepth，因为我们只关心数组内部的对象
-            }
-          } else if (char === ']') {
-            bracketDepth--
           }
         }
       }
@@ -595,6 +605,7 @@ const findArrayElements = (text: string): ArrayInfo[] => {
     console.error('Error finding array elements:', e)
   }
 
+  console.log('Found array elements:', results)
   return results
 }
 
