@@ -21,6 +21,20 @@
 
       <!-- GitHub 和设置按钮 -->
       <div class="header-actions">
+        <!-- 更新提示按钮 -->
+        <el-tooltip
+          v-if="hasUpdate"
+          :content="`发现新版本 ${updateInfo?.latestVersion || ''}，点击下载`"
+          placement="bottom"
+        >
+          <button
+            class="icon-btn update-btn"
+            @click="openUpdatePage"
+          >
+            <span class="update-icon">🔔</span>
+            <span class="update-badge"></span>
+          </button>
+        </el-tooltip>
         <button
           class="icon-btn github-btn"
           @click="openGithub"
@@ -151,6 +165,10 @@ const appVersion = ref("");
 const isMac = ref(false);
 const maximised = ref(false);
 
+// 更新相关
+const hasUpdate = ref(false);
+const updateInfo = ref<any>(null);
+
 onMounted(async () => {
   // 检测用户代理或使用Wails API检测平台
   isMac.value = navigator.userAgent.toUpperCase().indexOf("MAC") >= 0;
@@ -163,6 +181,9 @@ onMounted(async () => {
     console.error('获取版本失败:', error);
     appVersion.value = 'unknown';
   }
+
+  // 静默检查更新
+  checkForUpdateSilent();
 });
 
 // 菜单标题映射
@@ -344,15 +365,15 @@ const checkForUpdate = async () => {
     const owner = 'zzdylan';
     const repo = 'dev-tools';
 
-    const updateInfo = await CheckForUpdate(owner, repo);
+    const result = await CheckForUpdate(owner, repo);
     loading.close();
 
-    if (updateInfo.hasUpdate) {
+    if (result.hasUpdate) {
       // 有新版本
-      const description = updateInfo.description.substring(0, 300).replace(/\n/g, '<br>');
+      const description = result.description.substring(0, 300).replace(/\n/g, '<br>');
 
       await ElMessageBox.confirm(
-        `最新版本: <strong>${updateInfo.latestVersion}</strong><br>当前版本: ${updateInfo.currentVersion}<br><br>${description}`,
+        `最新版本: <strong>${result.latestVersion}</strong><br>当前版本: ${result.currentVersion}<br><br>${description}`,
         '发现新版本',
         {
           confirmButtonText: '立即下载',
@@ -362,15 +383,15 @@ const checkForUpdate = async () => {
       );
 
       // 打开下载页面
-      const downloadUrl = updateInfo.downloadUrl && updateInfo.downloadUrl.trim() !== ''
-        ? updateInfo.downloadUrl
+      const downloadUrl = result.downloadUrl && result.downloadUrl.trim() !== ''
+        ? result.downloadUrl
         : 'https://github.com/zzdylan/dev-tools/releases/latest';
 
       console.log('打开下载地址:', downloadUrl);
       BrowserOpenURL(downloadUrl);
     } else {
       // 已是最新版本
-      ElMessage.success(`当前已是最新版本: ${updateInfo.currentVersion}`);
+      ElMessage.success(`当前已是最新版本: ${result.currentVersion}`);
     }
   } catch (error: any) {
     loading.close();
@@ -383,6 +404,38 @@ const checkForUpdate = async () => {
     // 其他错误
     console.error('检查更新失败:', error);
     ElMessage.error('检查更新失败，请稍后重试');
+  }
+};
+
+// 静默检查更新（启动时调用）
+const checkForUpdateSilent = async () => {
+  try {
+    const owner = 'zzdylan';
+    const repo = 'dev-tools';
+
+    const result = await CheckForUpdate(owner, repo);
+
+    if (result.hasUpdate) {
+      // 有新版本，设置状态
+      hasUpdate.value = true;
+      updateInfo.value = result;
+      console.log('发现新版本:', result.latestVersion);
+    }
+  } catch (error: any) {
+    // 静默失败，不显示错误消息
+    console.log('静默检查更新失败:', error);
+  }
+};
+
+// 打开更新页面
+const openUpdatePage = () => {
+  if (updateInfo.value) {
+    const downloadUrl = updateInfo.value.downloadUrl && updateInfo.value.downloadUrl.trim() !== ''
+      ? updateInfo.value.downloadUrl
+      : 'https://github.com/zzdylan/dev-tools/releases/latest';
+
+    console.log('打开下载地址:', downloadUrl);
+    BrowserOpenURL(downloadUrl);
   }
 };
 </script>
@@ -663,7 +716,44 @@ const checkForUpdate = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-right: 0;
+  margin-right: 12px;
+}
+
+.update-btn {
+  padding: 6px;
+  border: 1px solid #ef4444;
+  border-radius: 4px;
+  position: relative;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.update-btn:hover {
+  background: #fef2f2;
+}
+
+.update-icon {
+  font-size: 18px;
+  display: block;
+}
+
+.update-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .github-btn {
